@@ -20,6 +20,11 @@ export default function LineupSection({
   const [selectedPhaseId, setSelectedPhaseId] = useState<string>(
     activePhaseId || (phases.length > 0 ? phases[0].id : 'phase-1')
   );
+  const [failedLogos, setFailedLogos] = useState<Record<string, boolean>>({});
+
+  const handleImageError = (artistId: string) => {
+    setFailedLogos((prev) => ({ ...prev, [artistId]: true }));
+  };
 
   // Filter artists by phase if phaseId is defined, otherwise show all
   const currentArtists = lineup.filter((artist) => {
@@ -78,7 +83,10 @@ export default function LineupSection({
         {/* Artist Logo Cards Grid - Clean Apple minimalist white design */}
         <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
           {currentArtists.map((artist) => {
-            const logoSrc = artist.logoUrl || artist.image;
+            const rawLogoSrc = artist.logoUrl || artist.image;
+            const isFailed = failedLogos[artist.id];
+            const logoSrc = (!isFailed && rawLogoSrc) ? rawLogoSrc : null;
+
             return (
               <div
                 key={artist.id}
@@ -91,6 +99,7 @@ export default function LineupSection({
                   <img
                     src={logoSrc}
                     alt={artist.name}
+                    onError={() => handleImageError(artist.id)}
                     className="max-h-16 sm:max-h-20 max-w-full object-contain filter group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (

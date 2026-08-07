@@ -173,7 +173,7 @@ export const defaultConfig: SiteConfig = {
   metaTitle: 'Playlist Rewind 2026 - Bandung | 14-15 November 2026',
   metaDescription: 'Beli tiket resmi Playlist Rewind 2026 Bandung pada 14-15 November 2026. Saksikan musisi dan artis favorit kamu secara langsung!',
   metaKeywords: 'Playlist Rewind 2026, Konser Bandung, Tiket Playlist Rewind, Festival Musik Bandung 2026',
-  ogImage: '',
+  ogImage: '/og-image.jpg',
   ogTitle: 'Playlist Rewind 2026 - Bandung | 14-15 November 2026',
   ogDescription: 'Beli tiket resmi Playlist Rewind 2026 Bandung pada 14-15 November 2026. Saksikan musisi dan artis favorit kamu secara langsung!',
   canonicalUrl: 'https://playlistrewind.com',
@@ -185,6 +185,9 @@ const dataFilePath = path.join(process.cwd(), 'src', 'data', 'config.json');
 
 export function sanitizeConfig(cfg: SiteConfig): SiteConfig {
   const c = { ...cfg };
+  if (!c.ogImage) {
+    c.ogImage = '/og-image.jpg';
+  }
   if (!c.ogTitle || c.ogTitle.includes('Secapa AD')) {
     c.ogTitle = c.metaTitle || 'Playlist Rewind 2026 - Bandung | 14-15 November 2026';
   }

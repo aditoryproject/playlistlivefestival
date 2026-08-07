@@ -232,6 +232,14 @@ export default function AdminPage() {
     });
   };
 
+  const handleRemoveLogo = (id: string) => {
+    if (!config) return;
+    setConfig({
+      ...config,
+      lineup: config.lineup.map((a) => (a.id === id ? { ...a, logoUrl: '', image: '' } : a)),
+    });
+  };
+
   // Login Screen
   if (!isAuthenticated) {
     return (
@@ -670,8 +678,12 @@ export default function AdminPage() {
                             type="url"
                             value={artist.logoUrl || artist.image || ''}
                             onChange={(e) => {
-                              handleUpdateArtist(artist.id, 'logoUrl', e.target.value);
-                              handleUpdateArtist(artist.id, 'image', e.target.value);
+                              const val = e.target.value;
+                              if (!val) {
+                                handleRemoveLogo(artist.id);
+                              } else {
+                                handleUpdateArtist(artist.id, 'logoUrl', val);
+                              }
                             }}
                             placeholder="/uploads/my_logo.png atau https://..."
                             className="flex-1 min-w-[200px] px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-900 text-xs font-mono"
@@ -687,6 +699,9 @@ export default function AdminPage() {
                                   src={logoSrc}
                                   alt={artist.name}
                                   className="max-h-full max-w-full object-contain"
+                                  onError={(e) => {
+                                    (e.target as HTMLElement).style.display = 'none';
+                                  }}
                                 />
                               </div>
                               <div>
@@ -696,11 +711,9 @@ export default function AdminPage() {
                             </div>
 
                             <button
-                              onClick={() => {
-                                handleUpdateArtist(artist.id, 'logoUrl', '');
-                                handleUpdateArtist(artist.id, 'image', '');
-                              }}
-                              className="text-xs text-red-500 hover:text-red-700 font-medium"
+                              type="button"
+                              onClick={() => handleRemoveLogo(artist.id)}
+                              className="text-xs text-red-500 hover:text-red-700 font-semibold px-2 py-1 rounded-lg hover:bg-red-50 transition-colors"
                             >
                               Hapus Logo
                             </button>

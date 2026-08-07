@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { getSiteConfig, getSiteConfigAsync } from '@/lib/config';
+import { getSiteConfigAsync } from '@/lib/config';
 import PixelScripts from '@/components/PixelScripts';
 import { generateMusicEventSchema } from '@/lib/schema';
 
@@ -8,17 +8,16 @@ export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteConfigAsync();
   const siteUrl = 'https://playlistlivefestival.letsplaymaker.com';
 
-  let ogImageUrl = config.ogImage;
-  if (!ogImageUrl) {
-    ogImageUrl = `${siteUrl}/icon.png`;
-  } else if (ogImageUrl.startsWith('/')) {
+  let ogImageUrl = config.ogImage || '/og-image.jpg';
+  if (ogImageUrl.startsWith('/')) {
     ogImageUrl = `${siteUrl}${ogImageUrl}`;
   }
 
-  const title = config.metaTitle || 'Playlist Rewind 2026 - Bandung | 14-15 November 2026';
-  const description = config.metaDescription || 'Beli tiket resmi Playlist Rewind 2026 Bandung pada 14-15 November 2026.';
+  const title = config.ogTitle || config.metaTitle || 'Playlist Rewind 2026 - Bandung | 14-15 November 2026';
+  const description = config.ogDescription || config.metaDescription || 'Beli tiket resmi Playlist Rewind 2026 Bandung pada 14-15 November 2026.';
 
   return {
+    metadataBase: new URL(siteUrl),
     title,
     description,
     keywords: config.metaKeywords,
@@ -33,12 +32,14 @@ export async function generateMetadata(): Promise<Metadata> {
       images: [
         {
           url: ogImageUrl,
-          width: 1200,
-          height: 630,
+          width: 1600,
+          height: 900,
           alt: title,
+          type: 'image/jpeg',
         },
       ],
       type: 'website',
+      locale: 'id_ID',
     },
     twitter: {
       card: 'summary_large_image',
@@ -60,17 +61,41 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const config = getSiteConfig();
+  const config = await getSiteConfigAsync();
   const schemaJson = generateMusicEventSchema(config);
+  const siteUrl = 'https://playlistlivefestival.letsplaymaker.com';
+
+  let ogImageUrl = config.ogImage || '/og-image.jpg';
+  if (ogImageUrl.startsWith('/')) {
+    ogImageUrl = `${siteUrl}${ogImageUrl}`;
+  }
+
+  const title = config.ogTitle || config.metaTitle || 'Playlist Rewind 2026 - Bandung | 14-15 November 2026';
+  const description = config.ogDescription || config.metaDescription || 'Beli tiket resmi Playlist Rewind 2026 Bandung pada 14-15 November 2026.';
 
   return (
     <html lang="id">
       <head>
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={siteUrl} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:image:secure_url" content={ogImageUrl} />
+        <meta property="og:image:width" content="1600" />
+        <meta property="og:image:height" content="900" />
+        <meta property="og:image:type" content="image/jpeg" />
+        <meta property="og:image:alt" content={title} />
+        <meta property="og:site_name" content={`${config.eventTitleFirst} ${config.eventTitleSecond}`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImageUrl} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaJson) }}
