@@ -15,8 +15,8 @@ export async function generateMetadata(): Promise<Metadata> {
       canonical: config.canonicalUrl,
     },
     openGraph: {
-      title: config.ogTitle,
-      description: config.ogDescription,
+      title: config.ogTitle || config.metaTitle,
+      description: config.ogDescription || config.metaDescription,
       url: config.canonicalUrl,
       siteName: `${config.eventTitleFirst} ${config.eventTitleSecond}`,
       images: [
@@ -24,15 +24,15 @@ export async function generateMetadata(): Promise<Metadata> {
           url: config.ogImage,
           width: 1200,
           height: 630,
-          alt: config.ogTitle,
+          alt: config.ogTitle || config.metaTitle,
         },
       ],
       type: 'website',
     },
     twitter: {
       card: 'summary_large_image',
-      title: config.ogTitle,
-      description: config.ogDescription,
+      title: config.ogTitle || config.metaTitle,
+      description: config.ogDescription || config.metaDescription,
       images: [config.ogImage],
     },
     robots: {

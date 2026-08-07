@@ -938,7 +938,7 @@ export default function AdminPage() {
                   <input
                     type="text"
                     value={config.metaTitle}
-                    onChange={(e) => setConfig({ ...config, metaTitle: e.target.value })}
+                    onChange={(e) => setConfig({ ...config, metaTitle: e.target.value, ogTitle: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-zinc-900 text-sm font-medium"
                   />
                 </div>
@@ -950,7 +950,7 @@ export default function AdminPage() {
                   <textarea
                     rows={3}
                     value={config.metaDescription}
-                    onChange={(e) => setConfig({ ...config, metaDescription: e.target.value })}
+                    onChange={(e) => setConfig({ ...config, metaDescription: e.target.value, ogDescription: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-zinc-900 text-sm"
                   />
                 </div>
