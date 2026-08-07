@@ -1,0 +1,44 @@
+-- MySQL Database Schema for Playlist Rewind Website
+-- Author: Antigravity AI
+-- Date: 2026
+
+CREATE DATABASE IF NOT EXISTS `playlistweb` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+USE `playlistweb`;
+
+-- Table 1: Site Configuration Storage
+CREATE TABLE IF NOT EXISTS `site_config` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `config_key` VARCHAR(50) NOT NULL UNIQUE DEFAULT 'default_config',
+  `config_json` LONGTEXT NOT NULL,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX `idx_config_key` (`config_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table 2: Buy Now Click Analytics Counter
+CREATE TABLE IF NOT EXISTS `buy_now_analytics` (
+  `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+  `clicked_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `user_agent` VARCHAR(255) NULL,
+  `ip_address` VARCHAR(45) NULL,
+  INDEX `idx_clicked_at` (`clicked_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table 3: Detailed Visitor Traffic Analytics
+CREATE TABLE IF NOT EXISTS `visitor_logs` (
+  `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+  `ip_address` VARCHAR(45) NULL,
+  `city` VARCHAR(100) DEFAULT 'Unknown',
+  `country` VARCHAR(100) DEFAULT 'Indonesia',
+  `referrer` VARCHAR(255) DEFAULT 'Direct',
+  `source_category` VARCHAR(50) DEFAULT 'Direct / Bookmark',
+  `utm_source` VARCHAR(100) NULL,
+  `utm_medium` VARCHAR(100) NULL,
+  `utm_campaign` VARCHAR(100) NULL,
+  `device_type` VARCHAR(50) DEFAULT 'Mobile',
+  `browser` VARCHAR(50) DEFAULT 'Chrome',
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_created_at` (`created_at`),
+  INDEX `idx_source` (`source_category`),
+  INDEX `idx_city` (`city`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
