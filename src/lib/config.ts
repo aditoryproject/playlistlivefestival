@@ -183,6 +183,23 @@ export const defaultConfig: SiteConfig = {
 
 const dataFilePath = path.join(process.cwd(), 'src', 'data', 'config.json');
 
+export function sanitizeConfig(cfg: SiteConfig): SiteConfig {
+  const c = { ...cfg };
+  if (!c.ogTitle || c.ogTitle.includes('Secapa AD')) {
+    c.ogTitle = c.metaTitle || 'Playlist Rewind 2026 - Bandung | 14-15 November 2026';
+  }
+  if (!c.ogDescription || c.ogDescription.includes('Secapa AD')) {
+    c.ogDescription = c.metaDescription || 'Beli tiket resmi Playlist Rewind 2026 Bandung pada 14-15 November 2026.';
+  }
+  if (c.videoSubtitle?.includes('Secapa AD')) {
+    c.videoSubtitle = 'Rasakan atmosfir dan keseruan festival musik terbesar di Bandung!';
+  }
+  if (c.venueName?.includes('Secapa AD')) {
+    c.venueName = 'Bandung';
+  }
+  return c;
+}
+
 /**
  * Synchronous local JSON config reader (legacy & static render fallback)
  */
@@ -194,14 +211,14 @@ export function getSiteConfig(): SiteConfig {
         fs.mkdirSync(dir, { recursive: true });
       }
       fs.writeFileSync(dataFilePath, JSON.stringify(defaultConfig, null, 2), 'utf-8');
-      return defaultConfig;
+      return sanitizeConfig(defaultConfig);
     }
     const fileData = fs.readFileSync(dataFilePath, 'utf-8');
     const parsed = JSON.parse(fileData);
-    return { ...defaultConfig, ...parsed };
+    return sanitizeConfig({ ...defaultConfig, ...parsed });
   } catch (error) {
     console.error('Error reading site config file:', error);
-    return defaultConfig;
+    return sanitizeConfig(defaultConfig);
   }
 }
 
@@ -212,7 +229,7 @@ export async function getSiteConfigAsync(): Promise<SiteConfig> {
   // 1. Try MySQL Database
   const dbConfig = await getDbSiteConfig();
   if (dbConfig) {
-    return { ...defaultConfig, ...dbConfig };
+    return sanitizeConfig({ ...defaultConfig, ...dbConfig });
   }
 
   // 2. Fallback to Local JSON file
@@ -225,7 +242,7 @@ export async function getSiteConfigAsync(): Promise<SiteConfig> {
 export function saveSiteConfig(newConfig: Partial<SiteConfig>): SiteConfig {
   try {
     const current = getSiteConfig();
-    const updated = { ...current, ...newConfig };
+    const updated = sanitizeConfig({ ...current, ...newConfig });
     const dir = path.dirname(dataFilePath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
@@ -243,7 +260,7 @@ export function saveSiteConfig(newConfig: Partial<SiteConfig>): SiteConfig {
  */
 export async function saveSiteConfigAsync(newConfig: Partial<SiteConfig>): SiteConfig {
   const current = await getSiteConfigAsync();
-  const updated = { ...current, ...newConfig };
+  const updated = sanitizeConfig({ ...current, ...newConfig });
 
   // Save to MySQL DB if available
   await saveDbSiteConfig(updated);

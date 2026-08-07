@@ -1,39 +1,50 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { getSiteConfig } from '@/lib/config';
+import { getSiteConfig, getSiteConfigAsync } from '@/lib/config';
 import PixelScripts from '@/components/PixelScripts';
 import { generateMusicEventSchema } from '@/lib/schema';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const config = getSiteConfig();
+  const config = await getSiteConfigAsync();
+  const siteUrl = 'https://playlistlivefestival.letsplaymaker.com';
+
+  let ogImageUrl = config.ogImage;
+  if (!ogImageUrl) {
+    ogImageUrl = `${siteUrl}/icon.png`;
+  } else if (ogImageUrl.startsWith('/')) {
+    ogImageUrl = `${siteUrl}${ogImageUrl}`;
+  }
+
+  const title = config.metaTitle || 'Playlist Rewind 2026 - Bandung | 14-15 November 2026';
+  const description = config.metaDescription || 'Beli tiket resmi Playlist Rewind 2026 Bandung pada 14-15 November 2026.';
 
   return {
-    title: config.metaTitle,
-    description: config.metaDescription,
+    title,
+    description,
     keywords: config.metaKeywords,
     alternates: {
-      canonical: config.canonicalUrl,
+      canonical: config.canonicalUrl || siteUrl,
     },
     openGraph: {
-      title: config.ogTitle || config.metaTitle,
-      description: config.ogDescription || config.metaDescription,
-      url: config.canonicalUrl,
+      title,
+      description,
+      url: siteUrl,
       siteName: `${config.eventTitleFirst} ${config.eventTitleSecond}`,
       images: [
         {
-          url: config.ogImage,
+          url: ogImageUrl,
           width: 1200,
           height: 630,
-          alt: config.ogTitle || config.metaTitle,
+          alt: title,
         },
       ],
       type: 'website',
     },
     twitter: {
       card: 'summary_large_image',
-      title: config.ogTitle || config.metaTitle,
-      description: config.ogDescription || config.metaDescription,
-      images: [config.ogImage],
+      title,
+      description,
+      images: [ogImageUrl],
     },
     robots: {
       index: true,
