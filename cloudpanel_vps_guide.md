@@ -19,7 +19,7 @@ Panduan langkah demi langkah untuk melakukan deploy aplikasi **Playlist Rewind**
 3. Isi form berikut:
    - **Domain Name**: `playlistlivefestival.lestplaymaker.com`
    - **Node.js Version**: Pilih **Node.js 20.x** atau **Node.js 22.x**.
-   - **App Port**: `3000` (atau port kosong lainnya).
+   - **App Port**: `3001` (Port bebas selain 3000 & 5200).
 4. Klik **Create Site**.
 
 ---
@@ -56,7 +56,7 @@ Buat file `.env.local` di root folder proyek (`/home/cloudpanel/htdocs/playlistl
 
 ```env
 # Port Aplikasi Next.js
-PORT=3000
+PORT=3001
 
 # Password Login Dashboard CMS (Bisa Anda ganti sesuka hati)
 ADMIN_PASSCODE=PlaymakerSecret2026!
@@ -86,7 +86,7 @@ npm run build
 
 # 3. Jalankan PM2 Process Manager
 npm install -g pm2
-pm2 start npm --name "playlist-web" -- start -- -p 3000
+pm2 start npm --name "playlist-web" -- start -- -p 3001
 pm2 save
 pm2 startup
 ```
