@@ -18,11 +18,18 @@ export default function BuyNowButton({
 }: BuyNowButtonProps) {
   const [isClicked, setIsClicked] = useState(false);
 
-  const handleClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     setIsClicked(true);
 
-    // Optional audio click feedback
+    // 1. Immediately fire Pixel events (Meta InitiateCheckout, TikTok, Google Analytics)
+    triggerBuyNowPixels(eventTitle);
+
+    // 2. Increment click counter in backend analytics silently
+    try {
+      fetch('/api/analytics', { method: 'POST' }).catch(() => {});
+    } catch (err) {}
+
+    // 3. Audio click feedback if enabled
     if (enableSound && typeof window !== 'undefined') {
       try {
         const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -37,24 +44,12 @@ export default function BuyNowButton({
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + 0.15);
-      } catch (err) {
-        // Audio Context might be restricted
-      }
+      } catch (err) {}
     }
 
-    // Trigger pixels (Meta, TikTok, Google Tag)
-    triggerBuyNowPixels(eventTitle);
-
-    // Increment click counter in backend analytics silently
-    try {
-      fetch('/api/analytics', { method: 'POST' }).catch(() => {});
-    } catch (err) {}
-
-    // Delay slightly to ensure pixel triggers before navigation
     setTimeout(() => {
-      window.open(ticketUrl, '_blank', 'noopener,noreferrer');
       setIsClicked(false);
-    }, 250);
+    }, 400);
   };
 
   return (
