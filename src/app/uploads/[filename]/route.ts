@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { findUploadedFile } from '@/lib/uploads';
 
 export async function GET(
   req: NextRequest,
@@ -16,9 +17,9 @@ export async function GET(
 
     // Security: Prevent path traversal attacks by extracting base filename only
     const safeFilename = path.basename(filename);
-    const filePath = path.join(process.cwd(), 'public', 'uploads', safeFilename);
+    const filePath = findUploadedFile(safeFilename);
 
-    if (!fs.existsSync(filePath)) {
+    if (!filePath || !fs.existsSync(filePath)) {
       return new NextResponse('File Not Found', { status: 404 });
     }
 
@@ -31,12 +32,14 @@ export async function GET(
     else if (ext === '.webp') contentType = 'image/webp';
     else if (ext === '.svg') contentType = 'image/svg+xml';
     else if (ext === '.gif') contentType = 'image/gif';
+    else if (ext === '.avif') contentType = 'image/avif';
 
-    return new NextResponse(fileBuffer, {
+    return new Response(new Uint8Array(fileBuffer), {
       status: 200,
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',
+        'Access-Control-Allow-Origin': '*',
       },
     });
   } catch (error) {

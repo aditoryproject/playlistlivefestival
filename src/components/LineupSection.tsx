@@ -86,6 +86,7 @@ export default function LineupSection({
             const rawLogoSrc = artist.logoUrl || artist.image;
             const isFailed = failedLogos[artist.id];
             const logoSrc = (!isFailed && rawLogoSrc) ? rawLogoSrc : null;
+            const displayName = (artist.name && artist.name.trim().length > 0) ? artist.name.trim() : 'ARTIST';
 
             return (
               <div
@@ -98,14 +99,14 @@ export default function LineupSection({
                 {logoSrc ? (
                   <img
                     src={logoSrc}
-                    alt={artist.name}
+                    alt={displayName}
                     onError={() => handleImageError(artist.id)}
                     className="max-h-16 sm:max-h-20 max-w-full object-contain filter group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
                   <div className="text-center px-2">
                     <span className="text-base sm:text-lg font-black tracking-tight text-zinc-950 uppercase font-sans leading-snug group-hover:text-pink-600 transition-colors">
-                      {artist.name}
+                      {displayName}
                     </span>
                   </div>
                 )}

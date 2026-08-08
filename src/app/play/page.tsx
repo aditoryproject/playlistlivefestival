@@ -149,6 +149,10 @@ export default function AdminPage() {
 
   // Upload Logo File Handler
   const handleLogoUpload = async (artistId: string, file: File) => {
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Ukuran file terlalu besar. Maksimal 10 MB.');
+      return;
+    }
     setUploadingId(artistId);
     try {
       const formData = new FormData();
@@ -176,6 +180,10 @@ export default function AdminPage() {
   // Generic Upload File Handler for Site Config (ogImage, videoCoverImage, etc.)
   const handleGenericFileUpload = async (field: keyof SiteConfig, file: File) => {
     if (!config) return;
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Ukuran file terlalu besar. Maksimal 10 MB.');
+      return;
+    }
     setUploadingId(field);
     try {
       const formData = new FormData();
@@ -694,13 +702,15 @@ export default function AdminPage() {
                         {logoSrc && (
                           <div className="mt-2 p-3 bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <div className="w-16 h-12 rounded-lg bg-white p-1.5 border border-zinc-200 flex items-center justify-center overflow-hidden">
+                              <div className="w-16 h-12 rounded-lg bg-white p-1.5 border border-zinc-200 flex items-center justify-center overflow-hidden shrink-0">
                                 <img
                                   src={logoSrc}
-                                  alt={artist.name}
+                                  alt={artist.name || 'Preview Logo'}
                                   className="max-h-full max-w-full object-contain"
                                   onError={(e) => {
-                                    (e.target as HTMLElement).style.display = 'none';
+                                    const target = e.currentTarget;
+                                    target.onerror = null;
+                                    target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ef4444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/%3E%3Cline x1='2' y1='2' x2='22' y2='22'/%3E%3C/svg%3E";
                                   }}
                                 />
                               </div>
