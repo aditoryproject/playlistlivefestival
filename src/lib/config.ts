@@ -185,6 +185,9 @@ const dataFilePath = path.join(process.cwd(), 'src', 'data', 'config.json');
 
 export function sanitizeConfig(cfg: SiteConfig): SiteConfig {
   const c = { ...cfg };
+  if (c.metaPixelId) c.metaPixelId = c.metaPixelId.trim();
+  if (c.tikTokPixelId) c.tikTokPixelId = c.tikTokPixelId.trim();
+  if (c.googleTagId) c.googleTagId = c.googleTagId.trim();
   if (!c.ogImage) {
     c.ogImage = '/og-image.jpg';
   }

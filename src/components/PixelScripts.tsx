@@ -15,10 +15,14 @@ export default function PixelScripts({
   googleTagId,
   customHeadScripts,
 }: PixelScriptsProps) {
+  const cleanMetaPixelId = metaPixelId?.trim();
+  const cleanTikTokPixelId = tikTokPixelId?.trim();
+  const cleanGoogleTagId = googleTagId?.trim();
+
   return (
     <>
       {/* 1. META / FACEBOOK PIXEL */}
-      {metaPixelId && (
+      {cleanMetaPixelId && (
         <Script
           id="meta-pixel"
           strategy="afterInteractive"
@@ -32,7 +36,7 @@ export default function PixelScripts({
               t.src=v;s=b.getElementsByTagName(e)[0];
               s.parentNode.insertBefore(t,s)}(window, document,'script',
               'https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init', '${metaPixelId}');
+              fbq('init', '${cleanMetaPixelId}');
               fbq('track', 'PageView');
             `,
           }}
@@ -40,7 +44,7 @@ export default function PixelScripts({
       )}
 
       {/* 2. TIKTOK PIXEL */}
-      {tikTokPixelId && (
+      {cleanTikTokPixelId && (
         <Script
           id="tiktok-pixel"
           strategy="afterInteractive"
@@ -48,7 +52,7 @@ export default function PixelScripts({
             __html: `
               !function (w, d, t) {
                 w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var e=0;e<ttq.methods.length;e++)ttq.setAndDefer(ttq,ttq.methods[e]);ttq.instance=function(t){for(var e=ttq.methods[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._t[n]=+new Date;var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
-                ttq.load('${tikTokPixelId}');
+                ttq.load('${cleanTikTokPixelId}');
                 ttq.page();
               }(window, document, 'ttq');
             `,
@@ -57,11 +61,11 @@ export default function PixelScripts({
       )}
 
       {/* 3. GOOGLE TAG (GA4 / GTM) */}
-      {googleTagId && (
+      {cleanGoogleTagId && (
         <>
           <Script
             strategy="afterInteractive"
-            src={`https://www.googletagmanager.com/gtag/js?id=${googleTagId}`}
+            src={`https://www.googletagmanager.com/gtag/js?id=${cleanGoogleTagId}`}
           />
           <Script
             id="google-analytics"
@@ -71,7 +75,7 @@ export default function PixelScripts({
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${googleTagId}', {
+                gtag('config', '${cleanGoogleTagId}', {
                   page_path: window.location.pathname,
                 });
               `,
