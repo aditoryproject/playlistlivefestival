@@ -236,10 +236,16 @@ export default function AdminPage() {
 
       const data = await res.json();
       if (data.success && data.url) {
-        handleUpdateArtist(artistId, 'logoUrl', data.url);
+        if (config) {
+          setConfig({
+            ...config,
+            lineup: config.lineup.map((a) => (a.id === artistId ? { ...a, logoUrl: data.url, image: '' } : a)),
+          });
+        }
       } else {
         alert(data.error || 'Gagal mengunggah logo');
       }
+
     } catch (error) {
       console.error('Upload error:', error);
       alert('Terjadi kesalahan saat mengunggah file logo.');
@@ -307,7 +313,16 @@ export default function AdminPage() {
     if (!config) return;
     setConfig({
       ...config,
-      lineup: config.lineup.map((a) => (a.id === id ? { ...a, [field]: value } : a)),
+      lineup: config.lineup.map((a) => {
+        if (a.id === id) {
+          const updated = { ...a, [field]: value };
+          if (field === 'logoUrl' && value) {
+            updated.image = '';
+          }
+          return updated;
+        }
+        return a;
+      }),
     });
   };
 
@@ -318,6 +333,7 @@ export default function AdminPage() {
       lineup: config.lineup.map((a) => (a.id === id ? { ...a, logoUrl: '', image: '' } : a)),
     });
   };
+
 
   // Login Screen
   if (!isAuthenticated) {
@@ -666,19 +682,30 @@ export default function AdminPage() {
               </div>
 
               {/* ARTISTS & LOGOS SECTION */}
-              <div className="flex items-center justify-between pt-2">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
                 <div>
                   <h2 className="text-xl font-bold text-zinc-900">Daftar Logo Artis & Band</h2>
                   <p className="text-xs text-zinc-500 mt-1">Upload logo artis (PNG/JPG) atau ketik nama untuk tampilan minimalis</p>
                 </div>
 
-                <button
-                  onClick={() => handleAddArtist()}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-zinc-900 text-white text-xs font-semibold shadow-xs hover:bg-zinc-800 transition-colors"
-                >
-                  <Plus className="w-4 h-4" /> Tambah Logo Artis
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleSaveConfig}
+                    disabled={loading}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors shadow-xs"
+                  >
+                    <Save className="w-4 h-4" /> Simpan Lineup
+                  </button>
+
+                  <button
+                    onClick={() => handleAddArtist()}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-zinc-900 text-white text-xs font-semibold shadow-xs hover:bg-zinc-800 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" /> Tambah Logo Artis
+                  </button>
+                </div>
               </div>
+
 
               <div className="space-y-4">
                 {config.lineup.map((artist) => {
@@ -816,8 +843,21 @@ export default function AdminPage() {
                   );
                 })}
               </div>
+
+              {/* BOTTOM SAVE BUTTON FOR LINEUP */}
+              <div className="flex justify-end pt-4 border-t border-zinc-200">
+                <button
+                  onClick={handleSaveConfig}
+                  disabled={loading}
+                  className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center gap-2 transition-all shadow-md"
+                >
+                  <Save className="w-4 h-4" />
+                  Simpan Seluruh Perubahan Lineup
+                </button>
+              </div>
             </div>
           )}
+
 
           {/* TAB 3: VIDEO TEASER PREVIEW */}
           {activeTab === 'video' && (
