@@ -280,7 +280,8 @@ export function saveSiteConfig(newConfig: Partial<SiteConfig>): SiteConfig {
 /**
  * Async config saver: updates MySQL DB AND syncs to local JSON file
  */
-export async function saveSiteConfigAsync(newConfig: Partial<SiteConfig>): SiteConfig {
+export async function saveSiteConfigAsync(newConfig: Partial<SiteConfig>): Promise<SiteConfig> {
+
   const current = await getSiteConfigAsync();
   const updated = sanitizeConfig({ ...current, ...newConfig });
 

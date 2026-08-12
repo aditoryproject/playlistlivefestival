@@ -6,7 +6,7 @@ import {
   User,
   Phone,
   Mail,
-  Instagram,
+  AtSign,
   MapPin,
   Sparkles,
   ArrowRight,
@@ -16,6 +16,7 @@ import {
   Loader2,
   Briefcase
 } from 'lucide-react';
+
 
 interface AffiliateModalProps {
   isOpen: boolean;
@@ -270,7 +271,8 @@ export function AffiliateModal({ isOpen, onClose, title, subtitle }: AffiliateMo
                   Username Instagram / TikTok
                 </label>
                 <div className="relative">
-                  <Instagram className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <AtSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+
                   <input
                     type="text"
                     placeholder="Contoh: @username_anda"

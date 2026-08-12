@@ -229,9 +229,10 @@ export async function recordVisitorLog(input: VisitorLogInput): Promise<boolean>
     country: input.country || 'Indonesia',
     referrer: input.referrer || 'Direct',
     sourceCategory: input.sourceCategory || 'Direct / Bookmark',
-    utmSource: input.utmSource || null,
-    utmMedium: input.utmMedium || null,
-    utmCampaign: input.utmCampaign || null,
+    utmSource: input.utmSource || undefined,
+    utmMedium: input.utmMedium || undefined,
+    utmCampaign: input.utmCampaign || undefined,
+
     deviceType: input.deviceType || 'Mobile',
     browser: input.browser || 'Chrome',
     createdAt: new Date().toISOString(),
