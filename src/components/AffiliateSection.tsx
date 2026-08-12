@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { triggerAffiliateClickPixels } from '@/lib/pixels';
 import { Sparkles, Users, Award, TrendingUp, ArrowRight } from 'lucide-react';
 
 interface AffiliateSectionProps {
@@ -16,6 +17,11 @@ export function AffiliateSection({
   subtitle,
   buttonText,
 }: AffiliateSectionProps) {
+  const handleClick = () => {
+    triggerAffiliateClickPixels();
+    onOpenModal();
+  };
+
   return (
     <section className="relative py-12 sm:py-16 px-4 bg-white text-zinc-900">
       <div className="max-w-5xl mx-auto">
@@ -76,7 +82,7 @@ export function AffiliateSection({
             {/* Right CTA Button */}
             <div className="lg:col-span-5 flex flex-col items-center lg:items-end justify-center">
               <button
-                onClick={onOpenModal}
+                onClick={handleClick}
                 className="w-full sm:w-auto px-8 py-4 rounded-full bg-zinc-950 hover:bg-zinc-800 text-white font-bold text-sm sm:text-base tracking-wide uppercase shadow-md hover:shadow-lg flex items-center justify-center gap-2.5 transition-all transform hover:-translate-y-0.5"
               >
                 <span>{buttonText || 'Daftar Affiliate Playlist'}</span>

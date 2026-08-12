@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { triggerAffiliateSubmitPixels, triggerJoinWaGroupPixels } from '@/lib/pixels';
 import {
   X,
   User,
@@ -80,6 +81,8 @@ export function AffiliateModal({ isOpen, onClose, title, subtitle }: AffiliateMo
         if (data.waGroupUrl) {
           setWaGroupUrl(data.waGroupUrl);
         }
+        // Trigger Pixel Lead & CompleteRegistration conversion events
+        triggerAffiliateSubmitPixels(title || 'Affiliate Partner Registration');
         setStep(3); // Move to final success step
       } else {
         setErrorMsg(data.error || 'Gagal mengirim pendaftaran. Silakan coba lagi.');
@@ -89,6 +92,10 @@ export function AffiliateModal({ isOpen, onClose, title, subtitle }: AffiliateMo
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleJoinWaClick = () => {
+    triggerJoinWaGroupPixels(title || 'Affiliate WA Group');
   };
 
   const handleResetAndClose = () => {
@@ -369,6 +376,7 @@ export function AffiliateModal({ isOpen, onClose, title, subtitle }: AffiliateMo
               {/* Clean WhatsApp Group Button */}
               <a
                 href={waGroupUrl}
+                onClick={handleJoinWaClick}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-4 px-6 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm tracking-wide uppercase shadow-md flex items-center justify-center gap-2.5 transition-all hover:-translate-y-0.5"
