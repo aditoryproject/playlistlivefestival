@@ -19,9 +19,16 @@ import {
   Eye,
   Video,
   Upload,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Users,
+  Download,
+  ExternalLink,
+  Search,
+  MessageSquare,
+  Share2
 } from 'lucide-react';
 import Link from 'next/link';
+
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -31,7 +38,7 @@ export default function AdminPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'hero' | 'pixels' | 'seo' | 'lineup' | 'video' | 'features' | 'analytics'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'pixels' | 'seo' | 'lineup' | 'video' | 'features' | 'analytics' | 'affiliate'>('hero');
   const [config, setConfig] = useState<SiteConfig | null>(null);
 
   // Visitor & Traffic Analytics State
@@ -39,6 +46,67 @@ export default function AdminPage() {
   const [endDate, setEndDate] = useState<string>('');
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [loadingAnalytics, setLoadingAnalytics] = useState<boolean>(false);
+
+  // Affiliate Registrations State
+  const [affiliateList, setAffiliateList] = useState<any[]>([]);
+  const [loadingAffiliate, setLoadingAffiliate] = useState<boolean>(false);
+  const [affiliateSearch, setAffiliateSearch] = useState<string>('');
+
+  const fetchAffiliateData = async () => {
+    setLoadingAffiliate(true);
+    try {
+      const res = await fetch('/api/affiliate');
+      const data = await res.json();
+      if (data.success) {
+        setAffiliateList(data.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch affiliate data:', err);
+    } finally {
+      setLoadingAffiliate(false);
+    }
+  };
+
+  const handleDeleteAffiliate = async (id: string | number) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus data pendaftaran affiliate ini?')) return;
+    try {
+      const res = await fetch(`/api/affiliate?id=${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        setAffiliateList((prev) => prev.filter((item) => String(item.id) !== String(id)));
+      }
+    } catch (err) {
+      console.error('Failed to delete affiliate record:', err);
+    }
+  };
+
+  const exportAffiliateCsv = () => {
+    if (!affiliateList || affiliateList.length === 0) {
+      alert('Belum ada data pendaftar affiliate untuk diexport.');
+      return;
+    }
+    const headers = ['ID', 'Waktu Daftar', 'Nama Lengkap', 'WhatsApp', 'Email', 'Sosmed', 'Kota', 'Pengalaman'];
+    const rows = affiliateList.map((item) => [
+      item.id,
+      new Date(item.createdAt).toLocaleString('id-ID'),
+      `"${(item.fullName || '').replace(/"/g, '""')}"`,
+      `"${(item.whatsapp || '').replace(/"/g, '""')}"`,
+      `"${(item.email || '').replace(/"/g, '""')}"`,
+      `"${(item.instagramTiktok || '').replace(/"/g, '""')}"`,
+      `"${(item.city || '').replace(/"/g, '""')}"`,
+      `"${(item.experience || '').replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `affiliate_pendaftar_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   const fetchAnalytics = async (start?: string, end?: string) => {
     setLoadingAnalytics(true);
@@ -70,8 +138,11 @@ export default function AdminPage() {
   useEffect(() => {
     if (activeTab === 'analytics') {
       fetchAnalytics(startDate, endDate);
+    } else if (activeTab === 'affiliate') {
+      fetchAffiliateData();
     }
   }, [activeTab]);
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -366,8 +437,10 @@ export default function AdminPage() {
             { id: 'pixels', label: 'Tracking & Pixels', icon: Tag },
             { id: 'seo', label: 'SEO & Meta Graph', icon: Globe },
             { id: 'features', label: 'Map & Features', icon: MapPin },
+            { id: 'affiliate', label: 'Program Affiliate', icon: Users },
             { id: 'analytics', label: 'Click Analytics', icon: BarChart3 },
           ].map((tab) => {
+
             const Icon = tab.icon;
             return (
               <button
@@ -1412,8 +1485,266 @@ export default function AdminPage() {
             </div>
           )}
 
+          {/* TAB 8: AFFILIATE MANAGEMENT */}
+          {activeTab === 'affiliate' && config && (
+            <div className="space-y-8">
+              {/* Header */}
+              <div>
+                <h2 className="text-xl font-bold text-zinc-900 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-amber-500" />
+                  Manajemen Program Affiliate
+                </h2>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Atur saklar fitur, link WhatsApp Group, webhook Google Sheets, dan lihat daftar pendaftar affiliate.
+                </p>
+              </div>
+
+              {/* Section 1: Settings Form */}
+              <div className="p-6 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-5">
+                <h3 className="text-sm font-bold text-zinc-800 uppercase tracking-wider flex items-center justify-between">
+                  <span>1. Pengaturan & Switch Fitur</span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={config.showAffiliateSection ?? true}
+                      onChange={(e) => setConfig({ ...config, showAffiliateSection: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span className="ml-3 text-xs font-semibold text-zinc-700">
+                      {config.showAffiliateSection ? 'Fitur Tampil (ON)' : 'Fitur Sembunyi (OFF)'}
+                    </span>
+                  </label>
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-700 mb-1">
+                      Teks Tombol CTA Affiliate
+                    </label>
+                    <input
+                      type="text"
+                      value={config.affiliateButtonText || ''}
+                      onChange={(e) => setConfig({ ...config, affiliateButtonText: e.target.value })}
+                      placeholder="Daftar Affiliate Playlist"
+                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-700 mb-1">
+                      Link WhatsApp Group Affiliate <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={config.affiliateWaGroupUrl || ''}
+                      onChange={(e) => setConfig({ ...config, affiliateWaGroupUrl: e.target.value })}
+                      placeholder="https://chat.whatsapp.com/xxxxxx"
+                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800 font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-700 mb-1">
+                      Judul Banner Affiliate
+                    </label>
+                    <input
+                      type="text"
+                      value={config.affiliateTitle || ''}
+                      onChange={(e) => setConfig({ ...config, affiliateTitle: e.target.value })}
+                      placeholder="Gabung Program Affiliate Playlist Rewind 2026"
+                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-700 mb-1">
+                      Webhook Google Sheets (Opsional Auto-Sync)
+                    </label>
+                    <input
+                      type="text"
+                      value={config.affiliateGoogleSheetWebhook || ''}
+                      onChange={(e) => setConfig({ ...config, affiliateGoogleSheetWebhook: e.target.value })}
+                      placeholder="https://script.google.com/macros/s/xxxx/exec"
+                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800 font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 mb-1">
+                    Deskripsi / Subtitle Banner
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={config.affiliateSubtitle || ''}
+                    onChange={(e) => setConfig({ ...config, affiliateSubtitle: e.target.value })}
+                    placeholder="Dapatkan komisi menarik dan akses eksklusif dengan menjadi bagian dari tim promo Playlist!"
+                    className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800 resize-none"
+                  />
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={handleSaveConfig}
+                    className="px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-sm"
+                  >
+                    <Save className="w-4 h-4" />
+                    Simpan Pengaturan Affiliate
+                  </button>
+                </div>
+              </div>
+
+              {/* Section 2: Applications Table */}
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-base font-bold text-zinc-900">
+                      2. Data Pendaftar Affiliate ({affiliateList.length})
+                    </h3>
+                    <p className="text-xs text-zinc-500">
+                      Data pendaftaran real-time dari formulir homepage.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    {/* Search Bar */}
+                    <div className="relative flex-1 sm:w-64">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
+                      <input
+                        type="text"
+                        placeholder="Cari nama / WA / kota..."
+                        value={affiliateSearch}
+                        onChange={(e) => setAffiliateSearch(e.target.value)}
+                        className="w-full pl-9 pr-3 py-1.5 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800"
+                      />
+                    </div>
+
+                    <button
+                      onClick={fetchAffiliateData}
+                      disabled={loadingAffiliate}
+                      className="p-2 border border-zinc-300 hover:bg-zinc-100 rounded-xl text-zinc-700 transition-colors"
+                      title="Refresh Data"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${loadingAffiliate ? 'animate-spin' : ''}`} />
+                    </button>
+
+                    <button
+                      onClick={exportAffiliateCsv}
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all shadow-sm"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Export CSV
+                    </button>
+                  </div>
+                </div>
+
+                {/* Table */}
+                <div className="overflow-x-auto border border-zinc-200 rounded-2xl bg-white shadow-xs">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-zinc-100/80 text-zinc-600 border-b border-zinc-200 font-semibold uppercase text-[10px] tracking-wider">
+                        <th className="p-3">Waktu</th>
+                        <th className="p-3">Nama Lengkap</th>
+                        <th className="p-3">WhatsApp</th>
+                        <th className="p-3">Email</th>
+                        <th className="p-3">Sosmed</th>
+                        <th className="p-3">Kota</th>
+                        <th className="p-3">Pengalaman</th>
+                        <th className="p-3 text-center">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-100 text-zinc-700">
+                      {affiliateList.filter((item) => {
+                        if (!affiliateSearch) return true;
+                        const q = affiliateSearch.toLowerCase();
+                        return (
+                          (item.fullName || '').toLowerCase().includes(q) ||
+                          (item.whatsapp || '').toLowerCase().includes(q) ||
+                          (item.city || '').toLowerCase().includes(q) ||
+                          (item.email || '').toLowerCase().includes(q)
+                        );
+                      }).length > 0 ? (
+                        affiliateList
+                          .filter((item) => {
+                            if (!affiliateSearch) return true;
+                            const q = affiliateSearch.toLowerCase();
+                            return (
+                              (item.fullName || '').toLowerCase().includes(q) ||
+                              (item.whatsapp || '').toLowerCase().includes(q) ||
+                              (item.city || '').toLowerCase().includes(q) ||
+                              (item.email || '').toLowerCase().includes(q)
+                            );
+                          })
+                          .map((item) => {
+                            const waClean = (item.whatsapp || '').replace(/\D/g, '');
+                            const waUrl = waClean.startsWith('0')
+                              ? `https://wa.me/62${waClean.slice(1)}`
+                              : `https://wa.me/${waClean}`;
+                            return (
+                              <tr key={item.id} className="hover:bg-zinc-50/80 transition-colors">
+                                <td className="p-3 font-mono text-[11px] whitespace-nowrap text-zinc-500">
+                                  {new Date(item.createdAt).toLocaleString('id-ID', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </td>
+                                <td className="p-3 font-bold text-zinc-900">{item.fullName}</td>
+                                <td className="p-3 whitespace-nowrap">
+                                  <a
+                                    href={waUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono font-medium hover:bg-emerald-100 transition-colors"
+                                  >
+                                    <MessageSquare className="w-3 h-3" />
+                                    {item.whatsapp}
+                                  </a>
+                                </td>
+                                <td className="p-3 text-zinc-600 font-mono text-[11px]">{item.email || '-'}</td>
+                                <td className="p-3 text-zinc-600 font-medium">{item.instagramTiktok || '-'}</td>
+                                <td className="p-3 text-zinc-600">{item.city || '-'}</td>
+                                <td className="p-3 text-zinc-500 max-w-xs truncate" title={item.experience}>
+                                  {item.experience || '-'}
+                                </td>
+                                <td className="p-3 text-center">
+                                  <button
+                                    onClick={() => handleDeleteAffiliate(item.id)}
+                                    className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    title="Hapus Record"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })
+                      ) : (
+                        <tr>
+                          <td colSpan={8} className="p-8 text-center text-zinc-400 text-xs">
+                            {loadingAffiliate ? (
+                              <div className="flex items-center justify-center gap-2">
+                                <RefreshCw className="w-4 h-4 animate-spin" />
+                                Memuat data pendaftar...
+                              </div>
+                            ) : (
+                              'Belum ada pendaftaran affiliate.'
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
         </main>
       </div>
     </div>
   );
 }
+

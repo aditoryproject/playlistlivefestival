@@ -57,6 +57,14 @@ export interface SiteConfig {
   spotifyEmbedUrl: string;
   showSoundEffects: boolean;
 
+  // Affiliate Registration Feature
+  showAffiliateSection: boolean;
+  affiliateButtonText: string;
+  affiliateTitle: string;
+  affiliateSubtitle: string;
+  affiliateWaGroupUrl: string;
+  affiliateGoogleSheetWebhook: string;
+
   // Tracking & Pixels
   metaPixelId: string;
   tikTokPixelId: string;
@@ -164,6 +172,14 @@ export const defaultConfig: SiteConfig = {
   showSpotify: false,
   spotifyEmbedUrl: 'https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M',
   showSoundEffects: true,
+
+  showAffiliateSection: true,
+  affiliateButtonText: 'Daftar Affiliate Playlist',
+  affiliateTitle: 'Gabung Program Affiliate Playlist Rewind 2026',
+  affiliateSubtitle: 'Dapatkan komisi menarik dan akses eksklusif dengan menjadi bagian dari tim promo Playlist!',
+  affiliateWaGroupUrl: 'https://chat.whatsapp.com/',
+  affiliateGoogleSheetWebhook: '',
+
 
   metaPixelId: '',
   tikTokPixelId: '',

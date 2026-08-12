@@ -29,8 +29,25 @@ export interface VisitorLogItem extends VisitorLogInput {
   createdAt: string;
 }
 
+export interface AffiliateApplicationInput {
+  fullName: string;
+  whatsapp: string;
+  email?: string;
+  instagramTiktok?: string;
+  city?: string;
+  experience?: string;
+}
+
+export interface AffiliateApplicationItem extends AffiliateApplicationInput {
+  id: string | number;
+  createdAt: string;
+  status: string;
+}
+
 // In-Memory Fallback Store for Local Dev without MySQL
 const memoryVisitorLogs: VisitorLogItem[] = [];
+const memoryAffiliateApplications: AffiliateApplicationItem[] = [];
+
 
 /**
  * Get or initialize MySQL connection pool
@@ -108,7 +125,25 @@ export async function initDatabase(): Promise<boolean> {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
 
+    // 4. Affiliate Applications table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS affiliate_applications (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        full_name VARCHAR(150) NOT NULL,
+        whatsapp VARCHAR(30) NOT NULL,
+        email VARCHAR(150) NULL,
+        instagram_tiktok VARCHAR(150) NULL,
+        city VARCHAR(100) NULL,
+        experience TEXT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        status VARCHAR(20) DEFAULT 'active',
+        INDEX idx_affiliate_created (created_at),
+        INDEX idx_affiliate_whatsapp (whatsapp)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
     isInitialized = true;
+
     console.log('[MySQL DB] Database schema verified and initialized successfully.');
     return true;
   } catch (err) {
@@ -337,3 +372,98 @@ export async function getDetailedVisitorAnalytics(startDate?: string, endDate?: 
     recentLogs: logs.slice(0, 50),
   };
 }
+
+/**
+ * Record a new affiliate application
+ */
+export async function recordAffiliateApplication(input: AffiliateApplicationInput): Promise<AffiliateApplicationItem> {
+  const db = getDbPool();
+  const newItem: AffiliateApplicationItem = {
+    id: Date.now(),
+    fullName: input.fullName,
+    whatsapp: input.whatsapp,
+    email: input.email || '',
+    instagramTiktok: input.instagramTiktok || '',
+    city: input.city || '',
+    experience: input.experience || '',
+    createdAt: new Date().toISOString(),
+    status: 'active',
+  };
+
+  if (db) {
+    try {
+      await initDatabase();
+      const [result]: any = await db.query(
+        `INSERT INTO affiliate_applications (full_name, whatsapp, email, instagram_tiktok, city, experience)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          input.fullName,
+          input.whatsapp,
+          input.email || null,
+          input.instagramTiktok || null,
+          input.city || null,
+          input.experience || null,
+        ]
+      );
+      newItem.id = result.insertId;
+    } catch (err) {
+      console.warn('[MySQL DB] Failed to insert affiliate application into MySQL:', err);
+      memoryAffiliateApplications.unshift(newItem);
+    }
+  } else {
+    memoryAffiliateApplications.unshift(newItem);
+  }
+
+  return newItem;
+}
+
+/**
+ * Get all affiliate applications
+ */
+export async function getAffiliateApplicationsFromDb(): Promise<AffiliateApplicationItem[]> {
+  const db = getDbPool();
+
+  if (db) {
+    try {
+      await initDatabase();
+      const [rows]: any = await db.query(
+        `SELECT id, full_name as fullName, whatsapp, email, 
+                instagram_tiktok as instagramTiktok, city, experience, 
+                created_at as createdAt, status
+         FROM affiliate_applications
+         ORDER BY created_at DESC`
+      );
+      return rows || [];
+    } catch (err) {
+      console.warn('[MySQL DB] Error fetching affiliate applications:', err);
+      return memoryAffiliateApplications;
+    }
+  }
+
+  return memoryAffiliateApplications;
+}
+
+/**
+ * Delete an affiliate application by ID
+ */
+export async function deleteAffiliateApplicationFromDb(id: string | number): Promise<boolean> {
+  const db = getDbPool();
+
+  if (db) {
+    try {
+      await initDatabase();
+      await db.query(`DELETE FROM affiliate_applications WHERE id = ?`, [id]);
+      return true;
+    } catch (err) {
+      console.warn('[MySQL DB] Error deleting affiliate application:', err);
+    }
+  }
+
+  const idx = memoryAffiliateApplications.findIndex((item) => String(item.id) === String(id));
+  if (idx !== -1) {
+    memoryAffiliateApplications.splice(idx, 1);
+    return true;
+  }
+  return false;
+}
+

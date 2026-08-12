@@ -8,6 +8,8 @@ import VenueMap from '@/components/VenueMap';
 import SpotifyPlayer from '@/components/SpotifyPlayer';
 import Footer from '@/components/Footer';
 import VisitorTracker from '@/components/VisitorTracker';
+import { AffiliateClientWrapper } from '@/components/AffiliateClientWrapper';
+
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -46,9 +48,13 @@ export default function HomePage() {
           />
         )}
 
+        {/* Affiliate Program Section (master toggle: config.showAffiliateSection) */}
+        <AffiliateClientWrapper config={config} />
+
         {config.showSpotify && config.spotifyEmbedUrl && (
           <SpotifyPlayer spotifyEmbedUrl={config.spotifyEmbedUrl} />
         )}
+
 
         {config.showVenueMap && (
           <VenueMap

@@ -42,3 +42,19 @@ CREATE TABLE IF NOT EXISTS `visitor_logs` (
   INDEX `idx_source` (`source_category`),
   INDEX `idx_city` (`city`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table 4: Affiliate Registrations / Submissions
+CREATE TABLE IF NOT EXISTS `affiliate_applications` (
+  `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+  `full_name` VARCHAR(150) NOT NULL,
+  `whatsapp` VARCHAR(30) NOT NULL,
+  `email` VARCHAR(150) NULL,
+  `instagram_tiktok` VARCHAR(150) NULL,
+  `city` VARCHAR(100) NULL,
+  `experience` TEXT NULL,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `status` VARCHAR(20) DEFAULT 'active',
+  INDEX `idx_affiliate_created` (`created_at`),
+  INDEX `idx_affiliate_whatsapp` (`whatsapp`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
