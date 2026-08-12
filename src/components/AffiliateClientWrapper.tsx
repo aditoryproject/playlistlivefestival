@@ -23,10 +23,10 @@ export function AffiliateClientWrapper({ config, renderButtonOnly }: AffiliateCl
       <>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold text-xs sm:text-sm tracking-wide uppercase shadow-md transition-all border border-amber-500/30 hover:border-amber-500/60"
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#F5F5F7] hover:bg-white text-zinc-950 font-medium text-xs sm:text-sm tracking-tight shadow-[0_4px_15px_rgba(0,0,0,0.04)] hover:shadow-md border border-zinc-200/90 transition-all duration-300 hover:-translate-y-0.5"
         >
-          <Users className="w-4 h-4 text-amber-400" />
-          {config.affiliateButtonText || 'Daftar Affiliate'}
+          <Users className="w-4 h-4 text-zinc-700" />
+          <span>{config.affiliateButtonText || 'Daftar Affiliate Playlist'}</span>
         </button>
 
         <AffiliateModal
