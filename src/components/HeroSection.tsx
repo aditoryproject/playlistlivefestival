@@ -4,7 +4,7 @@ import React from 'react';
 import BuyNowButton from './BuyNowButton';
 import { SiteConfig } from '@/lib/config';
 import { Sparkles, MapPin, Calendar } from 'lucide-react';
-import { AffiliateClientWrapper } from './AffiliateClientWrapper';
+
 
 
 interface HeroSectionProps {
@@ -59,24 +59,17 @@ export default function HeroSection({ config }: HeroSectionProps) {
           {config.eventSubtitle}
         </p>
 
-        {/* BUY NOW BUTTON & AFFILIATE BUTTON */}
-        <div className="pt-3 sm:pt-6 flex flex-col items-center gap-4">
+        {/* BUY NOW BUTTON */}
+        <div className="pt-3 sm:pt-6">
           <BuyNowButton
             ticketUrl={config.ticketUrl}
             buttonText={config.buyButtonText}
             eventTitle={`${config.eventTitleFirst} ${config.eventTitleSecond}`}
             enableSound={config.showSoundEffects}
           />
-
-          {config.showAffiliateSection && (
-            <div className="pt-1">
-              <AffiliateClientWrapper config={config} renderButtonOnly={true} />
-            </div>
-          )}
         </div>
-
-
       </div>
     </section>
   );
 }
+
