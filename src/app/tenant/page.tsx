@@ -24,7 +24,8 @@ export default async function TenantPage() {
   const now = Date.now();
   const isCountdownActive = Boolean(config.showTenantCountdown && targetTime > 0);
   const isExpired = isCountdownActive && now >= targetTime;
-  const isOpen = config.showTenantSection && !isExpired;
+  const isOpen = !isExpired;
+
 
   return (
     <main className="min-h-screen flex flex-col justify-between bg-zinc-50 text-zinc-900">

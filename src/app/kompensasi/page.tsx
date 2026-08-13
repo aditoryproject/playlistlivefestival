@@ -24,7 +24,8 @@ export default async function KompensasiPage() {
   const now = Date.now();
   const isCountdownActive = Boolean(config.showCompensationCountdown && targetTime > 0);
   const isExpired = isCountdownActive && now >= targetTime;
-  const isOpen = config.showCompensationSection && !isExpired;
+  const isOpen = !isExpired;
+
 
   return (
     <main className="min-h-screen flex flex-col justify-between bg-zinc-50 text-zinc-900">

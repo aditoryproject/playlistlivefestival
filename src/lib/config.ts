@@ -202,7 +202,7 @@ export const defaultConfig: SiteConfig = {
   affiliateWaGroupUrl: 'https://chat.whatsapp.com/',
   affiliateGoogleSheetWebhook: '',
 
-  showCompensationSection: true,
+  showCompensationSection: false,
   showCompensationCuration: true,
   compensationButtonText: 'Klaim Kompensasi Tiket',
   compensationTitle: 'Kompensasi Tiket Playlist Live Super Festival 2024',
@@ -212,7 +212,7 @@ export const defaultConfig: SiteConfig = {
   showCompensationCountdown: false,
   compensationTargetDate: '2026-10-31T23:59:59',
 
-  showTenantSection: true,
+  showTenantSection: false,
   tenantButtonText: 'Daftar Tenant F&B',
   tenantTitle: 'Open Recruitment Tenant F&B Playlist Rewind 2026',
   tenantSubtitle: 'Bergabunglah bersama puluhan ribu pengunjung di festival musik terbesar di Bandung!',
@@ -220,6 +220,7 @@ export const defaultConfig: SiteConfig = {
   tenantGoogleSheetWebhook: '',
   showTenantCountdown: false,
   tenantTargetDate: '2026-10-31T23:59:59',
+
 
 
 
