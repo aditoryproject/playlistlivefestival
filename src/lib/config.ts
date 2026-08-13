@@ -64,6 +64,9 @@ export interface SiteConfig {
   affiliateSubtitle: string;
   affiliateWaGroupUrl: string;
   affiliateGoogleSheetWebhook: string;
+  showAffiliateCountdown?: boolean;
+  affiliateTargetDate?: string;
+
 
   // Compensation Form Feature
   showCompensationSection: boolean;
@@ -195,12 +198,15 @@ export const defaultConfig: SiteConfig = {
   spotifyEmbedUrl: 'https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M',
   showSoundEffects: true,
 
-  showAffiliateSection: true,
+  showAffiliateSection: false,
   affiliateButtonText: 'Daftar Affiliate Playlist',
   affiliateTitle: 'Gabung Program Affiliate Playlist Rewind 2026',
   affiliateSubtitle: 'Dapatkan komisi menarik dan akses eksklusif dengan menjadi bagian dari tim promo Playlist!',
   affiliateWaGroupUrl: 'https://chat.whatsapp.com/',
   affiliateGoogleSheetWebhook: '',
+  showAffiliateCountdown: false,
+  affiliateTargetDate: '2026-10-31T23:59:59',
+
 
   showCompensationSection: false,
   showCompensationCuration: true,

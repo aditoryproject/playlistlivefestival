@@ -1768,8 +1768,8 @@ export default function AdminPage() {
 
               {/* Section 1: Settings Form */}
               <div className="p-6 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-5">
-                <h3 className="text-sm font-bold text-zinc-800 uppercase tracking-wider flex items-center justify-between">
-                  <span>1. Pengaturan & Switch Fitur</span>
+                <h3 className="text-sm font-bold text-zinc-900 flex items-center justify-between">
+                  <span>1. Status & Pengaturan Formulir</span>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -1783,6 +1783,38 @@ export default function AdminPage() {
                     </span>
                   </label>
                 </h3>
+
+                {/* Countdown Control for Affiliate */}
+                <div className="p-4 bg-purple-50/60 rounded-xl border border-purple-200/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-purple-700" />
+                      <span className="text-xs font-bold text-purple-950">Countdown Timer & Auto-Close Deadline Affiliate</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={config.showAffiliateCountdown ?? false}
+                        onChange={(e) => setConfig({ ...config, showAffiliateCountdown: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                    </label>
+                  </div>
+                  {config.showAffiliateCountdown && (
+                    <div>
+                      <label className="block text-xs font-semibold text-purple-900 mb-1">
+                        Tanggal & Jam Batas Pendaftaran Affiliate (Form Auto-Off saat Waktu Habis)
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={config.affiliateTargetDate ? config.affiliateTargetDate.slice(0, 16) : ''}
+                        onChange={(e) => setConfig({ ...config, affiliateTargetDate: e.target.value })}
+                        className="w-full px-3 py-2 text-xs border border-purple-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-purple-600 font-medium"
+                      />
+                    </div>
+                  )}
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
