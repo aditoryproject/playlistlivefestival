@@ -67,6 +67,7 @@ export interface SiteConfig {
 
   // Compensation Form Feature
   showCompensationSection: boolean;
+  showCompensationCuration: boolean;
   compensationButtonText: string;
   compensationTitle: string;
   compensationSubtitle: string;
@@ -189,6 +190,7 @@ export const defaultConfig: SiteConfig = {
   affiliateGoogleSheetWebhook: '',
 
   showCompensationSection: true,
+  showCompensationCuration: true,
   compensationButtonText: 'Klaim Kompensasi Tiket',
   compensationTitle: 'Kompensasi Tiket Playlist Live Super Festival 2024',
   compensationSubtitle: 'Kompensasi berupa Discount 50% dari harga PRESALE 1 - FESTIVAL 2 DAY PASS pada event Playlist Rewind Festival 2026',

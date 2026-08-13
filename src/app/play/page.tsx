@@ -2002,6 +2002,25 @@ export default function AdminPage() {
                   />
                 </div>
 
+                <div className="flex items-center justify-between pt-3 border-t border-zinc-200">
+                  <div>
+                    <p className="text-xs font-bold text-zinc-800">Aktifkan Fitur Autokurasi Master Pembeli 2024</p>
+                    <p className="text-[11px] text-zinc-500">Tampilkan modul upload CSV master & pencocokan otomatis di tabel</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={config.showCompensationCuration ?? true}
+                      onChange={(e) => setConfig({ ...config, showCompensationCuration: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    <span className="ml-3 text-xs font-semibold text-zinc-700">
+                      {config.showCompensationCuration ? 'Kurasi Active (ON)' : 'Kurasi Nonaktif (OFF)'}
+                    </span>
+                  </label>
+                </div>
+
                 <div className="flex justify-end pt-2">
                   <button
                     onClick={handleSaveConfig}
@@ -2013,61 +2032,63 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* Section 2: Upload Master Buyers 2024 Dataset */}
-              <div className="bg-gradient-to-r from-zinc-900 to-emerald-950 text-white p-5 rounded-2xl border border-emerald-900/50 shadow-md space-y-3">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div>
-                    <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-1">
-                      Data Master 2024 Engine
-                    </div>
-                    <h3 className="text-sm font-bold text-white">2. Upload Database Master Pembeli 2024 (.CSV)</h3>
-                    <p className="text-xs text-zinc-300 mt-0.5">
-                      Unggah berkas CSV pembeli 2024 (Email, Phone, Name, Qty) untuk kurasi pencocokan otomatis instan.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <p className="text-xs font-bold text-emerald-300">{masterCount.toLocaleString('id-ID')} Records</p>
-                      <p className="text-[10px] text-zinc-400">Data Master Aktif</p>
+              {/* Section 2: Upload Master Buyers 2024 Dataset (Toggled ON/OFF) */}
+              {(config.showCompensationCuration ?? true) && (
+                <div className="bg-gradient-to-r from-zinc-900 to-emerald-950 text-white p-5 rounded-2xl border border-emerald-900/50 shadow-md space-y-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-1">
+                        Data Master 2024 Engine
+                      </div>
+                      <h3 className="text-sm font-bold text-white">2. Upload Database Master Pembeli 2024 (.CSV)</h3>
+                      <p className="text-xs text-zinc-300 mt-0.5">
+                        Unggah berkas CSV pembeli 2024 (Email, Phone, Name, Qty) untuk kurasi pencocokan otomatis instan.
+                      </p>
                     </div>
 
-                    <label className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl cursor-pointer transition-all shadow-sm flex items-center gap-2 shrink-0">
-                      {uploadingMaster ? (
-                        <>
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          <span>Mengunggah...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-3.5 h-3.5" />
-                          <span>Upload CSV Master</span>
-                        </>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <p className="text-xs font-bold text-emerald-300">{masterCount.toLocaleString('id-ID')} Records</p>
+                        <p className="text-[10px] text-zinc-400">Data Master Aktif</p>
+                      </div>
+
+                      <label className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl cursor-pointer transition-all shadow-sm flex items-center gap-2 shrink-0">
+                        {uploadingMaster ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>Mengunggah...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-3.5 h-3.5" />
+                            <span>Upload CSV Master</span>
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          accept=".csv"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleUploadMasterCsv(file);
+                          }}
+                          disabled={uploadingMaster}
+                        />
+                      </label>
+
+                      {masterCount > 0 && (
+                        <button
+                          onClick={handleClearMasterData}
+                          className="px-3 py-2 bg-white/10 hover:bg-red-500/20 text-zinc-300 hover:text-red-300 text-xs font-bold rounded-xl transition-all border border-white/10"
+                          title="Kosongkan Data Master"
+                        >
+                          Reset
+                        </button>
                       )}
-                      <input
-                        type="file"
-                        accept=".csv"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleUploadMasterCsv(file);
-                        }}
-                        disabled={uploadingMaster}
-                      />
-                    </label>
-
-                    {masterCount > 0 && (
-                      <button
-                        onClick={handleClearMasterData}
-                        className="px-3 py-2 bg-white/10 hover:bg-red-500/20 text-zinc-300 hover:text-red-300 text-xs font-bold rounded-xl transition-all border border-white/10"
-                        title="Kosongkan Data Master"
-                      >
-                        Reset
-                      </button>
-                    )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Section 3: Compensation Data Table */}
               <div className="space-y-4">
@@ -2082,17 +2103,19 @@ export default function AdminPage() {
                   </div>
 
                   <div className="flex items-center gap-2 w-full sm:w-auto">
-                    {/* Curation Filter Dropdown */}
-                    <select
-                      value={curationFilter}
-                      onChange={(e) => setCurationFilter(e.target.value as any)}
-                      className="px-3 py-2 text-xs border border-zinc-300 rounded-xl bg-white text-zinc-700 font-semibold focus:outline-none focus:ring-2 focus:ring-zinc-800"
-                    >
-                      <option value="ALL">Semua Kurasi ({compensationList.length})</option>
-                      <option value="VERIFIED_MATCH">🟢 Verified Match</option>
-                      <option value="OVERCLAIM_WARNING">⚠️ Overclaim Warning</option>
-                      <option value="UNMATCHED">🔴 Unmatched (Foto E-Tiket)</option>
-                    </select>
+                    {/* Curation Filter Dropdown (Only when Curation ON) */}
+                    {(config.showCompensationCuration ?? true) && (
+                      <select
+                        value={curationFilter}
+                        onChange={(e) => setCurationFilter(e.target.value as any)}
+                        className="px-3 py-2 text-xs border border-zinc-300 rounded-xl bg-white text-zinc-700 font-semibold focus:outline-none focus:ring-2 focus:ring-zinc-800"
+                      >
+                        <option value="ALL">Semua Kurasi ({compensationList.length})</option>
+                        <option value="VERIFIED_MATCH">🟢 Verified Match</option>
+                        <option value="OVERCLAIM_WARNING">⚠️ Overclaim Warning</option>
+                        <option value="UNMATCHED">🔴 Unmatched (Foto E-Tiket)</option>
+                      </select>
+                    )}
 
                     <div className="relative flex-1 sm:w-48">
                       <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
@@ -2129,7 +2152,7 @@ export default function AdminPage() {
                     <thead>
                       <tr className="bg-zinc-100/80 text-zinc-600 border-b border-zinc-200 font-semibold uppercase text-[10px] tracking-wider">
                         <th className="p-3">Waktu</th>
-                        <th className="p-3">Status Kurasi 2024</th>
+                        {(config.showCompensationCuration ?? true) && <th className="p-3">Status Kurasi 2024</th>}
                         <th className="p-3">Nama (KTP)</th>
                         <th className="p-3">No. Identitas</th>
                         <th className="p-3">File KTP</th>
@@ -2189,49 +2212,51 @@ export default function AdminPage() {
                                     minute: '2-digit',
                                   })}
                                 </td>
-                                {/* Curation Badge Column */}
-                                <td className="p-3">
-                                  {cur.status === 'VERIFIED_MATCH' && (
-                                    <div
-                                      className="inline-flex flex-col gap-0.5 px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-[10px] font-bold"
-                                      title={`Cocok via ${cur.matchedBy}. Total beli 2024: ${cur.purchasedQty} tiket.`}
-                                    >
-                                      <span className="flex items-center gap-1">
-                                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                        VERIFIED MATCH
-                                      </span>
-                                      <span className="text-[9px] text-emerald-600 font-normal">
-                                        Histori 2024: {cur.purchasedQty} Tiket (Via {cur.matchedBy})
-                                      </span>
-                                    </div>
-                                  )}
+                                {/* Curation Badge Column (Only when Curation ON) */}
+                                {(config.showCompensationCuration ?? true) && (
+                                  <td className="p-3">
+                                    {cur.status === 'VERIFIED_MATCH' && (
+                                      <div
+                                        className="inline-flex flex-col gap-0.5 px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-[10px] font-bold"
+                                        title={`Cocok via ${cur.matchedBy}. Total beli 2024: ${cur.purchasedQty} tiket.`}
+                                      >
+                                        <span className="flex items-center gap-1">
+                                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                          VERIFIED MATCH
+                                        </span>
+                                        <span className="text-[9px] text-emerald-600 font-normal">
+                                          Histori 2024: {cur.purchasedQty} Tiket (Via {cur.matchedBy})
+                                        </span>
+                                      </div>
+                                    )}
 
-                                  {cur.status === 'OVERCLAIM_WARNING' && (
-                                    <div
-                                      className="inline-flex flex-col gap-0.5 px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-300 rounded-xl text-[10px] font-bold"
-                                      title={`Histori 2024 hanya ${cur.purchasedQty} tiket, tapi klaim ${cur.claimedQty} tiket!`}
-                                    >
-                                      <span className="flex items-center gap-1 text-amber-700">
-                                        ⚠️ OVERCLAIM
-                                      </span>
-                                      <span className="text-[9px] text-amber-800 font-medium">
-                                        Beli 2024: {cur.purchasedQty} Tiket | Klaim: {cur.claimedQty} Tiket
-                                      </span>
-                                    </div>
-                                  )}
+                                    {cur.status === 'OVERCLAIM_WARNING' && (
+                                      <div
+                                        className="inline-flex flex-col gap-0.5 px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-300 rounded-xl text-[10px] font-bold"
+                                        title={`Histori 2024 hanya ${cur.purchasedQty} tiket, tapi klaim ${cur.claimedQty} tiket!`}
+                                      >
+                                        <span className="flex items-center gap-1 text-amber-700">
+                                          ⚠️ OVERCLAIM
+                                        </span>
+                                        <span className="text-[9px] text-amber-800 font-medium">
+                                          Beli 2024: {cur.purchasedQty} Tiket | Klaim: {cur.claimedQty} Tiket
+                                        </span>
+                                      </div>
+                                    )}
 
-                                  {cur.status === 'UNMATCHED' && (
-                                    <div
-                                      className="inline-flex flex-col gap-0.5 px-2.5 py-1 bg-zinc-100 text-zinc-600 border border-zinc-200 rounded-xl text-[10px] font-semibold"
-                                      title="Email & HP tidak ada di database pembeli 2024. Cek foto bukti E-Tiket."
-                                    >
-                                      <span>🔴 UNMATCHED</span>
-                                      <span className="text-[9px] text-zinc-400 font-normal">
-                                        Cek Foto E-Tiket Manual
-                                      </span>
-                                    </div>
-                                  )}
-                                </td>
+                                    {cur.status === 'UNMATCHED' && (
+                                      <div
+                                        className="inline-flex flex-col gap-0.5 px-2.5 py-1 bg-zinc-100 text-zinc-600 border border-zinc-200 rounded-xl text-[10px] font-semibold"
+                                        title="Email & HP tidak ada di database pembeli 2024. Cek foto bukti E-Tiket."
+                                      >
+                                        <span>🔴 UNMATCHED</span>
+                                        <span className="text-[9px] text-zinc-400 font-normal">
+                                          Cek Foto E-Tiket Manual
+                                        </span>
+                                      </div>
+                                    )}
+                                  </td>
+                                )}
                                 <td className="p-3 font-bold text-zinc-900">{item.fullName}</td>
                                 <td className="p-3 font-mono text-[11px] text-zinc-700">{item.identityNumber}</td>
                                 <td className="p-3">
