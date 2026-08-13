@@ -58,3 +58,26 @@ CREATE TABLE IF NOT EXISTS `affiliate_applications` (
   INDEX `idx_affiliate_whatsapp` (`whatsapp`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Table 5: Tenant F&B Registrations / Submissions
+CREATE TABLE IF NOT EXISTS `tenant_applications` (
+  `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
+  `brand_name` VARCHAR(150) NOT NULL,
+  `category` VARCHAR(100) NOT NULL,
+  `menu_description` TEXT NULL,
+  `price_range` VARCHAR(100) NULL,
+  `instagram_catalog` VARCHAR(255) NULL,
+  `pic_name` VARCHAR(150) NOT NULL,
+  `whatsapp` VARCHAR(30) NOT NULL,
+  `email` VARCHAR(150) NULL,
+  `city` VARCHAR(100) NULL,
+  `power_requirement` VARCHAR(50) NULL,
+  `equipment_list` TEXT NULL,
+  `event_experience` TEXT NULL,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `status` VARCHAR(20) DEFAULT 'active',
+  INDEX `idx_tenant_created` (`created_at`),
+  INDEX `idx_tenant_whatsapp` (`whatsapp`),
+  INDEX `idx_tenant_category` (`category`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+

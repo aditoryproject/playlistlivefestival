@@ -12,6 +12,9 @@ declare global {
     triggerCompensationClickPixels?: (eventTitle?: string) => void;
     triggerCompensationSubmitPixels?: (eventTitle?: string) => void;
     triggerJoinCompensationWaGroupPixels?: (eventTitle?: string) => void;
+    triggerTenantClickPixels?: (eventTitle?: string) => void;
+    triggerTenantSubmitPixels?: (eventTitle?: string) => void;
+    triggerJoinTenantWaGroupPixels?: (eventTitle?: string) => void;
   }
 }
 
@@ -423,6 +426,98 @@ export function triggerJoinCompensationWaGroupPixels(eventTitle: string = 'Compe
   }
 }
 
+/**
+ * Pixel tracking when user clicks "Daftar Tenant F&B" (Intent)
+ */
+export function triggerTenantClickPixels(eventTitle: string = 'Tenant Registration Click') {
+  if (typeof window === 'undefined') return;
+
+  console.log('[Pixel Tracking] Firing Tenant Click events...');
+
+  const fbq = window.fbq || (window as any)._fbq;
+  if (fbq && typeof fbq === 'function') {
+    try {
+      fbq('trackCustom', 'ClickTenantRegistration', { content_name: eventTitle });
+      fbq('track', 'FindLocation', { content_name: eventTitle });
+    } catch (e) {}
+  }
+
+  const ttq = window.ttq;
+  if (ttq && typeof ttq.track === 'function') {
+    try {
+      ttq.track('ClickButton', { button_name: 'Tenant Registration' });
+    } catch (e) {}
+  }
+
+  const gtag = window.gtag;
+  if (gtag && typeof gtag === 'function') {
+    try {
+      gtag('event', 'tenant_click', {
+        event_category: 'Tenant',
+        event_label: eventTitle,
+      });
+    } catch (e) {}
+  }
+}
+
+/**
+ * Pixel tracking when user completes Tenant F&B Form Submission
+ */
+export function triggerTenantSubmitPixels(eventTitle: string = 'Tenant Registration Submission') {
+  if (typeof window === 'undefined') return;
+
+  console.log('[Pixel Tracking] Firing Tenant Submit Lead events...');
+
+  const fbq = window.fbq || (window as any)._fbq;
+  if (fbq && typeof fbq === 'function') {
+    try {
+      fbq('track', 'Lead', { content_name: eventTitle, value: 1, currency: 'IDR' });
+      fbq('track', 'CompleteRegistration', { content_name: eventTitle });
+      fbq('trackCustom', 'TenantSubmitted', { content_name: eventTitle });
+    } catch (e) {}
+  }
+
+  const ttq = window.ttq;
+  if (ttq && typeof ttq.track === 'function') {
+    try {
+      ttq.track('CompleteRegistration', { content_name: eventTitle });
+      ttq.track('SubmitForm', { button_name: 'Tenant Submit' });
+    } catch (e) {}
+  }
+
+  const gtag = window.gtag;
+  if (gtag && typeof gtag === 'function') {
+    try {
+      gtag('event', 'generate_lead', {
+        event_category: 'Tenant',
+        event_label: eventTitle,
+        value: 1,
+      });
+      gtag('event', 'tenant_submitted', {
+        event_category: 'Conversion',
+        event_label: eventTitle,
+      });
+    } catch (e) {}
+  }
+}
+
+/**
+ * Pixel tracking when user clicks "Gabung WA Group Tenant"
+ */
+export function triggerJoinTenantWaGroupPixels(eventTitle: string = 'Tenant WA Group') {
+  if (typeof window === 'undefined') return;
+
+  console.log('[Pixel Tracking] Firing Join Tenant WA Group events...');
+
+  const fbq = window.fbq || (window as any)._fbq;
+  if (fbq && typeof fbq === 'function') {
+    try {
+      fbq('track', 'Contact', { content_name: eventTitle });
+      fbq('trackCustom', 'JoinTenantWaGroup', { content_name: eventTitle });
+    } catch (e) {}
+  }
+}
+
 // Bind to window object for global availability
 if (typeof window !== 'undefined') {
   window.triggerBuyNowPixels = triggerBuyNowPixels;
@@ -432,4 +527,8 @@ if (typeof window !== 'undefined') {
   window.triggerCompensationClickPixels = triggerCompensationClickPixels;
   window.triggerCompensationSubmitPixels = triggerCompensationSubmitPixels;
   window.triggerJoinCompensationWaGroupPixels = triggerJoinCompensationWaGroupPixels;
+  window.triggerTenantClickPixels = triggerTenantClickPixels;
+  window.triggerTenantSubmitPixels = triggerTenantSubmitPixels;
+  window.triggerJoinTenantWaGroupPixels = triggerJoinTenantWaGroupPixels;
 }
+

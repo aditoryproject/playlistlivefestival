@@ -10,7 +10,7 @@ import Footer from '@/components/Footer';
 import VisitorTracker from '@/components/VisitorTracker';
 import { AffiliateClientWrapper } from '@/components/AffiliateClientWrapper';
 import { CompensationClientWrapper } from '@/components/CompensationClientWrapper';
-
+import { TenantClientWrapper } from '@/components/TenantClientWrapper';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -49,11 +49,15 @@ export default function HomePage() {
           />
         )}
 
+        {/* Tenant F&B Section (master toggle: config.showTenantSection) */}
+        <TenantClientWrapper config={config} />
+
         {/* Affiliate Program Section (master toggle: config.showAffiliateSection) */}
         <AffiliateClientWrapper config={config} />
 
         {/* Compensation Form Section (master toggle: config.showCompensationSection) */}
         <CompensationClientWrapper config={config} />
+
 
         {config.showSpotify && config.spotifyEmbedUrl && (
           <SpotifyPlayer spotifyEmbedUrl={config.spotifyEmbedUrl} />

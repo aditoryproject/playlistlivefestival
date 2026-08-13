@@ -27,8 +27,11 @@ import {
   MessageSquare,
   Share2,
   FileText,
+  Utensils,
+  Clock,
   X
 } from 'lucide-react';
+
 import Link from 'next/link';
 
 
@@ -40,8 +43,90 @@ export default function AdminPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'hero' | 'pixels' | 'seo' | 'lineup' | 'video' | 'features' | 'analytics' | 'affiliate' | 'compensation'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'pixels' | 'seo' | 'lineup' | 'video' | 'features' | 'analytics' | 'affiliate' | 'compensation' | 'tenant'>('hero');
   const [config, setConfig] = useState<SiteConfig | null>(null);
+
+  // Tenant F&B Submissions State
+  const [tenantList, setTenantList] = useState<any[]>([]);
+  const [loadingTenant, setLoadingTenant] = useState<boolean>(false);
+  const [tenantSearch, setTenantSearch] = useState<string>('');
+
+  const fetchTenantData = async () => {
+    setLoadingTenant(true);
+    try {
+      const res = await fetch('/api/tenant');
+      const data = await res.json();
+      if (data.success) {
+        setTenantList(data.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch tenant data:', err);
+    } finally {
+      setLoadingTenant(false);
+    }
+  };
+
+  const handleDeleteTenant = async (id: string | number) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus data pendaftaran tenant ini?')) return;
+    try {
+      const res = await fetch(`/api/tenant?id=${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        setTenantList((prev) => prev.filter((item) => String(item.id) !== String(id)));
+      }
+    } catch (err) {
+      console.error('Failed to delete tenant record:', err);
+    }
+  };
+
+  const exportTenantCsv = () => {
+    if (!tenantList || tenantList.length === 0) {
+      alert('Belum ada data pendaftar tenant F&B untuk diexport.');
+      return;
+    }
+    const headers = [
+      'ID',
+      'Waktu Daftar',
+      'Nama Brand / Usaha',
+      'Kategori',
+      'Deskripsi Menu',
+      'Kisaran Harga',
+      'Link Sosmed / Catalog',
+      'Nama PIC',
+      'WhatsApp',
+      'Email',
+      'Kota',
+      'Kebutuhan Listrik',
+      'Peralatan Listrik',
+      'Pengalaman Event',
+    ];
+    const rows = tenantList.map((item) => [
+      item.id,
+      new Date(item.createdAt).toLocaleString('id-ID'),
+      `"${(item.brandName || '').replace(/"/g, '""')}"`,
+      `"${(item.category || '').replace(/"/g, '""')}"`,
+      `"${(item.menuDescription || '').replace(/"/g, '""')}"`,
+      `"${(item.priceRange || '').replace(/"/g, '""')}"`,
+      `"${(item.instagramCatalog || '').replace(/"/g, '""')}"`,
+      `"${(item.picName || '').replace(/"/g, '""')}"`,
+      `"${(item.whatsapp || '').replace(/"/g, '""')}"`,
+      `"${(item.email || '').replace(/"/g, '""')}"`,
+      `"${(item.city || '').replace(/"/g, '""')}"`,
+      `"${(item.powerRequirement || '').replace(/"/g, '""')}"`,
+      `"${(item.equipmentList || '').replace(/"/g, '""')}"`,
+      `"${(item.eventExperience || '').replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `tenant_fb_pendaftar_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   // Compensation Submissions State
   const [compensationList, setCompensationList] = useState<any[]>([]);
@@ -276,8 +361,11 @@ export default function AdminPage() {
     } else if (activeTab === 'compensation') {
       fetchCompensationData();
       fetchMasterCount();
+    } else if (activeTab === 'tenant') {
+      fetchTenantData();
     }
   }, [activeTab]);
+
 
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -591,7 +679,9 @@ export default function AdminPage() {
             { id: 'features', label: 'Map & Features', icon: MapPin },
             { id: 'affiliate', label: 'Program Affiliate', icon: Users },
             { id: 'compensation', label: 'Form Kompensasi', icon: FileText },
+            { id: 'tenant', label: 'Pendaftaran Tenant F&B', icon: Utensils },
             { id: 'analytics', label: 'Click Analytics', icon: BarChart3 },
+
           ].map((tab) => {
 
             const Icon = tab.icon;
@@ -1948,6 +2038,39 @@ export default function AdminPage() {
                   </label>
                 </h3>
 
+                {/* Countdown Timer Control */}
+                <div className="p-4 bg-emerald-50/60 rounded-xl border border-emerald-200/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-emerald-700" />
+                      <span className="text-xs font-bold text-emerald-950">Countdown Timer & Auto-Close Deadline</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={config.showCompensationCountdown ?? false}
+                        onChange={(e) => setConfig({ ...config, showCompensationCountdown: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                  </div>
+                  {config.showCompensationCountdown && (
+                    <div>
+                      <label className="block text-xs font-semibold text-emerald-900 mb-1">
+                        Tanggal & Jam Batas Pengajuan (Form Auto-Off saat Waktu Habis)
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={config.compensationTargetDate ? config.compensationTargetDate.slice(0, 16) : ''}
+                        onChange={(e) => setConfig({ ...config, compensationTargetDate: e.target.value })}
+                        className="w-full px-3 py-2 text-xs border border-emerald-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 font-medium"
+                      />
+                    </div>
+                  )}
+                </div>
+
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-zinc-700 mb-1">
@@ -2330,6 +2453,278 @@ export default function AdminPage() {
               </div>
             </div>
           )}
+
+          {/* TAB 10: PENDAFTARAN TENANT F&B */}
+          {activeTab === 'tenant' && (
+            <div className="space-y-8">
+              {/* Section Header */}
+              <div>
+                <h2 className="text-xl font-bold text-zinc-900">Pengaturan Pendaftaran Tenant F&B</h2>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Kelola status aktif pendaftaran booth F&B, kata-kata banner, countdown timer deadline, link WA Group, serta sinkronisasi Webhook Google Sheets.
+                </p>
+              </div>
+
+              {/* Section 1: Settings */}
+              <div className="bg-zinc-50 p-5 rounded-2xl border border-zinc-200 space-y-4">
+                <h3 className="text-sm font-bold text-zinc-900 flex items-center justify-between">
+                  <span>1. Status & Pengaturan Form Tenant F&B</span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={config.showTenantSection ?? true}
+                      onChange={(e) => setConfig({ ...config, showTenantSection: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                    <span className="ml-3 text-xs font-semibold text-zinc-700">
+                      {config.showTenantSection ? 'Fitur Tampil (ON)' : 'Fitur Sembunyi (OFF)'}
+                    </span>
+                  </label>
+                </h3>
+
+                {/* Countdown Control for Tenant */}
+                <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-200/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-amber-700" />
+                      <span className="text-xs font-bold text-amber-950">Countdown Timer & Auto-Close Deadline Tenant</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={config.showTenantCountdown ?? false}
+                        onChange={(e) => setConfig({ ...config, showTenantCountdown: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
+                    </label>
+                  </div>
+                  {config.showTenantCountdown && (
+                    <div>
+                      <label className="block text-xs font-semibold text-amber-900 mb-1">
+                        Tanggal & Jam Batas Pendaftaran Tenant (Form Auto-Off saat Waktu Habis)
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={config.tenantTargetDate ? config.tenantTargetDate.slice(0, 16) : ''}
+                        onChange={(e) => setConfig({ ...config, tenantTargetDate: e.target.value })}
+                        className="w-full px-3 py-2 text-xs border border-amber-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-600 font-medium"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-700 mb-1">
+                      Judul Section Tenant F&B
+                    </label>
+                    <input
+                      type="text"
+                      value={config.tenantTitle || ''}
+                      onChange={(e) => setConfig({ ...config, tenantTitle: e.target.value })}
+                      placeholder="Open Recruitment Tenant F&B Playlist Rewind 2026"
+                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-700 mb-1">
+                      Teks Tombol CTA Tenant
+                    </label>
+                    <input
+                      type="text"
+                      value={config.tenantButtonText || ''}
+                      onChange={(e) => setConfig({ ...config, tenantButtonText: e.target.value })}
+                      placeholder="Daftar Tenant F&B"
+                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 mb-1">
+                    Subtitle / Deskripsi Singkat Tenant
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={config.tenantSubtitle || ''}
+                    onChange={(e) => setConfig({ ...config, tenantSubtitle: e.target.value })}
+                    placeholder="Bergabunglah bersama puluhan ribu pengunjung..."
+                    className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-700 mb-1">
+                      Link WhatsApp Group khusus Tenant F&B
+                    </label>
+                    <input
+                      type="text"
+                      value={config.tenantWaGroupUrl || ''}
+                      onChange={(e) => setConfig({ ...config, tenantWaGroupUrl: e.target.value })}
+                      placeholder="https://chat.whatsapp.com/..."
+                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800 font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-700 mb-1">
+                      Webhook Google Sheets (Auto-Sync Data)
+                    </label>
+                    <input
+                      type="text"
+                      value={config.tenantGoogleSheetWebhook || ''}
+                      onChange={(e) => setConfig({ ...config, tenantGoogleSheetWebhook: e.target.value })}
+                      placeholder="https://script.google.com/macros/s/xxxx/exec"
+                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800 font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 2: Table Submissions */}
+              <div className="space-y-4 pt-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-base font-bold text-zinc-900">
+                      Daftar Pendaftar Tenant F&B ({tenantList.length})
+                    </h3>
+                    <p className="text-xs text-zinc-500">
+                      Pendaftar tenant yang mengisi form via website & modal
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={fetchTenantData}
+                      disabled={loadingTenant}
+                      className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${loadingTenant ? 'animate-spin' : ''}`} />
+                      <span>Refresh</span>
+                    </button>
+
+                    <button
+                      onClick={exportTenantCsv}
+                      className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Export CSV Data Tenant</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Search */}
+                <div className="relative">
+                  <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
+                  <input
+                    type="text"
+                    value={tenantSearch}
+                    onChange={(e) => setTenantSearch(e.target.value)}
+                    placeholder="Cari berdasarkan nama brand, PIC, WhatsApp, kategori, kota..."
+                    className="w-full pl-9 pr-4 py-2 text-xs border border-zinc-200 rounded-xl bg-zinc-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-800"
+                  />
+                </div>
+
+                {/* Table */}
+                <div className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white shadow-xs">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-zinc-50 text-zinc-600 font-semibold border-b border-zinc-200">
+                      <tr>
+                        <th className="p-3">Waktu</th>
+                        <th className="p-3">Nama Brand</th>
+                        <th className="p-3">Kategori</th>
+                        <th className="p-3">Nama PIC</th>
+                        <th className="p-3">WhatsApp</th>
+                        <th className="p-3">Daya Listrik</th>
+                        <th className="p-3">Kota</th>
+                        <th className="p-3 text-center">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-100">
+                      {tenantList && tenantList.length > 0 ? (
+                        tenantList
+                          .filter((item) => {
+                            if (!tenantSearch) return true;
+                            const q = tenantSearch.toLowerCase();
+                            return (
+                              (item.brandName || '').toLowerCase().includes(q) ||
+                              (item.picName || '').toLowerCase().includes(q) ||
+                              (item.whatsapp || '').toLowerCase().includes(q) ||
+                              (item.category || '').toLowerCase().includes(q) ||
+                              (item.city || '').toLowerCase().includes(q)
+                            );
+                          })
+                          .map((item) => {
+                            const cleanPhone = (item.whatsapp || '').replace(/\D/g, '');
+                            const waUrl = `https://wa.me/${cleanPhone.startsWith('0') ? '62' + cleanPhone.slice(1) : cleanPhone}`;
+
+                            return (
+                              <tr key={item.id} className="hover:bg-zinc-50/80 transition-colors">
+                                <td className="p-3 text-zinc-500 font-mono text-[11px] whitespace-nowrap">
+                                  {new Date(item.createdAt).toLocaleDateString('id-ID', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </td>
+                                <td className="p-3 font-bold text-amber-950">{item.brandName}</td>
+                                <td className="p-3 font-medium text-zinc-700">
+                                  <span className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-lg text-[10px] font-bold">
+                                    {item.category}
+                                  </span>
+                                </td>
+                                <td className="p-3 font-semibold text-zinc-900">{item.picName}</td>
+                                <td className="p-3 whitespace-nowrap">
+                                  <a
+                                    href={waUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono font-medium hover:bg-emerald-100 transition-colors"
+                                  >
+                                    <MessageSquare className="w-3 h-3" />
+                                    {item.whatsapp}
+                                  </a>
+                                </td>
+                                <td className="p-3 text-zinc-700 font-medium">{item.powerRequirement || '-'}</td>
+                                <td className="p-3 text-zinc-600">{item.city || '-'}</td>
+                                <td className="p-3 text-center">
+                                  <button
+                                    onClick={() => handleDeleteTenant(item.id)}
+                                    className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    title="Hapus Record Tenant"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })
+                      ) : (
+                        <tr>
+                          <td colSpan={8} className="p-8 text-center text-zinc-400 text-xs">
+                            {loadingTenant ? (
+                              <div className="flex items-center justify-center gap-2">
+                                <RefreshCw className="w-4 h-4 animate-spin" />
+                                Memuat data tenant...
+                              </div>
+                            ) : (
+                              'Belum ada pendaftaran tenant F&B.'
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
 
         </main>
       </div>

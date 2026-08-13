@@ -73,6 +73,19 @@ export interface SiteConfig {
   compensationSubtitle: string;
   compensationWaGroupUrl: string;
   compensationGoogleSheetWebhook: string;
+  showCompensationCountdown?: boolean;
+  compensationTargetDate?: string;
+
+  // Tenant F&B Registration Feature
+  showTenantSection: boolean;
+  tenantButtonText: string;
+  tenantTitle: string;
+  tenantSubtitle: string;
+  tenantWaGroupUrl: string;
+  tenantGoogleSheetWebhook: string;
+  showTenantCountdown?: boolean;
+  tenantTargetDate?: string;
+
 
   // Tracking & Pixels
   metaPixelId: string;
@@ -196,6 +209,18 @@ export const defaultConfig: SiteConfig = {
   compensationSubtitle: 'Kompensasi berupa Discount 50% dari harga PRESALE 1 - FESTIVAL 2 DAY PASS pada event Playlist Rewind Festival 2026',
   compensationWaGroupUrl: 'https://chat.whatsapp.com/',
   compensationGoogleSheetWebhook: '',
+  showCompensationCountdown: false,
+  compensationTargetDate: '2026-10-31T23:59:59',
+
+  showTenantSection: true,
+  tenantButtonText: 'Daftar Tenant F&B',
+  tenantTitle: 'Open Recruitment Tenant F&B Playlist Rewind 2026',
+  tenantSubtitle: 'Bergabunglah bersama puluhan ribu pengunjung di festival musik terbesar di Bandung!',
+  tenantWaGroupUrl: 'https://chat.whatsapp.com/',
+  tenantGoogleSheetWebhook: '',
+  showTenantCountdown: false,
+  tenantTargetDate: '2026-10-31T23:59:59',
+
 
 
   metaPixelId: '',
