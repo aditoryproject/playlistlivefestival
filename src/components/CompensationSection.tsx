@@ -19,14 +19,14 @@ export function CompensationSection({
   return (
     <section className="relative py-10 sm:py-14 px-4 bg-white text-zinc-900">
       <div className="max-w-5xl mx-auto">
-        <div className="rounded-3xl bg-gradient-to-r from-red-950 via-zinc-900 to-zinc-950 border border-red-900/30 p-8 sm:p-12 shadow-xl shadow-red-950/10 text-white overflow-hidden relative">
+        <div className="rounded-3xl bg-gradient-to-r from-zinc-900 via-zinc-950 to-emerald-950 border border-emerald-900/30 p-8 sm:p-12 shadow-xl shadow-zinc-950/20 text-white overflow-hidden relative">
           {/* Subtle Background Glow */}
-          <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
           {/* Top Badge */}
           <div className="flex justify-center md:justify-start mb-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-red-500/20 border border-red-500/30 text-red-300 text-xs font-semibold uppercase tracking-wider">
-              <Ticket className="w-3.5 h-3.5 text-red-400" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-semibold uppercase tracking-wider">
+              <Ticket className="w-3.5 h-3.5 text-emerald-400" />
               Layanan Penukaran Kompensasi
             </div>
           </div>
@@ -45,7 +45,7 @@ export function CompensationSection({
               {/* Benefits Highlights */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 <div className="p-3.5 rounded-2xl bg-white/10 border border-white/10 flex items-center gap-3 backdrop-blur-sm">
-                  <div className="p-2 rounded-xl bg-red-500/20 text-red-400 shrink-0">
+                  <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 shrink-0">
                     <Gift className="w-4 h-4" />
                   </div>
                   <div>
@@ -55,12 +55,12 @@ export function CompensationSection({
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-white/10 border border-white/10 flex items-center gap-3 backdrop-blur-sm">
-                  <div className="p-2 rounded-xl bg-red-500/20 text-red-400 shrink-0">
+                  <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 shrink-0">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-white">Verifikasi Cepat</p>
-                    <p className="text-[11px] text-zinc-300">Langsung ke Group WA Resmi</p>
+                    <p className="text-xs font-bold text-white">Proses Verifikasi Resmi</p>
+                    <p className="text-[11px] text-zinc-300">Data tersimpan rapi & aman</p>
                   </div>
                 </div>
               </div>
@@ -70,7 +70,7 @@ export function CompensationSection({
             <div className="lg:col-span-4 flex flex-col items-center lg:items-end justify-center pt-4 lg:pt-0">
               <button
                 onClick={onOpenModal}
-                className="w-full sm:w-auto px-8 py-4 bg-red-600 hover:bg-red-500 text-white rounded-2xl text-sm font-extrabold flex items-center justify-center gap-3 shadow-lg shadow-red-600/30 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+                className="w-full sm:w-auto px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-sm font-extrabold flex items-center justify-center gap-3 shadow-lg shadow-emerald-950/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
               >
                 <span>{buttonText || 'Klaim Kompensasi Tiket'}</span>
                 <ArrowRight className="w-4 h-4" />

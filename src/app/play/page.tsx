@@ -1871,7 +1871,7 @@ export default function AdminPage() {
                       onChange={(e) => setConfig({ ...config, showCompensationSection: e.target.checked })}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-700"></div>
+                    <div className="w-11 h-6 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
                     <span className="ml-3 text-xs font-semibold text-zinc-700">
                       {config.showCompensationSection ? 'Fitur Tampil (ON)' : 'Fitur Sembunyi (OFF)'}
                     </span>
@@ -1894,32 +1894,6 @@ export default function AdminPage() {
 
                   <div>
                     <label className="block text-xs font-bold text-zinc-700 mb-1">
-                      Link WhatsApp Group Kompensasi <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={config.compensationWaGroupUrl || ''}
-                      onChange={(e) => setConfig({ ...config, compensationWaGroupUrl: e.target.value })}
-                      placeholder="https://chat.whatsapp.com/xxxxxx"
-                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800 font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-zinc-700 mb-1">
-                      Judul Form Kompensasi
-                    </label>
-                    <input
-                      type="text"
-                      value={config.compensationTitle || ''}
-                      onChange={(e) => setConfig({ ...config, compensationTitle: e.target.value })}
-                      placeholder="Kompensasi Tiket Playlist Live Super Festival 2024"
-                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-zinc-700 mb-1">
                       Webhook Google Sheets (Auto-Sync Data)
                     </label>
                     <input
@@ -1930,6 +1904,19 @@ export default function AdminPage() {
                       className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800 font-mono"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 mb-1">
+                    Judul Form Kompensasi
+                  </label>
+                  <input
+                    type="text"
+                    value={config.compensationTitle || ''}
+                    onChange={(e) => setConfig({ ...config, compensationTitle: e.target.value })}
+                    placeholder="Kompensasi Tiket Playlist Live Super Festival 2024"
+                    className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800"
+                  />
                 </div>
 
                 <div>
@@ -1948,7 +1935,7 @@ export default function AdminPage() {
                 <div className="flex justify-end pt-2">
                   <button
                     onClick={handleSaveConfig}
-                    className="px-5 py-2.5 bg-red-900 hover:bg-red-800 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-sm"
+                    className="px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-sm cursor-pointer"
                   >
                     <Save className="w-4 h-4" />
                     Simpan Pengaturan Kompensasi

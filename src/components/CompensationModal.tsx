@@ -167,9 +167,9 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-200">
       <div className="relative w-full max-w-2xl bg-zinc-100 rounded-2xl shadow-2xl overflow-hidden my-8 border border-zinc-200 max-h-[90vh] flex flex-col">
         {/* Header Bar */}
-        <div className="bg-gradient-to-r from-red-950 via-zinc-900 to-red-900 text-white px-6 py-5 flex items-start justify-between relative shrink-0">
+        <div className="bg-gradient-to-r from-zinc-900 via-zinc-950 to-emerald-950 text-white px-6 py-5 flex items-start justify-between relative shrink-0">
           <div>
-            <div className="inline-flex items-center gap-1.5 bg-red-500/20 text-red-300 border border-red-500/30 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-2">
+            <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-2">
               Formulir Resmi Kompensasi
             </div>
             <h2 className="text-lg md:text-xl font-black tracking-tight text-white">
@@ -199,28 +199,18 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
               </div>
               <h3 className="text-xl font-bold text-zinc-900">Pengajuan Kompensasi Berhasil!</h3>
               <p className="text-sm text-zinc-600 leading-relaxed max-w-md mx-auto">
-                Terima kasih <strong className="text-zinc-900">{fullName}</strong>. Data dan dokumen kompensasi Anda telah kami terima dan terverifikasi.
+                Terima kasih <strong className="text-zinc-900">{fullName}</strong>. Data dan dokumen kompensasi Anda telah kami terima dan tersimpan dengan aman.
               </p>
-              <div className="bg-amber-50 border border-amber-200 text-amber-900 text-xs p-4 rounded-xl text-left space-y-1">
-                <p className="font-bold">Langkah Selanjutnya:</p>
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs p-4 rounded-xl text-left space-y-1">
+                <p className="font-bold text-emerald-950">Status Pengajuan:</p>
                 <p>
-                  Silakan bergabung ke <strong>Group WhatsApp Kompensasi</strong> resmi untuk proses klaim voucher discount 50% Anda.
+                  Tim kami akan memverifikasi data Anda dan mengirimkan informasi kompensasi diskon 50% melalui Email / WhatsApp yang telah Anda daftarkan.
                 </p>
               </div>
-              <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
-                <a
-                  href={waGroupUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => triggerJoinCompensationWaGroupPixels(title || 'Compensation WA Group')}
-                  className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-md transition-all"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Gabung Group WA Kompensasi
-                </a>
+              <div className="pt-3 flex justify-center">
                 <button
                   onClick={onClose}
-                  className="w-full sm:w-auto px-5 py-3 bg-zinc-200 hover:bg-zinc-300 text-zinc-700 text-xs font-bold rounded-xl transition-all"
+                  className="w-full sm:w-auto px-8 py-3 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
                 >
                   Tutup Halaman
                 </button>
@@ -424,7 +414,7 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
                 <button
                   type="submit"
                   disabled={loading || uploadingKtp || uploadingTicket}
-                  className="px-6 py-2.5 bg-red-900 hover:bg-red-800 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-all disabled:opacity-50"
+                  className="px-7 py-3 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                   Submit
@@ -432,7 +422,7 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
                 <button
                   type="button"
                   onClick={handleClearForm}
-                  className="text-xs font-semibold text-red-950 hover:underline"
+                  className="text-xs font-semibold text-zinc-500 hover:text-zinc-800 hover:underline"
                 >
                   Clear form
                 </button>
