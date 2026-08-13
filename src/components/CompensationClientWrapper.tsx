@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { SiteConfig } from '@/lib/config';
 import { CompensationSection } from './CompensationSection';
 import { CompensationModal } from './CompensationModal';
+import { triggerCompensationClickPixels } from '@/lib/pixels';
 
 interface CompensationClientWrapperProps {
   config: SiteConfig;
@@ -18,6 +19,7 @@ export function CompensationClientWrapper({ config, renderButtonOnly }: Compensa
   }
 
   const handleOpenModal = () => {
+    triggerCompensationClickPixels(config.compensationTitle);
     setIsModalOpen(true);
   };
 

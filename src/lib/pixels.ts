@@ -9,6 +9,9 @@ declare global {
     triggerAffiliateClickPixels?: (eventTitle?: string) => void;
     triggerAffiliateSubmitPixels?: (eventTitle?: string) => void;
     triggerJoinWaGroupPixels?: (eventTitle?: string) => void;
+    triggerCompensationClickPixels?: (eventTitle?: string) => void;
+    triggerCompensationSubmitPixels?: (eventTitle?: string) => void;
+    triggerJoinCompensationWaGroupPixels?: (eventTitle?: string) => void;
   }
 }
 
@@ -260,10 +263,173 @@ export function triggerJoinWaGroupPixels(eventTitle: string = 'Affiliate WA Grou
   }
 }
 
+/**
+ * Pixel tracking when user clicks "Klaim Kompensasi Tiket" (Intent)
+ */
+export function triggerCompensationClickPixels(eventTitle: string = 'Compensation Claim Click') {
+  if (typeof window === 'undefined') return;
+
+  console.log('[Pixel Tracking] Firing Compensation Click events...');
+
+  const fbq = window.fbq || (window as any)._fbq;
+  if (fbq && typeof fbq === 'function') {
+    try {
+      fbq('trackCustom', 'ClickCompensation', { content_name: eventTitle });
+      fbq('track', 'FindLocation', { content_name: eventTitle });
+      console.log('✅ Meta Pixel ClickCompensation fired');
+    } catch (e) {
+      console.error('Error firing Meta Pixel:', e);
+    }
+  }
+
+  const ttq = window.ttq;
+  if (ttq && typeof ttq.track === 'function') {
+    try {
+      ttq.track('ClickButton', { button_name: 'Compensation Claim' });
+      console.log('✅ TikTok Pixel ClickButton fired');
+    } catch (e) {
+      console.error('Error firing TikTok Pixel:', e);
+    }
+  }
+
+  const gtag = window.gtag;
+  if (gtag && typeof gtag === 'function') {
+    try {
+      gtag('event', 'compensation_click', {
+        event_category: 'Compensation',
+        event_label: eventTitle,
+      });
+    } catch (e) {}
+  }
+
+  if (window.dataLayer && Array.isArray(window.dataLayer)) {
+    try {
+      window.dataLayer.push({
+        event: 'compensation_click',
+        timestamp: new Date().toISOString(),
+      });
+    } catch (e) {}
+  }
+}
+
+/**
+ * Pixel tracking when user completes Compensation Form Submission (Lead Conversion)
+ */
+export function triggerCompensationSubmitPixels(eventTitle: string = 'Compensation Form Submission') {
+  if (typeof window === 'undefined') return;
+
+  console.log('[Pixel Tracking] Firing Compensation Submit Lead events...');
+
+  const fbq = window.fbq || (window as any)._fbq;
+  if (fbq && typeof fbq === 'function') {
+    try {
+      fbq('track', 'Lead', {
+        content_name: eventTitle,
+        value: 1,
+        currency: 'IDR',
+      });
+      fbq('track', 'CompleteRegistration', {
+        content_name: eventTitle,
+      });
+      fbq('trackCustom', 'CompensationSubmitted', {
+        content_name: eventTitle,
+      });
+      console.log('✅ Meta Pixel Lead & CompleteRegistration fired');
+    } catch (e) {
+      console.error('Error firing Meta Pixel:', e);
+    }
+  }
+
+  const ttq = window.ttq;
+  if (ttq && typeof ttq.track === 'function') {
+    try {
+      ttq.track('CompleteRegistration', { content_name: eventTitle });
+      ttq.track('SubmitForm', { button_name: 'Compensation Submit' });
+      console.log('✅ TikTok Pixel CompleteRegistration fired');
+    } catch (e) {
+      console.error('Error firing TikTok Pixel:', e);
+    }
+  }
+
+  const gtag = window.gtag;
+  if (gtag && typeof gtag === 'function') {
+    try {
+      gtag('event', 'generate_lead', {
+        event_category: 'Compensation',
+        event_label: eventTitle,
+        value: 1,
+      });
+      gtag('event', 'compensation_submitted', {
+        event_category: 'Conversion',
+        event_label: eventTitle,
+      });
+      console.log('✅ Google Tag generate_lead fired');
+    } catch (e) {
+      console.error('Error firing Google Tag:', e);
+    }
+  }
+
+  if (window.dataLayer && Array.isArray(window.dataLayer)) {
+    try {
+      window.dataLayer.push({
+        event: 'compensation_submitted',
+        event_category: 'Lead',
+        timestamp: new Date().toISOString(),
+      });
+    } catch (e) {}
+  }
+}
+
+/**
+ * Pixel tracking when user clicks "Gabung WA Group Kompensasi"
+ */
+export function triggerJoinCompensationWaGroupPixels(eventTitle: string = 'Compensation WA Group') {
+  if (typeof window === 'undefined') return;
+
+  console.log('[Pixel Tracking] Firing Join Compensation WA Group events...');
+
+  const fbq = window.fbq || (window as any)._fbq;
+  if (fbq && typeof fbq === 'function') {
+    try {
+      fbq('track', 'Contact', { content_name: eventTitle });
+      fbq('trackCustom', 'JoinCompensationWaGroup', { content_name: eventTitle });
+    } catch (e) {}
+  }
+
+  const ttq = window.ttq;
+  if (ttq && typeof ttq.track === 'function') {
+    try {
+      ttq.track('Contact', { button_name: 'Join Compensation WA Group' });
+    } catch (e) {}
+  }
+
+  const gtag = window.gtag;
+  if (gtag && typeof gtag === 'function') {
+    try {
+      gtag('event', 'join_compensation_wa_group', {
+        event_category: 'Compensation',
+        event_label: eventTitle,
+      });
+    } catch (e) {}
+  }
+
+  if (window.dataLayer && Array.isArray(window.dataLayer)) {
+    try {
+      window.dataLayer.push({
+        event: 'join_compensation_wa_group',
+        timestamp: new Date().toISOString(),
+      });
+    } catch (e) {}
+  }
+}
+
 // Bind to window object for global availability
 if (typeof window !== 'undefined') {
   window.triggerBuyNowPixels = triggerBuyNowPixels;
   window.triggerAffiliateClickPixels = triggerAffiliateClickPixels;
   window.triggerAffiliateSubmitPixels = triggerAffiliateSubmitPixels;
   window.triggerJoinWaGroupPixels = triggerJoinWaGroupPixels;
+  window.triggerCompensationClickPixels = triggerCompensationClickPixels;
+  window.triggerCompensationSubmitPixels = triggerCompensationSubmitPixels;
+  window.triggerJoinCompensationWaGroupPixels = triggerJoinCompensationWaGroupPixels;
 }

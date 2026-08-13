@@ -11,6 +11,10 @@ import {
   MessageSquare,
   AlertCircle,
 } from 'lucide-react';
+import {
+  triggerCompensationSubmitPixels,
+  triggerJoinCompensationWaGroupPixels,
+} from '@/lib/pixels';
 
 interface CompensationModalProps {
   isOpen: boolean;
@@ -148,6 +152,9 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
         setWaGroupUrl(data.waGroupUrl);
       }
 
+      // Trigger Pixel Tracking Lead Event
+      triggerCompensationSubmitPixels(title || 'Compensation Form Submission');
+
       setSubmitted(true);
     } catch (err: any) {
       setErrorMsg(err.message || 'Terjadi kesalahan sistem. Silakan coba beberapa saat lagi.');
@@ -205,6 +212,7 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
                   href={waGroupUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => triggerJoinCompensationWaGroupPixels(title || 'Compensation WA Group')}
                   className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-md transition-all"
                 >
                   <MessageSquare className="w-4 h-4" />
