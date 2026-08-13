@@ -457,16 +457,38 @@ export default function CompensationFormContent({
             <label className="block text-sm font-bold text-zinc-900">
               Jumlah Tiket yang ingin dikompensasi <span className="text-red-500">*</span>
             </label>
-            <p className="text-xs text-zinc-500 font-medium">*Contoh : 1 Tiket</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-zinc-500 gap-1 font-medium">
+              <span>*Contoh : 1 Tiket</span>
+              <span className="text-amber-700 font-bold">*Maksimal 10 Tiket per pengajuan</span>
+            </div>
             <input
               type="text"
               required
               value={ticketCount}
-              onChange={(e) => setTicketCount(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                setTicketCount(val);
+                const num = parseInt(val.replace(/\D/g, ''), 10) || 0;
+                if (num > 10) {
+                  setErrorMsg('Jumlah tiket melebihi batas maksimal (Maksimal 10 Tiket per pengajuan).');
+                } else if (errorMsg.includes('Maksimal 10 Tiket')) {
+                  setErrorMsg('');
+                }
+              }}
               placeholder="Your answer"
-              className="w-full px-3 py-2 text-sm border-b border-zinc-300 focus:border-zinc-900 focus:outline-none bg-transparent transition-colors"
+              className={`w-full px-3 py-2 text-sm border-b focus:outline-none bg-transparent transition-colors ${
+                (parseInt(ticketCount.replace(/\D/g, ''), 10) || 0) > 10
+                  ? 'border-red-500 text-red-600 font-bold focus:border-red-600'
+                  : 'border-zinc-300 focus:border-zinc-900'
+              }`}
             />
+            {(parseInt(ticketCount.replace(/\D/g, ''), 10) || 0) > 10 && (
+              <p className="text-xs font-bold text-red-600 mt-1">
+                ⚠️ Jumlah tiket yang diisi melebihi batas (Maksimal 10 Tiket per pengajuan).
+              </p>
+            )}
           </div>
+
 
           {/* Action Buttons */}
           <div className="pt-2 flex items-center justify-between gap-4">

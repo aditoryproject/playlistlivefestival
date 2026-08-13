@@ -67,6 +67,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const numericTicketCount = parseInt((ticketCount || '').replace(/\D/g, ''), 10) || 0;
+    if (numericTicketCount > 10) {
+      return NextResponse.json(
+        { success: false, error: 'Jumlah tiket melebihi batas (Maksimal 10 Tiket per pengajuan).' },
+        { status: 400 }
+      );
+    }
+
+
     // 1. Record compensation application to DB
     const application = await recordCompensationApplication({
       fullName: fullName.trim(),
