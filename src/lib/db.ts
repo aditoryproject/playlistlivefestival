@@ -60,10 +60,27 @@ export interface CompensationApplicationItem extends CompensationApplicationInpu
   status: string;
 }
 
+export interface MasterBuyer2024Record {
+  id?: string | number;
+  email: string;
+  phone: string;
+  name?: string;
+  qtyTicket?: number;
+}
+
+export interface CurationEvaluation {
+  status: 'VERIFIED_MATCH' | 'OVERCLAIM_WARNING' | 'UNMATCHED';
+  purchasedQty: number;
+  claimedQty: number;
+  matchedBy: 'email' | 'phone' | 'both' | 'none';
+  matchedBuyerName?: string;
+}
+
 // In-Memory Fallback Store for Local Dev without MySQL
 const memoryVisitorLogs: VisitorLogItem[] = [];
 const memoryAffiliateApplications: AffiliateApplicationItem[] = [];
 const memoryCompensationApplications: CompensationApplicationItem[] = [];
+const memoryMasterBuyers2024: MasterBuyer2024Record[] = [];
 
 
 /**
@@ -174,6 +191,20 @@ export async function initDatabase(): Promise<boolean> {
         status VARCHAR(20) DEFAULT 'active',
         INDEX idx_compensation_created (created_at),
         INDEX idx_compensation_whatsapp (whatsapp)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    // 6. Master Buyers 2024 table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS master_buyers_2024 (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(150) NOT NULL,
+        phone VARCHAR(50) NOT NULL,
+        name VARCHAR(150) NULL,
+        qty_ticket INT DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_master_email (email),
+        INDEX idx_master_phone (phone)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
 
@@ -598,5 +629,170 @@ export async function deleteCompensationApplicationFromDb(id: string | number): 
     return true;
   }
   return false;
+}
+
+/**
+ * Normalizes phone numbers (strips non-digits, converts 628... or 08... to 8...)
+ */
+function normalizePhoneNumber(phone: string): string {
+  if (!phone) return '';
+  let digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('62')) {
+    digits = digits.slice(2);
+  } else if (digits.startsWith('0')) {
+    digits = digits.slice(1);
+  }
+  return digits;
+}
+
+/**
+ * Bulk import master buyers 2024
+ */
+export async function importMasterBuyers2024(records: MasterBuyer2024Record[]): Promise<number> {
+  const db = getDbPool();
+  if (records.length === 0) return 0;
+
+  if (db) {
+    try {
+      await initDatabase();
+      // Prepare bulk values
+      const values = records.map((r) => [
+        (r.email || '').trim().toLowerCase(),
+        normalizePhoneNumber(r.phone),
+        (r.name || '').trim(),
+        r.qtyTicket || 1,
+      ]);
+
+      await db.query(
+        `INSERT INTO master_buyers_2024 (email, phone, name, qty_ticket) VALUES ?`,
+        [values]
+      );
+      return records.length;
+    } catch (err) {
+      console.warn('[MySQL DB] Failed bulk insert master buyers 2024:', err);
+    }
+  }
+
+  // Memory fallback
+  records.forEach((r) => {
+    memoryMasterBuyers2024.push({
+      email: (r.email || '').trim().toLowerCase(),
+      phone: normalizePhoneNumber(r.phone),
+      name: (r.name || '').trim(),
+      qtyTicket: r.qtyTicket || 1,
+    });
+  });
+
+  return records.length;
+}
+
+/**
+ * Get total master buyers 2024 count
+ */
+export async function getMasterBuyersCount(): Promise<number> {
+  const db = getDbPool();
+  if (db) {
+    try {
+      await initDatabase();
+      const [rows]: any = await db.query(`SELECT COUNT(*) as cnt FROM master_buyers_2024`);
+      return rows[0]?.cnt || 0;
+    } catch (err) {
+      console.warn('[MySQL DB] Failed get master buyers count:', err);
+    }
+  }
+  return memoryMasterBuyers2024.length;
+}
+
+/**
+ * Clear all master buyers 2024 records
+ */
+export async function clearMasterBuyers2024(): Promise<boolean> {
+  const db = getDbPool();
+  if (db) {
+    try {
+      await initDatabase();
+      await db.query(`TRUNCATE TABLE master_buyers_2024`);
+      return true;
+    } catch (err) {
+      console.warn('[MySQL DB] Failed truncate master_buyers_2024:', err);
+    }
+  }
+  memoryMasterBuyers2024.length = 0;
+  return true;
+}
+
+/**
+ * Evaluate curation status for a compensation claim against Master Buyers 2024
+ */
+export async function evaluateClaimCuration(claim: CompensationApplicationItem): Promise<CurationEvaluation> {
+  const userEmail = (claim.email || '').trim().toLowerCase();
+  const userPhone = normalizePhoneNumber(claim.whatsapp);
+
+  // Extract claimed numeric ticket count (e.g. "2 Tiket" -> 2)
+  const claimedCountMatch = (claim.ticketCount || '').match(/\d+/);
+  const claimedQty = claimedCountMatch ? parseInt(claimedCountMatch[0], 10) : 1;
+
+  let matchedRecords: MasterBuyer2024Record[] = [];
+  let matchedByEmail = false;
+  let matchedByPhone = false;
+
+  const db = getDbPool();
+
+  if (db) {
+    try {
+      await initDatabase();
+      const [rows]: any = await db.query(
+        `SELECT email, phone, name, qty_ticket as qtyTicket
+         FROM master_buyers_2024
+         WHERE (email = ? AND email != '') OR (phone = ? AND phone != '')`,
+        [userEmail, userPhone]
+      );
+      matchedRecords = rows || [];
+    } catch (err) {
+      console.warn('[MySQL DB] Failed to query master buyers for curation:', err);
+    }
+  }
+
+  // Memory fallback if DB unavailable or empty
+  if (matchedRecords.length === 0 && memoryMasterBuyers2024.length > 0) {
+    matchedRecords = memoryMasterBuyers2024.filter((r) => {
+      const matchE = userEmail && r.email === userEmail;
+      const matchP = userPhone && r.phone === userPhone;
+      return matchE || matchP;
+    });
+  }
+
+  if (matchedRecords.length === 0) {
+    return {
+      status: 'UNMATCHED',
+      purchasedQty: 0,
+      claimedQty,
+      matchedBy: 'none',
+    };
+  }
+
+  let totalPurchased = 0;
+  let matchedName = '';
+
+  matchedRecords.forEach((r) => {
+    totalPurchased += r.qtyTicket || 1;
+    if (!matchedName && r.name) matchedName = r.name;
+    if (userEmail && r.email === userEmail) matchedByEmail = true;
+    if (userPhone && r.phone === userPhone) matchedByPhone = true;
+  });
+
+  let matchedBy: 'email' | 'phone' | 'both' = 'email';
+  if (matchedByEmail && matchedByPhone) matchedBy = 'both';
+  else if (matchedByPhone) matchedBy = 'phone';
+
+  const isOverclaim = claimedQty > totalPurchased;
+
+  return {
+    status: isOverclaim ? 'OVERCLAIM_WARNING' : 'VERIFIED_MATCH',
+    purchasedQty: totalPurchased,
+    claimedQty,
+    matchedBy,
+    matchedBuyerName: matchedName,
+  };
 }
 

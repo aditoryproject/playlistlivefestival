@@ -48,6 +48,9 @@ export default function AdminPage() {
   const [loadingCompensation, setLoadingCompensation] = useState<boolean>(false);
   const [compensationSearch, setCompensationSearch] = useState<string>('');
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [masterCount, setMasterCount] = useState<number>(0);
+  const [uploadingMaster, setUploadingMaster] = useState<boolean>(false);
+  const [curationFilter, setCurationFilter] = useState<'ALL' | 'VERIFIED_MATCH' | 'OVERCLAIM_WARNING' | 'UNMATCHED'>('ALL');
 
   // Visitor & Traffic Analytics State
   const [startDate, setStartDate] = useState<string>('');
@@ -130,6 +133,58 @@ export default function AdminPage() {
     }
   };
 
+  const fetchMasterCount = async () => {
+    try {
+      const res = await fetch('/api/compensation/master-buyers');
+      const data = await res.json();
+      if (data.success) {
+        setMasterCount(data.count || 0);
+      }
+    } catch (err) {
+      console.error('Failed to fetch master count:', err);
+    }
+  };
+
+  const handleUploadMasterCsv = async (file: File) => {
+    if (!file) return;
+    setUploadingMaster(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/compensation/master-buyers', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`Berhasil mengimpor ${data.imported} data pembeli 2024! Total data master saat ini: ${data.total}`);
+        setMasterCount(data.total);
+        fetchCompensationData();
+      } else {
+        alert(data.error || 'Gagal mengunggah file CSV Master');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Gagal mengunggah file CSV Master');
+    } finally {
+      setUploadingMaster(false);
+    }
+  };
+
+  const handleClearMasterData = async () => {
+    if (!confirm('Apakah Anda yakin ingin menghapus SELURUH data master pembeli 2024?')) return;
+    try {
+      const res = await fetch('/api/compensation/master-buyers', { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        setMasterCount(0);
+        alert('Data master pembeli 2024 berhasil dikosongkan.');
+        fetchCompensationData();
+      }
+    } catch (err) {
+      console.error('Failed to clear master data:', err);
+    }
+  };
+
   const handleDeleteCompensation = async (id: string | number) => {
     if (!confirm('Apakah Anda yakin ingin menghapus data kompensasi ini?')) return;
     try {
@@ -148,10 +203,24 @@ export default function AdminPage() {
       alert('Belum ada data pendaftar kompensasi untuk diexport.');
       return;
     }
-    const headers = ['ID', 'Waktu Pengajuan', 'Nama Lengkap (KTP)', 'No. KTP', 'URL Foto KTP', 'WhatsApp', 'Email', 'URL Bukti E-Tiket', 'Jumlah Tiket'];
+    const headers = [
+      'ID',
+      'Waktu Pengajuan',
+      'Status Kurasi 2024',
+      'Pembelian Tiket 2024',
+      'Nama Lengkap (KTP)',
+      'No. KTP',
+      'URL Foto KTP',
+      'WhatsApp',
+      'Email',
+      'URL Bukti E-Tiket',
+      'Jumlah Tiket Diklaim',
+    ];
     const rows = compensationList.map((item) => [
       item.id,
       new Date(item.createdAt).toLocaleString('id-ID'),
+      `"${item.curation?.status || 'UNMATCHED'}"`,
+      `"${item.curation?.purchasedQty || 0} Tiket"`,
       `"${(item.fullName || '').replace(/"/g, '""')}"`,
       `"${(item.identityNumber || '').replace(/"/g, '""')}"`,
       `"${(item.ktpImageUrl || '').replace(/"/g, '""')}"`,
@@ -206,6 +275,7 @@ export default function AdminPage() {
       fetchAffiliateData();
     } else if (activeTab === 'compensation') {
       fetchCompensationData();
+      fetchMasterCount();
     }
   }, [activeTab]);
 
@@ -1943,20 +2013,88 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* Section 2: Compensation Data Table */}
+              {/* Section 2: Upload Master Buyers 2024 Dataset */}
+              <div className="bg-gradient-to-r from-zinc-900 to-emerald-950 text-white p-5 rounded-2xl border border-emerald-900/50 shadow-md space-y-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-1">
+                      Data Master 2024 Engine
+                    </div>
+                    <h3 className="text-sm font-bold text-white">2. Upload Database Master Pembeli 2024 (.CSV)</h3>
+                    <p className="text-xs text-zinc-300 mt-0.5">
+                      Unggah berkas CSV pembeli 2024 (Email, Phone, Name, Qty) untuk kurasi pencocokan otomatis instan.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <p className="text-xs font-bold text-emerald-300">{masterCount.toLocaleString('id-ID')} Records</p>
+                      <p className="text-[10px] text-zinc-400">Data Master Aktif</p>
+                    </div>
+
+                    <label className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl cursor-pointer transition-all shadow-sm flex items-center gap-2 shrink-0">
+                      {uploadingMaster ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Mengunggah...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>Upload CSV Master</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept=".csv"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleUploadMasterCsv(file);
+                        }}
+                        disabled={uploadingMaster}
+                      />
+                    </label>
+
+                    {masterCount > 0 && (
+                      <button
+                        onClick={handleClearMasterData}
+                        className="px-3 py-2 bg-white/10 hover:bg-red-500/20 text-zinc-300 hover:text-red-300 text-xs font-bold rounded-xl transition-all border border-white/10"
+                        title="Kosongkan Data Master"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3: Compensation Data Table */}
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
                     <h3 className="text-base font-bold text-zinc-900">
-                      2. Data Pengajuan Kompensasi ({compensationList.length})
+                      3. Data Pengajuan Kompensasi ({compensationList.length})
                     </h3>
                     <p className="text-xs text-zinc-500">
-                      Data klaim kompensasi beserta file lampiran KTP & Bukti Tiket 2024.
+                      Data klaim kompensasi beserta status autokurasi matching histori 2024 & lampiran dokumen.
                     </p>
                   </div>
 
                   <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <div className="relative flex-1 sm:w-64">
+                    {/* Curation Filter Dropdown */}
+                    <select
+                      value={curationFilter}
+                      onChange={(e) => setCurationFilter(e.target.value as any)}
+                      className="px-3 py-2 text-xs border border-zinc-300 rounded-xl bg-white text-zinc-700 font-semibold focus:outline-none focus:ring-2 focus:ring-zinc-800"
+                    >
+                      <option value="ALL">Semua Kurasi ({compensationList.length})</option>
+                      <option value="VERIFIED_MATCH">🟢 Verified Match</option>
+                      <option value="OVERCLAIM_WARNING">⚠️ Overclaim Warning</option>
+                      <option value="UNMATCHED">🔴 Unmatched (Foto E-Tiket)</option>
+                    </select>
+
+                    <div className="relative flex-1 sm:w-48">
                       <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
                       <input
                         type="text"
@@ -1991,6 +2129,7 @@ export default function AdminPage() {
                     <thead>
                       <tr className="bg-zinc-100/80 text-zinc-600 border-b border-zinc-200 font-semibold uppercase text-[10px] tracking-wider">
                         <th className="p-3">Waktu</th>
+                        <th className="p-3">Status Kurasi 2024</th>
                         <th className="p-3">Nama (KTP)</th>
                         <th className="p-3">No. Identitas</th>
                         <th className="p-3">File KTP</th>
@@ -2002,18 +2141,27 @@ export default function AdminPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-100 text-zinc-700">
-                      {compensationList.filter((item) => {
-                        if (!compensationSearch) return true;
-                        const q = compensationSearch.toLowerCase();
-                        return (
-                          (item.fullName || '').toLowerCase().includes(q) ||
-                          (item.identityNumber || '').toLowerCase().includes(q) ||
-                          (item.whatsapp || '').toLowerCase().includes(q) ||
-                          (item.email || '').toLowerCase().includes(q)
-                        );
-                      }).length > 0 ? (
+                      {compensationList
+                        .filter((item) => {
+                          if (curationFilter !== 'ALL') {
+                            const curStatus = item.curation?.status || 'UNMATCHED';
+                            if (curStatus !== curationFilter) return false;
+                          }
+                          if (!compensationSearch) return true;
+                          const q = compensationSearch.toLowerCase();
+                          return (
+                            (item.fullName || '').toLowerCase().includes(q) ||
+                            (item.identityNumber || '').toLowerCase().includes(q) ||
+                            (item.whatsapp || '').toLowerCase().includes(q) ||
+                            (item.email || '').toLowerCase().includes(q)
+                          );
+                        }).length > 0 ? (
                         compensationList
                           .filter((item) => {
+                            if (curationFilter !== 'ALL') {
+                              const curStatus = item.curation?.status || 'UNMATCHED';
+                              if (curStatus !== curationFilter) return false;
+                            }
                             if (!compensationSearch) return true;
                             const q = compensationSearch.toLowerCase();
                             return (
@@ -2028,6 +2176,9 @@ export default function AdminPage() {
                             const waUrl = waClean.startsWith('0')
                               ? `https://wa.me/62${waClean.slice(1)}`
                               : `https://wa.me/${waClean}`;
+
+                            const cur = item.curation || { status: 'UNMATCHED', purchasedQty: 0, claimedQty: 1, matchedBy: 'none' };
+
                             return (
                               <tr key={item.id} className="hover:bg-zinc-50/80 transition-colors">
                                 <td className="p-3 font-mono text-[11px] whitespace-nowrap text-zinc-500">
@@ -2037,6 +2188,49 @@ export default function AdminPage() {
                                     hour: '2-digit',
                                     minute: '2-digit',
                                   })}
+                                </td>
+                                {/* Curation Badge Column */}
+                                <td className="p-3">
+                                  {cur.status === 'VERIFIED_MATCH' && (
+                                    <div
+                                      className="inline-flex flex-col gap-0.5 px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-[10px] font-bold"
+                                      title={`Cocok via ${cur.matchedBy}. Total beli 2024: ${cur.purchasedQty} tiket.`}
+                                    >
+                                      <span className="flex items-center gap-1">
+                                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                        VERIFIED MATCH
+                                      </span>
+                                      <span className="text-[9px] text-emerald-600 font-normal">
+                                        Histori 2024: {cur.purchasedQty} Tiket (Via {cur.matchedBy})
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  {cur.status === 'OVERCLAIM_WARNING' && (
+                                    <div
+                                      className="inline-flex flex-col gap-0.5 px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-300 rounded-xl text-[10px] font-bold"
+                                      title={`Histori 2024 hanya ${cur.purchasedQty} tiket, tapi klaim ${cur.claimedQty} tiket!`}
+                                    >
+                                      <span className="flex items-center gap-1 text-amber-700">
+                                        ⚠️ OVERCLAIM
+                                      </span>
+                                      <span className="text-[9px] text-amber-800 font-medium">
+                                        Beli 2024: {cur.purchasedQty} Tiket | Klaim: {cur.claimedQty} Tiket
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  {cur.status === 'UNMATCHED' && (
+                                    <div
+                                      className="inline-flex flex-col gap-0.5 px-2.5 py-1 bg-zinc-100 text-zinc-600 border border-zinc-200 rounded-xl text-[10px] font-semibold"
+                                      title="Email & HP tidak ada di database pembeli 2024. Cek foto bukti E-Tiket."
+                                    >
+                                      <span>🔴 UNMATCHED</span>
+                                      <span className="text-[9px] text-zinc-400 font-normal">
+                                        Cek Foto E-Tiket Manual
+                                      </span>
+                                    </div>
+                                  )}
                                 </td>
                                 <td className="p-3 font-bold text-zinc-900">{item.fullName}</td>
                                 <td className="p-3 font-mono text-[11px] text-zinc-700">{item.identityNumber}</td>
@@ -2093,7 +2287,7 @@ export default function AdminPage() {
                           })
                       ) : (
                         <tr>
-                          <td colSpan={9} className="p-8 text-center text-zinc-400 text-xs">
+                          <td colSpan={10} className="p-8 text-center text-zinc-400 text-xs">
                             {loadingCompensation ? (
                               <div className="flex items-center justify-center gap-2">
                                 <RefreshCw className="w-4 h-4 animate-spin" />

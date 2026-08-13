@@ -3,6 +3,7 @@ import {
   recordCompensationApplication,
   getCompensationApplicationsFromDb,
   deleteCompensationApplicationFromDb,
+  evaluateClaimCuration,
 } from '@/lib/db';
 import { getSiteConfigAsync } from '@/lib/config';
 import { getClientIp, checkRateLimit } from '@/lib/rateLimit';
@@ -115,7 +116,16 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   try {
-    const data = await getCompensationApplicationsFromDb();
+    const rawData = await getCompensationApplicationsFromDb();
+    const data = await Promise.all(
+      rawData.map(async (item) => {
+        const curation = await evaluateClaimCuration(item);
+        return {
+          ...item,
+          curation,
+        };
+      })
+    );
     return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error('Error fetching compensation applications:', error);
