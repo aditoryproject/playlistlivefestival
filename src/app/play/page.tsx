@@ -25,7 +25,9 @@ import {
   ExternalLink,
   Search,
   MessageSquare,
-  Share2
+  Share2,
+  FileText,
+  X
 } from 'lucide-react';
 import Link from 'next/link';
 
