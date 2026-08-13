@@ -219,26 +219,14 @@ export default function TenantFormContent({
           <div className="bg-amber-50 border border-amber-200 text-amber-900 text-xs p-4 rounded-2xl text-left space-y-2">
             <p className="font-bold text-amber-950 flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-amber-600" />
-              Langkah Selanjutnya:
+              Status Pendaftaran:
             </p>
             <p>
-              Silakan bergabung ke Group WhatsApp khusus calon tenant F&B untuk mendapatkan arahan teknis booth, denah lokasi, dan syarat operasional.
+              Tim panitia akan meninjau pendaftaran tenant Anda dan menghubungi nomor WhatsApp / Email penanggung jawab untuk koordinasi selanjutnya.
             </p>
           </div>
-
-          {waGroupUrl && (
-            <a
-              href={waGroupUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => triggerJoinTenantWaGroupPixels()}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl transition-all shadow-md"
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span>Gabung WA Group Tenant F&B</span>
-            </a>
-          )}
         </div>
+
       ) : (
         /* FORM STATE */
         <form onSubmit={handleSubmit} className="space-y-4">

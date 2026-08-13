@@ -263,20 +263,8 @@ export default function CompensationFormContent({
               Tim kami akan memverifikasi data pembelian tiket Anda. Konfirmasi kompensasi diskon 50% akan dikirimkan ke WhatsApp & Email yang Anda cantumkan.
             </p>
           </div>
-
-          {waGroupUrl && (
-            <a
-              href={waGroupUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => triggerJoinCompensationWaGroupPixels()}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl transition-all shadow-md"
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span>Gabung WA Group Kompensasi</span>
-            </a>
-          )}
         </div>
+
       ) : (
         /* FORM STATE */
         <form onSubmit={handleSubmit} className="space-y-4">
