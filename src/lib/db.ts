@@ -44,9 +44,26 @@ export interface AffiliateApplicationItem extends AffiliateApplicationInput {
   status: string;
 }
 
+export interface CompensationApplicationInput {
+  fullName: string;
+  identityNumber: string;
+  ktpImageUrl: string;
+  whatsapp: string;
+  email: string;
+  ticketProofUrl: string;
+  ticketCount: string;
+}
+
+export interface CompensationApplicationItem extends CompensationApplicationInput {
+  id: string | number;
+  createdAt: string;
+  status: string;
+}
+
 // In-Memory Fallback Store for Local Dev without MySQL
 const memoryVisitorLogs: VisitorLogItem[] = [];
 const memoryAffiliateApplications: AffiliateApplicationItem[] = [];
+const memoryCompensationApplications: CompensationApplicationItem[] = [];
 
 
 /**
@@ -139,6 +156,24 @@ export async function initDatabase(): Promise<boolean> {
         status VARCHAR(20) DEFAULT 'active',
         INDEX idx_affiliate_created (created_at),
         INDEX idx_affiliate_whatsapp (whatsapp)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    // 5. Compensation Applications table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS compensation_applications (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        full_name VARCHAR(150) NOT NULL,
+        identity_number VARCHAR(50) NOT NULL,
+        ktp_image_url TEXT NOT NULL,
+        whatsapp VARCHAR(30) NOT NULL,
+        email VARCHAR(150) NOT NULL,
+        ticket_proof_url TEXT NOT NULL,
+        ticket_count VARCHAR(50) NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        status VARCHAR(20) DEFAULT 'active',
+        INDEX idx_compensation_created (created_at),
+        INDEX idx_compensation_whatsapp (whatsapp)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
 
@@ -463,6 +498,103 @@ export async function deleteAffiliateApplicationFromDb(id: string | number): Pro
   const idx = memoryAffiliateApplications.findIndex((item) => String(item.id) === String(id));
   if (idx !== -1) {
     memoryAffiliateApplications.splice(idx, 1);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Record a new Compensation Application
+ */
+export async function recordCompensationApplication(input: CompensationApplicationInput): Promise<CompensationApplicationItem> {
+  const db = getDbPool();
+  const newItem: CompensationApplicationItem = {
+    id: Date.now(),
+    fullName: input.fullName,
+    identityNumber: input.identityNumber,
+    ktpImageUrl: input.ktpImageUrl,
+    whatsapp: input.whatsapp,
+    email: input.email,
+    ticketProofUrl: input.ticketProofUrl,
+    ticketCount: input.ticketCount,
+    createdAt: new Date().toISOString(),
+    status: 'active',
+  };
+
+  if (db) {
+    try {
+      await initDatabase();
+      const [result]: any = await db.query(
+        `INSERT INTO compensation_applications (full_name, identity_number, ktp_image_url, whatsapp, email, ticket_proof_url, ticket_count)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          input.fullName,
+          input.identityNumber,
+          input.ktpImageUrl,
+          input.whatsapp,
+          input.email,
+          input.ticketProofUrl,
+          input.ticketCount,
+        ]
+      );
+      newItem.id = result.insertId;
+    } catch (err) {
+      console.warn('[MySQL DB] Failed to insert compensation application into MySQL:', err);
+      memoryCompensationApplications.unshift(newItem);
+    }
+  } else {
+    memoryCompensationApplications.unshift(newItem);
+  }
+
+  return newItem;
+}
+
+/**
+ * Get all compensation applications
+ */
+export async function getCompensationApplicationsFromDb(): Promise<CompensationApplicationItem[]> {
+  const db = getDbPool();
+
+  if (db) {
+    try {
+      await initDatabase();
+      const [rows]: any = await db.query(
+        `SELECT id, full_name as fullName, identity_number as identityNumber, 
+                ktp_image_url as ktpImageUrl, whatsapp, email, 
+                ticket_proof_url as ticketProofUrl, ticket_count as ticketCount,
+                created_at as createdAt, status
+         FROM compensation_applications
+         ORDER BY created_at DESC`
+      );
+      return rows || [];
+    } catch (err) {
+      console.warn('[MySQL DB] Error fetching compensation applications:', err);
+      return memoryCompensationApplications;
+    }
+  }
+
+  return memoryCompensationApplications;
+}
+
+/**
+ * Delete a compensation application by ID
+ */
+export async function deleteCompensationApplicationFromDb(id: string | number): Promise<boolean> {
+  const db = getDbPool();
+
+  if (db) {
+    try {
+      await initDatabase();
+      await db.query(`DELETE FROM compensation_applications WHERE id = ?`, [id]);
+      return true;
+    } catch (err) {
+      console.warn('[MySQL DB] Error deleting compensation application:', err);
+    }
+  }
+
+  const idx = memoryCompensationApplications.findIndex((item) => String(item.id) === String(id));
+  if (idx !== -1) {
+    memoryCompensationApplications.splice(idx, 1);
     return true;
   }
   return false;

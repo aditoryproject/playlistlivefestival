@@ -65,6 +65,14 @@ export interface SiteConfig {
   affiliateWaGroupUrl: string;
   affiliateGoogleSheetWebhook: string;
 
+  // Compensation Form Feature
+  showCompensationSection: boolean;
+  compensationButtonText: string;
+  compensationTitle: string;
+  compensationSubtitle: string;
+  compensationWaGroupUrl: string;
+  compensationGoogleSheetWebhook: string;
+
   // Tracking & Pixels
   metaPixelId: string;
   tikTokPixelId: string;
@@ -179,6 +187,13 @@ export const defaultConfig: SiteConfig = {
   affiliateSubtitle: 'Dapatkan komisi menarik dan akses eksklusif dengan menjadi bagian dari tim promo Playlist!',
   affiliateWaGroupUrl: 'https://chat.whatsapp.com/',
   affiliateGoogleSheetWebhook: '',
+
+  showCompensationSection: true,
+  compensationButtonText: 'Klaim Kompensasi Tiket',
+  compensationTitle: 'Kompensasi Tiket Playlist Live Super Festival 2024',
+  compensationSubtitle: 'Kompensasi berupa Discount 50% dari harga PRESALE 1 - FESTIVAL 2 DAY PASS pada event Playlist Rewind Festival 2026',
+  compensationWaGroupUrl: 'https://chat.whatsapp.com/',
+  compensationGoogleSheetWebhook: '',
 
 
   metaPixelId: '',

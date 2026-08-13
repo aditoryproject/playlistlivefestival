@@ -38,8 +38,14 @@ export default function AdminPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'hero' | 'pixels' | 'seo' | 'lineup' | 'video' | 'features' | 'analytics' | 'affiliate'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'pixels' | 'seo' | 'lineup' | 'video' | 'features' | 'analytics' | 'affiliate' | 'compensation'>('hero');
   const [config, setConfig] = useState<SiteConfig | null>(null);
+
+  // Compensation Submissions State
+  const [compensationList, setCompensationList] = useState<any[]>([]);
+  const [loadingCompensation, setLoadingCompensation] = useState<boolean>(false);
+  const [compensationSearch, setCompensationSearch] = useState<string>('');
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
   // Visitor & Traffic Analytics State
   const [startDate, setStartDate] = useState<string>('');
@@ -107,6 +113,62 @@ export default function AdminPage() {
     document.body.removeChild(link);
   };
 
+  const fetchCompensationData = async () => {
+    setLoadingCompensation(true);
+    try {
+      const res = await fetch('/api/compensation');
+      const data = await res.json();
+      if (data.success) {
+        setCompensationList(data.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch compensation data:', err);
+    } finally {
+      setLoadingCompensation(false);
+    }
+  };
+
+  const handleDeleteCompensation = async (id: string | number) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus data kompensasi ini?')) return;
+    try {
+      const res = await fetch(`/api/compensation?id=${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        setCompensationList((prev) => prev.filter((item) => String(item.id) !== String(id)));
+      }
+    } catch (err) {
+      console.error('Failed to delete compensation record:', err);
+    }
+  };
+
+  const exportCompensationCsv = () => {
+    if (!compensationList || compensationList.length === 0) {
+      alert('Belum ada data pendaftar kompensasi untuk diexport.');
+      return;
+    }
+    const headers = ['ID', 'Waktu Pengajuan', 'Nama Lengkap (KTP)', 'No. KTP', 'URL Foto KTP', 'WhatsApp', 'Email', 'URL Bukti E-Tiket', 'Jumlah Tiket'];
+    const rows = compensationList.map((item) => [
+      item.id,
+      new Date(item.createdAt).toLocaleString('id-ID'),
+      `"${(item.fullName || '').replace(/"/g, '""')}"`,
+      `"${(item.identityNumber || '').replace(/"/g, '""')}"`,
+      `"${(item.ktpImageUrl || '').replace(/"/g, '""')}"`,
+      `"${(item.whatsapp || '').replace(/"/g, '""')}"`,
+      `"${(item.email || '').replace(/"/g, '""')}"`,
+      `"${(item.ticketProofUrl || '').replace(/"/g, '""')}"`,
+      `"${(item.ticketCount || '').replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `kompensasi_pendaftar_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   const fetchAnalytics = async (start?: string, end?: string) => {
     setLoadingAnalytics(true);
@@ -140,6 +202,8 @@ export default function AdminPage() {
       fetchAnalytics(startDate, endDate);
     } else if (activeTab === 'affiliate') {
       fetchAffiliateData();
+    } else if (activeTab === 'compensation') {
+      fetchCompensationData();
     }
   }, [activeTab]);
 
@@ -454,6 +518,7 @@ export default function AdminPage() {
             { id: 'seo', label: 'SEO & Meta Graph', icon: Globe },
             { id: 'features', label: 'Map & Features', icon: MapPin },
             { id: 'affiliate', label: 'Program Affiliate', icon: Users },
+            { id: 'compensation', label: 'Form Kompensasi', icon: FileText },
             { id: 'analytics', label: 'Click Analytics', icon: BarChart3 },
           ].map((tab) => {
 
@@ -1782,9 +1847,325 @@ export default function AdminPage() {
             </div>
           )}
 
+          {/* TAB 9: FORM KOMPENSASI */}
+          {activeTab === 'compensation' && (
+            <div className="space-y-8">
+              {/* Section Header */}
+              <div>
+                <h2 className="text-xl font-bold text-zinc-900">Pengaturan Form Kompensasi Tiket</h2>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Kelola status aktif formulir klaim diskon kompensasi, kata-kata banner, link WA Group, serta sinkronisasi Webhook Google Sheets.
+                </p>
+              </div>
+
+              {/* Section 1: Settings */}
+              <div className="bg-zinc-50 p-5 rounded-2xl border border-zinc-200 space-y-4">
+                <h3 className="text-sm font-bold text-zinc-900 flex items-center justify-between">
+                  <span>1. Status & Pengaturan Formulir</span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={config.showCompensationSection ?? true}
+                      onChange={(e) => setConfig({ ...config, showCompensationSection: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-700"></div>
+                    <span className="ml-3 text-xs font-semibold text-zinc-700">
+                      {config.showCompensationSection ? 'Fitur Tampil (ON)' : 'Fitur Sembunyi (OFF)'}
+                    </span>
+                  </label>
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-700 mb-1">
+                      Teks Tombol CTA Kompensasi
+                    </label>
+                    <input
+                      type="text"
+                      value={config.compensationButtonText || ''}
+                      onChange={(e) => setConfig({ ...config, compensationButtonText: e.target.value })}
+                      placeholder="Klaim Kompensasi Tiket"
+                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-700 mb-1">
+                      Link WhatsApp Group Kompensasi <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={config.compensationWaGroupUrl || ''}
+                      onChange={(e) => setConfig({ ...config, compensationWaGroupUrl: e.target.value })}
+                      placeholder="https://chat.whatsapp.com/xxxxxx"
+                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800 font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-700 mb-1">
+                      Judul Form Kompensasi
+                    </label>
+                    <input
+                      type="text"
+                      value={config.compensationTitle || ''}
+                      onChange={(e) => setConfig({ ...config, compensationTitle: e.target.value })}
+                      placeholder="Kompensasi Tiket Playlist Live Super Festival 2024"
+                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-700 mb-1">
+                      Webhook Google Sheets (Auto-Sync Data)
+                    </label>
+                    <input
+                      type="text"
+                      value={config.compensationGoogleSheetWebhook || ''}
+                      onChange={(e) => setConfig({ ...config, compensationGoogleSheetWebhook: e.target.value })}
+                      placeholder="https://script.google.com/macros/s/xxxx/exec"
+                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800 font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 mb-1">
+                    Deskripsi / Subtitle Banner Kompensasi
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={config.compensationSubtitle || ''}
+                    onChange={(e) => setConfig({ ...config, compensationSubtitle: e.target.value })}
+                    placeholder="Kompensasi berupa Discount 50% dari harga PRESALE 1 - FESTIVAL 2 DAY PASS pada event Playlist Rewind Festival 2026"
+                    className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800 resize-none"
+                  />
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={handleSaveConfig}
+                    className="px-5 py-2.5 bg-red-900 hover:bg-red-800 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-sm"
+                  >
+                    <Save className="w-4 h-4" />
+                    Simpan Pengaturan Kompensasi
+                  </button>
+                </div>
+              </div>
+
+              {/* Section 2: Compensation Data Table */}
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-base font-bold text-zinc-900">
+                      2. Data Pengajuan Kompensasi ({compensationList.length})
+                    </h3>
+                    <p className="text-xs text-zinc-500">
+                      Data klaim kompensasi beserta file lampiran KTP & Bukti Tiket 2024.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <div className="relative flex-1 sm:w-64">
+                      <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                      <input
+                        type="text"
+                        value={compensationSearch}
+                        onChange={(e) => setCompensationSearch(e.target.value)}
+                        placeholder="Cari nama, WA, email..."
+                        className="w-full pl-9 pr-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800 bg-white"
+                      />
+                    </div>
+
+                    <button
+                      onClick={fetchCompensationData}
+                      className="p-2 border border-zinc-300 rounded-xl bg-white hover:bg-zinc-100 text-zinc-700 transition-colors"
+                      title="Refresh Data"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${loadingCompensation ? 'animate-spin' : ''}`} />
+                    </button>
+
+                    <button
+                      onClick={exportCompensationCsv}
+                      className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Export CSV
+                    </button>
+                  </div>
+                </div>
+
+                {/* Table */}
+                <div className="overflow-x-auto border border-zinc-200 rounded-2xl bg-white shadow-xs">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-zinc-100/80 text-zinc-600 border-b border-zinc-200 font-semibold uppercase text-[10px] tracking-wider">
+                        <th className="p-3">Waktu</th>
+                        <th className="p-3">Nama (KTP)</th>
+                        <th className="p-3">No. Identitas</th>
+                        <th className="p-3">File KTP</th>
+                        <th className="p-3">WhatsApp</th>
+                        <th className="p-3">Email</th>
+                        <th className="p-3">Bukti E-Tiket</th>
+                        <th className="p-3">Jml Tiket</th>
+                        <th className="p-3 text-center">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-100 text-zinc-700">
+                      {compensationList.filter((item) => {
+                        if (!compensationSearch) return true;
+                        const q = compensationSearch.toLowerCase();
+                        return (
+                          (item.fullName || '').toLowerCase().includes(q) ||
+                          (item.identityNumber || '').toLowerCase().includes(q) ||
+                          (item.whatsapp || '').toLowerCase().includes(q) ||
+                          (item.email || '').toLowerCase().includes(q)
+                        );
+                      }).length > 0 ? (
+                        compensationList
+                          .filter((item) => {
+                            if (!compensationSearch) return true;
+                            const q = compensationSearch.toLowerCase();
+                            return (
+                              (item.fullName || '').toLowerCase().includes(q) ||
+                              (item.identityNumber || '').toLowerCase().includes(q) ||
+                              (item.whatsapp || '').toLowerCase().includes(q) ||
+                              (item.email || '').toLowerCase().includes(q)
+                            );
+                          })
+                          .map((item) => {
+                            const waClean = (item.whatsapp || '').replace(/\D/g, '');
+                            const waUrl = waClean.startsWith('0')
+                              ? `https://wa.me/62${waClean.slice(1)}`
+                              : `https://wa.me/${waClean}`;
+                            return (
+                              <tr key={item.id} className="hover:bg-zinc-50/80 transition-colors">
+                                <td className="p-3 font-mono text-[11px] whitespace-nowrap text-zinc-500">
+                                  {new Date(item.createdAt).toLocaleString('id-ID', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </td>
+                                <td className="p-3 font-bold text-zinc-900">{item.fullName}</td>
+                                <td className="p-3 font-mono text-[11px] text-zinc-700">{item.identityNumber}</td>
+                                <td className="p-3">
+                                  {item.ktpImageUrl ? (
+                                    <button
+                                      onClick={() => setPreviewImageUrl(item.ktpImageUrl)}
+                                      className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-[10px] font-bold hover:bg-blue-100 transition-colors"
+                                    >
+                                      <ImageIcon className="w-3 h-3 text-blue-600" />
+                                      Lihat KTP
+                                    </button>
+                                  ) : (
+                                    <span className="text-zinc-400">-</span>
+                                  )}
+                                </td>
+                                <td className="p-3 whitespace-nowrap">
+                                  <a
+                                    href={waUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono font-medium hover:bg-emerald-100 transition-colors"
+                                  >
+                                    <MessageSquare className="w-3 h-3" />
+                                    {item.whatsapp}
+                                  </a>
+                                </td>
+                                <td className="p-3 text-zinc-600 font-mono text-[11px]">{item.email}</td>
+                                <td className="p-3">
+                                  {item.ticketProofUrl ? (
+                                    <button
+                                      onClick={() => setPreviewImageUrl(item.ticketProofUrl)}
+                                      className="inline-flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-lg text-[10px] font-bold hover:bg-purple-100 transition-colors"
+                                    >
+                                      <FileText className="w-3 h-3 text-purple-600" />
+                                      Lihat Tiket
+                                    </button>
+                                  ) : (
+                                    <span className="text-zinc-400">-</span>
+                                  )}
+                                </td>
+                                <td className="p-3 font-semibold text-zinc-900">{item.ticketCount}</td>
+                                <td className="p-3 text-center">
+                                  <button
+                                    onClick={() => handleDeleteCompensation(item.id)}
+                                    className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    title="Hapus Record"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })
+                      ) : (
+                        <tr>
+                          <td colSpan={9} className="p-8 text-center text-zinc-400 text-xs">
+                            {loadingCompensation ? (
+                              <div className="flex items-center justify-center gap-2">
+                                <RefreshCw className="w-4 h-4 animate-spin" />
+                                Memuat data kompensasi...
+                              </div>
+                            ) : (
+                              'Belum ada pendaftaran kompensasi.'
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
         </main>
       </div>
+
+      {/* Image / Document Preview Modal */}
+      {previewImageUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+          <div className="relative max-w-3xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl p-4 space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-200">
+              <h3 className="text-sm font-bold text-zinc-900">Preview Lampiran Dokumen</h3>
+              <div className="flex items-center gap-2">
+                <a
+                  href={previewImageUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-semibold rounded-lg flex items-center gap-1"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> Buka Full Tab
+                </a>
+                <button
+                  onClick={() => setPreviewImageUrl(null)}
+                  className="p-1 text-zinc-400 hover:text-zinc-700 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="max-h-[75vh] overflow-auto flex items-center justify-center bg-zinc-100 rounded-xl p-2">
+              {previewImageUrl.endsWith('.pdf') ? (
+                <iframe src={previewImageUrl} className="w-full h-[60vh] rounded-lg" />
+              ) : (
+                <img
+                  src={previewImageUrl}
+                  alt="Lampiran Dokumen"
+                  className="max-h-[70vh] w-auto object-contain rounded-lg shadow-sm"
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 

@@ -9,6 +9,7 @@ import SpotifyPlayer from '@/components/SpotifyPlayer';
 import Footer from '@/components/Footer';
 import VisitorTracker from '@/components/VisitorTracker';
 import { AffiliateClientWrapper } from '@/components/AffiliateClientWrapper';
+import { CompensationClientWrapper } from '@/components/CompensationClientWrapper';
 
 
 export const dynamic = 'force-dynamic';
@@ -50,6 +51,9 @@ export default function HomePage() {
 
         {/* Affiliate Program Section (master toggle: config.showAffiliateSection) */}
         <AffiliateClientWrapper config={config} />
+
+        {/* Compensation Form Section (master toggle: config.showCompensationSection) */}
+        <CompensationClientWrapper config={config} />
 
         {config.showSpotify && config.spotifyEmbedUrl && (
           <SpotifyPlayer spotifyEmbedUrl={config.spotifyEmbedUrl} />
