@@ -38,37 +38,37 @@ export function CompensationClientWrapper({
     if (config.showCompensationHeroBanner === false) return null;
 
     return (
-      <div className="w-full max-w-3xl sm:max-w-4xl mx-auto mt-6 sm:mt-10 px-2 sm:px-4">
+      <div className="w-full max-w-4xl sm:max-w-5xl md:max-w-6xl mx-auto mt-8 sm:mt-12 px-2 sm:px-4">
         <Link
           href="/kompensasi"
           onClick={() => triggerCompensationClickPixels(config.compensationTitle)}
-          className="group relative overflow-hidden block rounded-3xl bg-gradient-to-r from-zinc-900 via-zinc-950 to-emerald-950 p-6 sm:p-8 text-white border border-emerald-500/40 shadow-2xl shadow-emerald-950/30 hover:shadow-emerald-900/40 hover:border-emerald-400/60 transition-all duration-300 cursor-pointer"
+          className="group relative overflow-hidden block rounded-3xl bg-gradient-to-r from-zinc-900 via-zinc-950 to-emerald-950 p-6 sm:p-10 md:p-12 text-white border border-emerald-500/40 shadow-2xl shadow-emerald-950/40 hover:shadow-emerald-900/50 hover:border-emerald-400/70 transition-all duration-300 cursor-pointer text-left"
         >
-          {/* Subtle Glow Background */}
-          <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none group-hover:bg-emerald-500/25 transition-all" />
+          {/* Ambient Glow Background */}
+          <div className="absolute top-0 right-0 -mt-16 -mr-16 w-80 h-80 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none group-hover:bg-emerald-500/30 transition-all" />
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative z-10">
-            <div className="flex items-start sm:items-center gap-4 sm:gap-5 text-left min-w-0">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-inner">
-                <Gift className="w-6 h-6 sm:w-8 sm:h-8" />
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 sm:gap-8 relative z-10">
+            <div className="flex items-start sm:items-center gap-5 sm:gap-6 text-left min-w-0">
+              <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-3xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-inner">
+                <Gift className="w-7 h-7 sm:w-10 sm:h-10 text-emerald-400" />
               </div>
-              <div className="min-w-0 space-y-1">
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-300 uppercase tracking-wider bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-500/30">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <div className="min-w-0 space-y-2">
+                <div className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-300 uppercase tracking-wider bg-emerald-500/20 px-3.5 py-1 rounded-full border border-emerald-500/30">
+                  <Sparkles className="w-4 h-4 text-emerald-400" />
                   <span>Layanan Penukaran Kompensasi Tiket</span>
                 </div>
-                <h3 className="text-base sm:text-xl md:text-2xl font-black text-white leading-tight">
+                <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight">
                   {config.compensationTitle || 'Kompensasi Tiket Playlist Live Super Festival 2024'}
                 </h3>
-                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-                  {config.compensationSubtitle || 'Kompensasi berupa Discount 50% dari harga PRESALE 1 - FESTIVAL 2 DAY PASS'}
+                <p className="text-xs sm:text-base md:text-lg text-zinc-300 leading-relaxed max-w-3xl">
+                  {config.compensationSubtitle || 'Kompensasi berupa Discount 50% dari harga PRESALE 1 - FESTIVAL 2 DAY PASS pada event Playlist Rewind Festival 2026'}
                 </p>
               </div>
             </div>
 
-            <div className="self-end sm:self-center px-6 sm:px-8 py-3.5 sm:py-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black text-sm sm:text-base rounded-2xl shadow-lg shadow-emerald-950/40 transition-all shrink-0 flex items-center gap-2 group-hover:scale-105 active:scale-95 cursor-pointer">
+            <div className="self-stretch lg:self-center px-8 sm:px-10 py-4 sm:py-5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black text-base sm:text-lg md:text-xl rounded-2xl shadow-xl shadow-emerald-950/50 transition-all shrink-0 flex items-center justify-center gap-3 group-hover:scale-105 active:scale-95 cursor-pointer">
               <span>Klaim Kompensasi</span>
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-6 h-6" />
             </div>
           </div>
         </Link>

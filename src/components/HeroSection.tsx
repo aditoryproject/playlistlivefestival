@@ -13,7 +13,7 @@ interface HeroSectionProps {
 export default function HeroSection({ config }: HeroSectionProps) {
   return (
     <section className="pt-10 sm:pt-16 pb-8 sm:pb-12 px-4 relative overflow-hidden bg-white text-zinc-900">
-      <div className="relative z-10 max-w-4xl mx-auto text-center flex flex-col items-center space-y-5 sm:space-y-8">
+      <div className="relative z-10 max-w-6xl mx-auto text-center flex flex-col items-center space-y-5 sm:space-y-8">
         
         {/* Top Tagline */}
         <div className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold tracking-wide text-zinc-600">
