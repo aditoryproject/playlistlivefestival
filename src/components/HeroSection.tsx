@@ -18,9 +18,11 @@ export default function HeroSection({ config }: HeroSectionProps) {
         {/* Top Tagline */}
         <div className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold tracking-wide text-zinc-600">
           <span>Festival Experience by</span>
-          <span className="bg-black text-white px-2 py-0.5 rounded font-black tracking-tighter text-xs uppercase">
-            PLAYMAKER!
-          </span>
+          <img
+            src="/playmaker-black.png"
+            alt="PLAYMAKER!"
+            className="h-5 sm:h-6 w-auto object-contain inline-block"
+          />
         </div>
 
         {/* Ticket Availability Badge */}
