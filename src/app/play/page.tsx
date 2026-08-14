@@ -2230,12 +2230,44 @@ export default function AdminPage() {
                   </label>
                 </h3>
 
-                {/* Countdown Timer Control */}
+                {/* 1. Start Countdown Control (Waktu Mulai Dibuka / Teaser) */}
+                <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-200/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-amber-700" />
+                      <span className="text-xs font-bold text-amber-950">Waktu Mulai Dibuka (Hitung Mundur Pembukaan Form)</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={config.showCompensationStartCountdown ?? false}
+                        onChange={(e) => setConfig({ ...config, showCompensationStartCountdown: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
+                    </label>
+                  </div>
+                  {config.showCompensationStartCountdown && (
+                    <div>
+                      <label className="block text-xs font-semibold text-amber-900 mb-1">
+                        Tanggal & Jam Mulai Dibuka (Sebelum waktu ini, form terkunci & menampilkan hitung mundur pemberitahuan)
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={config.compensationStartDate ? config.compensationStartDate.slice(0, 16) : ''}
+                        onChange={(e) => setConfig({ ...config, compensationStartDate: e.target.value })}
+                        className="w-full px-3 py-2 text-xs border border-amber-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-600 font-medium"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. Deadline Countdown Control (Batas Penutupan) */}
                 <div className="p-4 bg-emerald-50/60 rounded-xl border border-emerald-200/80 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-emerald-700" />
-                      <span className="text-xs font-bold text-emerald-950">Countdown Timer & Auto-Close Deadline</span>
+                      <span className="text-xs font-bold text-emerald-950">Waktu Batas Penutupan (Auto-Close Deadline)</span>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -2250,7 +2282,7 @@ export default function AdminPage() {
                   {config.showCompensationCountdown && (
                     <div>
                       <label className="block text-xs font-semibold text-emerald-900 mb-1">
-                        Tanggal & Jam Batas Pengajuan (Form Auto-Off saat Waktu Habis)
+                        Tanggal & Jam Batas Akhir Penutupan (Form Auto-Off saat Waktu Habis)
                       </label>
                       <input
                         type="datetime-local"

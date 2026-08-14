@@ -76,6 +76,8 @@ export interface SiteConfig {
   compensationSubtitle: string;
   compensationWaGroupUrl: string;
   compensationGoogleSheetWebhook: string;
+  showCompensationStartCountdown?: boolean;
+  compensationStartDate?: string;
   showCompensationCountdown?: boolean;
   compensationTargetDate?: string;
 
@@ -215,6 +217,8 @@ export const defaultConfig: SiteConfig = {
   compensationSubtitle: 'Kompensasi berupa Discount 50% dari harga PRESALE 1 - FESTIVAL 2 DAY PASS pada event Playlist Rewind Festival 2026',
   compensationWaGroupUrl: 'https://chat.whatsapp.com/',
   compensationGoogleSheetWebhook: '',
+  showCompensationStartCountdown: false,
+  compensationStartDate: '2026-08-15T12:00:00',
   showCompensationCountdown: false,
   compensationTargetDate: '2026-10-31T23:59:59',
 

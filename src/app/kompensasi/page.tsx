@@ -96,6 +96,8 @@ export default async function KompensasiPage() {
           /* ACTIVE FORM */
           <CompensationFormContent
             config={config}
+            showStartCountdown={Boolean(config.showCompensationStartCountdown)}
+            startDate={config.compensationStartDate || ''}
             showCountdown={Boolean(config.showCompensationCountdown)}
             targetDate={config.compensationTargetDate || ''}
           />

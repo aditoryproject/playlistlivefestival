@@ -20,12 +20,16 @@ import { SiteConfig } from '@/lib/config';
 
 interface CompensationFormContentProps {
   config: SiteConfig;
+  showStartCountdown?: boolean;
+  startDate?: string;
   showCountdown?: boolean;
   targetDate?: string;
 }
 
 export default function CompensationFormContent({
   config,
+  showStartCountdown,
+  startDate,
   showCountdown,
   targetDate,
 }: CompensationFormContentProps) {
@@ -48,7 +52,16 @@ export default function CompensationFormContent({
   const [submitted, setSubmitted] = useState(false);
   const [waGroupUrl, setWaGroupUrl] = useState(config.compensationWaGroupUrl || 'https://chat.whatsapp.com/');
 
-  // Countdown timer state
+  // Start countdown state (Belum Dibuka / Teaser)
+  const [isNotStartedYet, setIsNotStartedYet] = useState(false);
+  const [startLeft, setStartLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
+  // Deadline countdown state (Batas Penutupan)
   const [isExpired, setIsExpired] = useState(false);
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
     days: 0,
@@ -58,26 +71,97 @@ export default function CompensationFormContent({
   });
 
   useEffect(() => {
-    if (!showCountdown || !targetDate) return;
+    const calculateTimes = () => {
+      const now = +new Date();
 
-    const calculateTime = () => {
-      const diff = +new Date(targetDate) - +new Date();
-      if (diff <= 0) {
-        setIsExpired(true);
+      // 1. Check Start Date (Belum Dibuka / Teaser)
+      if (showStartCountdown && startDate) {
+        const startDiff = +new Date(startDate) - now;
+        if (startDiff > 0) {
+          setIsNotStartedYet(true);
+          setStartLeft({
+            days: Math.floor(startDiff / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((startDiff / (1000 * 60 * 60)) % 24),
+            minutes: Math.floor((startDiff / 1000 / 60) % 60),
+            seconds: Math.floor((startDiff / 1000) % 60),
+          });
+        } else {
+          setIsNotStartedYet(false);
+        }
       } else {
-        setTimeLeft({
-          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((diff / 1000 / 60) % 60),
-          seconds: Math.floor((diff / 1000) % 60),
-        });
+        setIsNotStartedYet(false);
+      }
+
+      // 2. Check Target Date (Sudah Ditutup / Expired)
+      if (showCountdown && targetDate) {
+        const targetDiff = +new Date(targetDate) - now;
+        if (targetDiff <= 0) {
+          setIsExpired(true);
+        } else {
+          setIsExpired(false);
+          setTimeLeft({
+            days: Math.floor(targetDiff / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((targetDiff / (1000 * 60 * 60)) % 24),
+            minutes: Math.floor((targetDiff / 1000 / 60) % 60),
+            seconds: Math.floor((targetDiff / 1000) % 60),
+          });
+        }
+      } else {
+        setIsExpired(false);
       }
     };
 
-    calculateTime();
-    const timer = setInterval(calculateTime, 1000);
+    calculateTimes();
+    const timer = setInterval(calculateTimes, 1000);
     return () => clearInterval(timer);
-  }, [showCountdown, targetDate]);
+  }, [showStartCountdown, startDate, showCountdown, targetDate]);
+
+  if (isNotStartedYet) {
+    return (
+      <div className="bg-white rounded-3xl p-8 sm:p-12 text-center space-y-6 border border-zinc-200 shadow-xl">
+        <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+          <Clock className="w-8 h-8 animate-pulse" />
+        </div>
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+            <Lock className="w-3 h-3" />
+            Pendaftaran Belum Dibuka
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-zinc-900">
+            Formulir Kompensasi Tiket Segera Dibuka
+          </h2>
+          <p className="text-xs sm:text-sm text-zinc-600 max-w-md mx-auto leading-relaxed">
+            Pengajuan klaim kompensasi tiket akan resmi dibuka pada tanggal{' '}
+            <strong className="text-zinc-900">
+              {startDate ? new Date(startDate).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) : ''} WIB
+            </strong>. Silakan persiapkan data KTP & Bukti E-Tiket Anda.
+          </p>
+        </div>
+
+        {/* Countdown Box */}
+        <div className="bg-gradient-to-r from-zinc-900 via-zinc-950 to-emerald-950 p-6 rounded-2xl text-white shadow-lg max-w-lg mx-auto space-y-3">
+          <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
+            Hitung Mundur Pembukaan Form:
+          </p>
+          <div className="grid grid-cols-4 gap-2 text-center pt-1">
+            {[
+              { label: 'Hari', val: startLeft.days },
+              { label: 'Jam', val: startLeft.hours },
+              { label: 'Menit', val: startLeft.minutes },
+              { label: 'Detik', val: startLeft.seconds },
+            ].map((item, idx) => (
+              <div key={idx} className="bg-white/10 border border-white/15 px-3 py-2 rounded-xl">
+                <span className="text-xl sm:text-2xl font-black font-mono text-emerald-300">
+                  {String(item.val).padStart(2, '0')}
+                </span>
+                <span className="block text-[9px] text-zinc-300 uppercase">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isExpired) {
     return (
