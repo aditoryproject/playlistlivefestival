@@ -70,6 +70,7 @@ export interface SiteConfig {
 
   // Compensation Form Feature
   showCompensationSection: boolean;
+  showCompensationHeroBanner?: boolean;
   showCompensationCuration: boolean;
   compensationButtonText: string;
   compensationTitle: string;
@@ -211,6 +212,7 @@ export const defaultConfig: SiteConfig = {
 
 
   showCompensationSection: false,
+  showCompensationHeroBanner: true,
   showCompensationCuration: true,
   compensationButtonText: 'Klaim Kompensasi Tiket',
   compensationTitle: 'Kompensasi Tiket Playlist Live Super Festival 2024',

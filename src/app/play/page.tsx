@@ -2230,6 +2230,23 @@ export default function AdminPage() {
                   </label>
                 </h3>
 
+                {/* Hero Banner Toggle Control */}
+                <div className="flex items-center justify-between p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-200/80">
+                  <div>
+                    <p className="text-xs font-bold text-emerald-950">Tampilkan Banner Kompensasi di Beranda (Di Bawah Tombol Buy Now)</p>
+                    <p className="text-[11px] text-zinc-600">Tampilkan banner kompensasi beranda di bawah tombol Buy Now!</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={config.showCompensationHeroBanner ?? true}
+                      onChange={(e) => setConfig({ ...config, showCompensationHeroBanner: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                  </label>
+                </div>
+
                 {/* 1. Start Countdown Control (Waktu Mulai Dibuka / Teaser) */}
                 <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-200/80 space-y-3">
                   <div className="flex items-center justify-between">

@@ -4,8 +4,7 @@ import React from 'react';
 import BuyNowButton from './BuyNowButton';
 import { SiteConfig } from '@/lib/config';
 import { Sparkles, MapPin, Calendar } from 'lucide-react';
-
-
+import { CompensationClientWrapper } from './CompensationClientWrapper';
 
 interface HeroSectionProps {
   config: SiteConfig;
@@ -60,13 +59,16 @@ export default function HeroSection({ config }: HeroSectionProps) {
         </p>
 
         {/* BUY NOW BUTTON */}
-        <div className="pt-3 sm:pt-6">
+        <div className="pt-3 sm:pt-6 w-full">
           <BuyNowButton
             ticketUrl={config.ticketUrl}
             buttonText={config.buyButtonText}
             eventTitle={`${config.eventTitleFirst} ${config.eventTitleSecond}`}
             enableSound={config.showSoundEffects}
           />
+
+          {/* HERO COMPENSATION BANNER (DIRECTLY BELOW BUY NOW BUTTON) */}
+          <CompensationClientWrapper config={config} renderBannerOnly={true} />
         </div>
       </div>
     </section>
