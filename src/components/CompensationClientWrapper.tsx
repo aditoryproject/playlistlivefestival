@@ -38,37 +38,37 @@ export function CompensationClientWrapper({
     if (config.showCompensationHeroBanner === false) return null;
 
     return (
-      <div className="w-full max-w-4xl sm:max-w-5xl md:max-w-6xl mx-auto mt-8 sm:mt-12 px-2 sm:px-4">
+      <div className="w-full max-w-4xl sm:max-w-5xl md:max-w-6xl mx-auto mt-6 sm:mt-10 md:mt-12 px-3 sm:px-4">
         <Link
           href="/kompensasi"
           onClick={() => triggerCompensationClickPixels(config.compensationTitle)}
-          className="group relative overflow-hidden block rounded-3xl bg-gradient-to-r from-zinc-900 via-zinc-950 to-emerald-950 p-6 sm:p-10 md:p-12 text-white border border-emerald-500/40 shadow-2xl shadow-emerald-950/40 hover:shadow-emerald-900/50 hover:border-emerald-400/70 transition-all duration-300 cursor-pointer text-left"
+          className="group relative overflow-hidden block rounded-2xl sm:rounded-3xl bg-gradient-to-r from-zinc-900 via-zinc-950 to-emerald-950 p-4 min-[380px]:p-5 sm:p-8 md:p-12 text-white border border-emerald-500/40 shadow-xl sm:shadow-2xl shadow-emerald-950/40 hover:shadow-emerald-900/50 hover:border-emerald-400/70 transition-all duration-300 cursor-pointer text-left"
         >
           {/* Ambient Glow Background */}
-          <div className="absolute top-0 right-0 -mt-16 -mr-16 w-80 h-80 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none group-hover:bg-emerald-500/30 transition-all" />
+          <div className="absolute top-0 right-0 -mt-16 -mr-16 w-60 sm:w-80 h-60 sm:h-80 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none group-hover:bg-emerald-500/30 transition-all" />
 
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 sm:gap-8 relative z-10">
-            <div className="flex items-start sm:items-center gap-5 sm:gap-6 text-left min-w-0">
-              <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-3xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-inner">
-                <Gift className="w-7 h-7 sm:w-10 sm:h-10 text-emerald-400" />
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6 md:gap-8 relative z-10">
+            <div className="flex items-start sm:items-center gap-3.5 sm:gap-5 md:gap-6 text-left min-w-0">
+              <div className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-xl sm:rounded-3xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-inner mt-0.5 sm:mt-0">
+                <Gift className="w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10 text-emerald-400" />
               </div>
-              <div className="min-w-0 space-y-2">
-                <div className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-300 uppercase tracking-wider bg-emerald-500/20 px-3.5 py-1 rounded-full border border-emerald-500/30">
-                  <Sparkles className="w-4 h-4 text-emerald-400" />
+              <div className="min-w-0 space-y-1 sm:space-y-2">
+                <div className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs md:text-sm font-bold text-emerald-300 uppercase tracking-wider bg-emerald-500/20 px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full border border-emerald-500/30">
+                  <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-400" />
                   <span>Layanan Penukaran Kompensasi Tiket</span>
                 </div>
-                <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight">
+                <h3 className="text-sm min-[380px]:text-base sm:text-xl md:text-3xl lg:text-4xl font-black text-white leading-snug sm:leading-tight tracking-tight">
                   {config.compensationTitle || 'Kompensasi Tiket Playlist Live Super Festival 2024'}
                 </h3>
-                <p className="text-xs sm:text-base md:text-lg text-zinc-300 leading-relaxed max-w-3xl">
+                <p className="text-[11px] sm:text-sm md:text-lg text-zinc-300 leading-relaxed max-w-3xl">
                   {config.compensationSubtitle || 'Kompensasi berupa Discount 50% dari harga PRESALE 1 - FESTIVAL 2 DAY PASS pada event Playlist Rewind Festival 2026'}
                 </p>
               </div>
             </div>
 
-            <div className="self-stretch lg:self-center px-8 sm:px-10 py-4 sm:py-5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black text-base sm:text-lg md:text-xl rounded-2xl shadow-xl shadow-emerald-950/50 transition-all shrink-0 flex items-center justify-center gap-3 group-hover:scale-105 active:scale-95 cursor-pointer">
+            <div className="w-full lg:w-auto self-stretch lg:self-center px-5 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-black text-xs sm:text-base md:text-xl rounded-xl sm:rounded-2xl shadow-lg shadow-emerald-950/50 transition-all shrink-0 flex items-center justify-center gap-2 group-hover:scale-105 active:scale-95 cursor-pointer mt-1 sm:mt-0">
               <span>Klaim Kompensasi</span>
-              <ArrowRight className="w-6 h-6" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
             </div>
           </div>
         </Link>
