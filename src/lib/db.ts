@@ -119,7 +119,7 @@ export function getDbPool(): mysql.Pool | null {
         password: DB_PASSWORD,
         database: DB_NAME,
         waitForConnections: true,
-        connectionLimit: 10,
+        connectionLimit: parseInt(process.env.MYSQL_CONNECTION_LIMIT || '50', 10),
         queueLimit: 0,
       });
     } catch (err) {

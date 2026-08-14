@@ -7,7 +7,7 @@ import { getUploadsDir } from '@/lib/uploads';
 
 // Security Config for File Uploads
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
-const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg', '.gif', '.avif']);
+const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.svg', '.gif', '.avif', '.pdf']);
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
   'image/jpg',
@@ -18,6 +18,7 @@ const ALLOWED_MIME_TYPES = new Set([
   'image/svg+xml',
   'image/gif',
   'image/avif',
+  'application/pdf',
   'application/octet-stream',
 ]);
 
