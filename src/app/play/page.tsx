@@ -334,6 +334,147 @@ export default function AdminPage() {
     downloadCsv(`kompensasi_pendaftar_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
   };
 
+  // Syncing states & manual webhook trigger handlers
+  const [syncingAffiliate, setSyncingAffiliate] = useState(false);
+  const [syncingCompensation, setSyncingCompensation] = useState(false);
+  const [syncingTenant, setSyncingTenant] = useState(false);
+
+  const handleSyncAffiliateToSheets = async () => {
+    const webhookUrl = config?.affiliateGoogleSheetWebhook?.trim();
+    if (!webhookUrl || !webhookUrl.startsWith('http')) {
+      alert('Silakan isi & simpan Google Sheets Webhook URL terlebih dahulu.');
+      return;
+    }
+    if (!affiliateList || affiliateList.length === 0) {
+      alert('Belum ada data pendaftar affiliate untuk disinkronkan.');
+      return;
+    }
+
+    if (!confirm(`Apakah Anda yakin ingin menyinkronkan ${affiliateList.length} data Affiliate ke Google Sheets?`)) {
+      return;
+    }
+
+    setSyncingAffiliate(true);
+    let count = 0;
+    try {
+      for (const item of affiliateList) {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          mode: 'no-cors',
+          body: JSON.stringify({
+            timestamp: item.createdAt,
+            fullName: item.fullName,
+            whatsapp: item.whatsapp,
+            email: item.email,
+            instagramTiktok: item.instagramTiktok,
+            city: item.city,
+            experience: item.experience,
+          }),
+        }).catch(() => {});
+        count++;
+      }
+      alert(`Berhasil menyinkronkan ${count} data Affiliate ke Google Sheets! Sila cek file Google Sheets Anda.`);
+    } catch (err: any) {
+      alert(`Gagal menyinkronkan data: ${err.message || err}`);
+    } finally {
+      setSyncingAffiliate(false);
+    }
+  };
+
+  const handleSyncCompensationToSheets = async () => {
+    const webhookUrl = config?.compensationGoogleSheetWebhook?.trim();
+    if (!webhookUrl || !webhookUrl.startsWith('http')) {
+      alert('Silakan isi & simpan Google Sheets Webhook URL terlebih dahulu.');
+      return;
+    }
+    if (!compensationList || compensationList.length === 0) {
+      alert('Belum ada data pendaftar kompensasi untuk disinkronkan.');
+      return;
+    }
+
+    if (!confirm(`Apakah Anda yakin ingin menyinkronkan ${compensationList.length} data Kompensasi ke Google Sheets?`)) {
+      return;
+    }
+
+    setSyncingCompensation(true);
+    let count = 0;
+    try {
+      for (const item of compensationList) {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          mode: 'no-cors',
+          body: JSON.stringify({
+            timestamp: item.createdAt,
+            fullName: item.fullName,
+            identityNumber: item.identityNumber,
+            ktpImageUrl: formatFullUrl(item.ktpImageUrl),
+            whatsapp: item.whatsapp,
+            email: item.email,
+            ticketProofUrl: formatFullUrl(item.ticketProofUrl),
+            ticketCount: item.ticketCount,
+          }),
+        }).catch(() => {});
+        count++;
+      }
+      alert(`Berhasil menyinkronkan ${count} data Kompensasi ke Google Sheets! Sila cek file Google Sheets Anda.`);
+    } catch (err: any) {
+      alert(`Gagal menyinkronkan data: ${err.message || err}`);
+    } finally {
+      setSyncingCompensation(false);
+    }
+  };
+
+  const handleSyncTenantToSheets = async () => {
+    const webhookUrl = config?.tenantGoogleSheetWebhook?.trim();
+    if (!webhookUrl || !webhookUrl.startsWith('http')) {
+      alert('Silakan isi & simpan Google Sheets Webhook URL terlebih dahulu.');
+      return;
+    }
+    if (!tenantList || tenantList.length === 0) {
+      alert('Belum ada data pendaftar Tenant F&B untuk disinkronkan.');
+      return;
+    }
+
+    if (!confirm(`Apakah Anda yakin ingin menyinkronkan ${tenantList.length} data Tenant F&B ke Google Sheets?`)) {
+      return;
+    }
+
+    setSyncingTenant(true);
+    let count = 0;
+    try {
+      for (const item of tenantList) {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          mode: 'no-cors',
+          body: JSON.stringify({
+            timestamp: item.createdAt,
+            brandName: item.brandName,
+            category: item.category,
+            menuDescription: item.menuDescription,
+            priceRange: item.priceRange,
+            instagramCatalog: formatFullUrl(item.instagramCatalog),
+            picName: item.picName,
+            whatsapp: item.whatsapp,
+            email: item.email,
+            city: item.city,
+            powerRequirement: item.powerRequirement,
+            equipmentList: item.equipmentList,
+            eventExperience: item.eventExperience,
+          }),
+        }).catch(() => {});
+        count++;
+      }
+      alert(`Berhasil menyinkronkan ${count} data Tenant F&B ke Google Sheets! Sila cek file Google Sheets Anda.`);
+    } catch (err: any) {
+      alert(`Gagal menyinkronkan data: ${err.message || err}`);
+    } finally {
+      setSyncingTenant(false);
+    }
+  };
+
 
   const fetchAnalytics = async (start?: string, end?: string) => {
     setLoadingAnalytics(true);
@@ -1944,6 +2085,16 @@ export default function AdminPage() {
                       <Download className="w-3.5 h-3.5" />
                       Export CSV
                     </button>
+
+                    <button
+                      onClick={handleSyncAffiliateToSheets}
+                      disabled={syncingAffiliate}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all shadow-sm disabled:opacity-50"
+                      title="Kirim ulang data pendaftar affiliate ke Webhook Google Sheets"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${syncingAffiliate ? 'animate-spin' : ''}`} />
+                      <span>{syncingAffiliate ? 'Menyinkronkan...' : 'Sinkronkan ke GSheet'}</span>
+                    </button>
                   </div>
                 </div>
 
@@ -2307,6 +2458,16 @@ export default function AdminPage() {
                       <Download className="w-3.5 h-3.5" />
                       Export CSV
                     </button>
+
+                    <button
+                      onClick={handleSyncCompensationToSheets}
+                      disabled={syncingCompensation}
+                      className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
+                      title="Kirim ulang data pendaftar kompensasi ke Webhook Google Sheets"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${syncingCompensation ? 'animate-spin' : ''}`} />
+                      <span>{syncingCompensation ? 'Menyinkronkan...' : 'Sinkronkan ke GSheet'}</span>
+                    </button>
                   </div>
                 </div>
 
@@ -2654,6 +2815,16 @@ export default function AdminPage() {
                     >
                       <Download className="w-3.5 h-3.5" />
                       <span>Export CSV Data Tenant</span>
+                    </button>
+
+                    <button
+                      onClick={handleSyncTenantToSheets}
+                      disabled={syncingTenant}
+                      className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
+                      title="Kirim ulang data pendaftar tenant ke Webhook Google Sheets"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${syncingTenant ? 'animate-spin' : ''}`} />
+                      <span>{syncingTenant ? 'Menyinkronkan...' : 'Sinkronkan ke GSheet'}</span>
                     </button>
                   </div>
                 </div>
