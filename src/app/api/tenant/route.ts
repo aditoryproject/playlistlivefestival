@@ -68,6 +68,16 @@ export async function POST(req: NextRequest) {
       eventExperience: eventExperience ? eventExperience.trim() : '',
     });
 
+    // Helper to format absolute URL
+    const getFullUrl = (path?: string) => {
+      if (!path) return '';
+      if (path.startsWith('http://') || path.startsWith('https://')) return path;
+      const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
+      const proto = req.headers.get('x-forwarded-proto') || 'https';
+      const baseUrl = host ? `${proto}://${host}` : '';
+      return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+    };
+
     // 2. Fetch site config for WA group URL & Google Sheets Webhook URL
     const config = await getSiteConfigAsync();
     const waGroupUrl = config.tenantWaGroupUrl || 'https://chat.whatsapp.com/';
@@ -84,7 +94,7 @@ export async function POST(req: NextRequest) {
           category: application.category,
           menuDescription: application.menuDescription,
           priceRange: application.priceRange,
-          instagramCatalog: application.instagramCatalog,
+          instagramCatalog: getFullUrl(application.instagramCatalog),
           picName: application.picName,
           whatsapp: application.whatsapp,
           email: application.email,

@@ -87,6 +87,16 @@ export async function POST(req: NextRequest) {
       ticketCount: ticketCount.trim(),
     });
 
+    // Helper to format absolute URL for image links
+    const getFullUrl = (path?: string) => {
+      if (!path) return '';
+      if (path.startsWith('http://') || path.startsWith('https://')) return path;
+      const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
+      const proto = req.headers.get('x-forwarded-proto') || 'https';
+      const baseUrl = host ? `${proto}://${host}` : '';
+      return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+    };
+
     // 2. Fetch site config for WA group URL & Google Sheets Webhook URL
     const config = await getSiteConfigAsync();
     const waGroupUrl = config.compensationWaGroupUrl || 'https://chat.whatsapp.com/';
@@ -101,10 +111,10 @@ export async function POST(req: NextRequest) {
           timestamp: application.createdAt,
           fullName: application.fullName,
           identityNumber: application.identityNumber,
-          ktpImageUrl: application.ktpImageUrl,
+          ktpImageUrl: getFullUrl(application.ktpImageUrl),
           whatsapp: application.whatsapp,
           email: application.email,
-          ticketProofUrl: application.ticketProofUrl,
+          ticketProofUrl: getFullUrl(application.ticketProofUrl),
           ticketCount: application.ticketCount,
         }),
       }).catch((err) => {
