@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Upload,
@@ -10,6 +10,8 @@ import {
   Trash2,
   MessageSquare,
   AlertCircle,
+  Clock,
+  Lock,
 } from 'lucide-react';
 import {
   triggerCompensationSubmitPixels,
@@ -21,9 +23,22 @@ interface CompensationModalProps {
   onClose: () => void;
   title?: string;
   subtitle?: string;
+  showStartCountdown?: boolean;
+  startDate?: string;
+  showCountdown?: boolean;
+  targetDate?: string;
 }
 
-export function CompensationModal({ isOpen, onClose, title, subtitle }: CompensationModalProps) {
+export function CompensationModal({
+  isOpen,
+  onClose,
+  title,
+  subtitle,
+  showStartCountdown,
+  startDate,
+  showCountdown,
+  targetDate,
+}: CompensationModalProps) {
   // Form Field States
   const [fullName, setFullName] = useState('');
   const [identityNumber, setIdentityNumber] = useState('');
@@ -42,6 +57,70 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
   const [errorMsg, setErrorMsg] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [waGroupUrl, setWaGroupUrl] = useState('https://chat.whatsapp.com/');
+
+  // Start countdown state (Belum Dibuka / Teaser)
+  const [isNotStartedYet, setIsNotStartedYet] = useState(false);
+  const [startLeft, setStartLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
+  // Deadline countdown state (Batas Penutupan)
+  const [isExpired, setIsExpired] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
+  useEffect(() => {
+    const calculateTimes = () => {
+      const now = +new Date();
+
+      // 1. Check Start Date (Belum Dibuka / Teaser)
+      if (showStartCountdown && startDate) {
+        const startDiff = +new Date(startDate) - now;
+        if (startDiff > 0) {
+          setIsNotStartedYet(true);
+          setStartLeft({
+            days: Math.floor(startDiff / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((startDiff / (1000 * 60 * 60)) % 24),
+            minutes: Math.floor((startDiff / 1000 / 60) % 60),
+            seconds: Math.floor((startDiff / 1000) % 60),
+          });
+        } else {
+          setIsNotStartedYet(false);
+        }
+      } else {
+        setIsNotStartedYet(false);
+      }
+
+      // 2. Check Target Date (Sudah Ditutup / Expired)
+      if (showCountdown && targetDate) {
+        const targetDiff = +new Date(targetDate) - now;
+        if (targetDiff <= 0) {
+          setIsExpired(true);
+        } else {
+          setIsExpired(false);
+          setTimeLeft({
+            days: Math.floor(targetDiff / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((targetDiff / (1000 * 60 * 60)) % 24),
+            minutes: Math.floor((targetDiff / 1000 / 60) % 60),
+            seconds: Math.floor((targetDiff / 1000) % 60),
+          });
+        }
+      } else {
+        setIsExpired(false);
+      }
+    };
+
+    calculateTimes();
+    const timer = setInterval(calculateTimes, 1000);
+    return () => clearInterval(timer);
+  }, [showStartCountdown, startDate, showCountdown, targetDate]);
 
   if (!isOpen) return null;
 
@@ -191,7 +270,83 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
 
         {/* Modal Scrollable Body */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-4 text-zinc-800">
-          {submitted ? (
+          {isNotStartedYet ? (
+            /* NOT STARTED YET / START COUNTDOWN TEASER STATE */
+            <div className="bg-white rounded-2xl p-6 sm:p-8 text-center space-y-5 border border-zinc-200 shadow-xs my-2">
+              <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                <Clock className="w-7 h-7 animate-pulse" />
+              </div>
+              <div className="space-y-1.5">
+                <div className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full">
+                  <Lock className="w-3 h-3" />
+                  Pendaftaran Belum Dibuka
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-zinc-900">
+                  Formulir Kompensasi Tiket Segera Dibuka
+                </h3>
+                <p className="text-xs text-zinc-600 max-w-md mx-auto leading-relaxed">
+                  Pengajuan klaim kompensasi tiket akan resmi dibuka pada tanggal{' '}
+                  <strong className="text-zinc-900">
+                    {startDate ? new Date(startDate).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) : ''} WIB
+                  </strong>. Silakan persiapkan KTP & Bukti E-Tiket Anda.
+                </p>
+              </div>
+
+              {/* Countdown Box */}
+              <div className="bg-gradient-to-r from-zinc-900 via-zinc-950 to-emerald-950 p-5 rounded-2xl text-white shadow-md max-w-md mx-auto space-y-2">
+                <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">
+                  Hitung Mundur Pembukaan Form:
+                </p>
+                <div className="grid grid-cols-4 gap-2 text-center pt-1">
+                  {[
+                    { label: 'Hari', val: startLeft.days },
+                    { label: 'Jam', val: startLeft.hours },
+                    { label: 'Menit', val: startLeft.minutes },
+                    { label: 'Detik', val: startLeft.seconds },
+                  ].map((item, idx) => (
+                    <div key={idx} className="bg-white/10 border border-white/15 px-2.5 py-1.5 rounded-xl">
+                      <span className="text-lg sm:text-xl font-black font-mono text-emerald-300">
+                        {String(item.val).padStart(2, '0')}
+                      </span>
+                      <span className="block text-[8px] text-zinc-300 uppercase">{item.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-6 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold rounded-xl transition-all shadow-xs"
+                >
+                  Tutup Halaman
+                </button>
+              </div>
+            </div>
+          ) : isExpired ? (
+            /* EXPIRED STATE */
+            <div className="bg-white rounded-2xl p-6 sm:p-8 text-center space-y-4 border border-zinc-200 shadow-xs my-2">
+              <div className="w-14 h-14 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
+                <Lock className="w-7 h-7" />
+              </div>
+              <h3 className="text-lg font-bold text-zinc-900">
+                Pendaftaran Kompensasi Tiket Ditutup
+              </h3>
+              <p className="text-xs text-zinc-500 max-w-md mx-auto leading-relaxed">
+                Mohon maaf, batas waktu pendaftaran kompensasi tiket telah berakhir.
+              </p>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-6 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold rounded-xl transition-all shadow-xs"
+                >
+                  Tutup Halaman
+                </button>
+              </div>
+            </div>
+          ) : submitted ? (
             /* SUCCESS STATE */
             <div className="bg-white rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-sm border border-zinc-200 my-4">
               <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
@@ -232,8 +387,8 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
               </div>
 
               {/* 1. Nama Lengkap */}
-              <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-sm space-y-2">
-                <label className="block text-sm font-bold text-zinc-900">
+              <div className="bg-white rounded-2xl p-5 border border-zinc-200 shadow-xs space-y-2 hover:border-zinc-300 transition-colors">
+                <label className="block text-xs sm:text-sm font-bold text-zinc-900">
                   Nama Lengkap (Sesuai KTP) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -241,14 +396,14 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Your answer"
-                  className="w-full px-3 py-2 text-sm border-b border-zinc-300 focus:border-zinc-900 focus:outline-none bg-transparent transition-colors"
+                  placeholder="Contoh: Budi Santoso"
+                  className="w-full px-3 py-2 text-xs sm:text-sm border-b border-zinc-300 focus:border-emerald-600 focus:outline-none bg-transparent transition-colors font-medium text-zinc-900"
                 />
               </div>
 
               {/* 2. Nomor Identitas */}
-              <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-sm space-y-2">
-                <label className="block text-sm font-bold text-zinc-900">
+              <div className="bg-white rounded-2xl p-5 border border-zinc-200 shadow-xs space-y-2 hover:border-zinc-300 transition-colors">
+                <label className="block text-xs sm:text-sm font-bold text-zinc-900">
                   Nomor Identitas (KTP) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -256,22 +411,22 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
                   required
                   value={identityNumber}
                   onChange={(e) => setIdentityNumber(e.target.value)}
-                  placeholder="Your answer"
-                  className="w-full px-3 py-2 text-sm border-b border-zinc-300 focus:border-zinc-900 focus:outline-none bg-transparent transition-colors"
+                  placeholder="Contoh: 3273123456780001"
+                  className="w-full px-3 py-2 text-xs sm:text-sm border-b border-zinc-300 focus:border-emerald-600 focus:outline-none bg-transparent transition-colors font-medium text-zinc-900"
                 />
               </div>
 
               {/* 3. Upload KTP */}
-              <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-sm space-y-3">
+              <div className="bg-white rounded-2xl p-5 border border-zinc-200 shadow-xs space-y-3 hover:border-zinc-300 transition-colors">
                 <div>
-                  <label className="block text-sm font-bold text-zinc-900">
-                    Upload KTP <span className="text-red-500">*</span>
+                  <label className="block text-xs sm:text-sm font-bold text-zinc-900">
+                    Upload Foto KTP <span className="text-red-500">*</span>
                   </label>
-                  <p className="text-xs text-zinc-500 mt-0.5">Upload 1 supported file. Max 10 MB.</p>
+                  <p className="text-[11px] text-zinc-500 mt-0.5">Format: Gambar (JPG, PNG, WEBP) atau PDF. Maksimal 10 MB.</p>
                 </div>
 
                 {ktpImageUrl ? (
-                  <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800">
+                  <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900">
                     <div className="flex items-center gap-2 overflow-hidden">
                       <FileText className="w-4 h-4 shrink-0 text-emerald-600" />
                       <span className="truncate font-medium">{ktpImageUrl}</span>
@@ -286,16 +441,16 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
                     </button>
                   </div>
                 ) : (
-                  <label className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 rounded-xl text-xs font-bold text-zinc-700 cursor-pointer transition-all">
+                  <label className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 rounded-xl text-xs font-bold text-zinc-800 cursor-pointer transition-all active:scale-98">
                     {uploadingKtp ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin text-zinc-600" />
-                        <span>Uploading...</span>
+                        <span>Mengunggah KTP...</span>
                       </>
                     ) : (
                       <>
-                        <Upload className="w-4 h-4 text-blue-600" />
-                        <span>Add file</span>
+                        <Upload className="w-4 h-4 text-emerald-600" />
+                        <span>Pilih / Upload File KTP</span>
                       </>
                     )}
                     <input
@@ -313,8 +468,8 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
               </div>
 
               {/* 4. Nomor WhatsApp */}
-              <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-sm space-y-2">
-                <label className="block text-sm font-bold text-zinc-900">
+              <div className="bg-white rounded-2xl p-5 border border-zinc-200 shadow-xs space-y-2 hover:border-zinc-300 transition-colors">
+                <label className="block text-xs sm:text-sm font-bold text-zinc-900">
                   Nomor WhatsApp (Wajib Aktif) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -322,14 +477,14 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
                   required
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
-                  placeholder="Your answer"
-                  className="w-full px-3 py-2 text-sm border-b border-zinc-300 focus:border-zinc-900 focus:outline-none bg-transparent transition-colors"
+                  placeholder="Contoh: 081234567890"
+                  className="w-full px-3 py-2 text-xs sm:text-sm border-b border-zinc-300 focus:border-emerald-600 focus:outline-none bg-transparent transition-colors font-medium text-zinc-900"
                 />
               </div>
 
               {/* 5. Alamat Email */}
-              <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-sm space-y-2">
-                <label className="block text-sm font-bold text-zinc-900">
+              <div className="bg-white rounded-2xl p-5 border border-zinc-200 shadow-xs space-y-2 hover:border-zinc-300 transition-colors">
+                <label className="block text-xs sm:text-sm font-bold text-zinc-900">
                   Alamat Email (Wajib Aktif) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -337,22 +492,22 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Your answer"
-                  className="w-full px-3 py-2 text-sm border-b border-zinc-300 focus:border-zinc-900 focus:outline-none bg-transparent transition-colors"
+                  placeholder="Contoh: budi@gmail.com"
+                  className="w-full px-3 py-2 text-xs sm:text-sm border-b border-zinc-300 focus:border-emerald-600 focus:outline-none bg-transparent transition-colors font-medium text-zinc-900"
                 />
               </div>
 
               {/* 6. Upload Bukti E-Tiket */}
-              <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-sm space-y-3">
+              <div className="bg-white rounded-2xl p-5 border border-zinc-200 shadow-xs space-y-3 hover:border-zinc-300 transition-colors">
                 <div>
-                  <label className="block text-sm font-bold text-zinc-900 leading-snug">
-                    Upload Bukti E-Tiket (E-Mail) Pembelian Tiket Playlist Live Super Festival 2024 <span className="text-red-500">*</span>
+                  <label className="block text-xs sm:text-sm font-bold text-zinc-900 leading-snug">
+                    Upload Bukti E-Tiket Pembelian Tiket 2024 <span className="text-red-500">*</span>
                   </label>
-                  <p className="text-xs text-zinc-500 mt-0.5">Upload 1 supported file: PDF, document, or image. Max 10 MB.</p>
+                  <p className="text-[11px] text-zinc-500 mt-0.5">Upload screenshot email E-Tiket atau file PDF tiket 2024. Maksimal 10 MB.</p>
                 </div>
 
                 {ticketProofUrl ? (
-                  <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800">
+                  <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900">
                     <div className="flex items-center gap-2 overflow-hidden">
                       <FileText className="w-4 h-4 shrink-0 text-emerald-600" />
                       <span className="truncate font-medium">{ticketProofUrl}</span>
@@ -367,16 +522,16 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
                     </button>
                   </div>
                 ) : (
-                  <label className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 rounded-xl text-xs font-bold text-zinc-700 cursor-pointer transition-all">
+                  <label className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 rounded-xl text-xs font-bold text-zinc-800 cursor-pointer transition-all active:scale-98">
                     {uploadingTicket ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin text-zinc-600" />
-                        <span>Uploading...</span>
+                        <span>Mengunggah E-Tiket...</span>
                       </>
                     ) : (
                       <>
-                        <Upload className="w-4 h-4 text-blue-600" />
-                        <span>Add file</span>
+                        <Upload className="w-4 h-4 text-emerald-600" />
+                        <span>Pilih / Upload Bukti E-Tiket</span>
                       </>
                     )}
                     <input
@@ -394,14 +549,35 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
               </div>
 
               {/* 7. Jumlah Tiket */}
-              <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-sm space-y-2">
-                <label className="block text-sm font-bold text-zinc-900">
-                  Jumlah Tiket yang ingin dikompensasi <span className="text-red-500">*</span>
-                </label>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-zinc-500 gap-1 font-medium">
-                  <span>*Contoh : 1 Tiket</span>
-                  <span className="text-amber-700 font-bold">*Maksimal 10 Tiket per pengajuan</span>
+              <div className="bg-white rounded-2xl p-5 border border-zinc-200 shadow-xs space-y-3 hover:border-zinc-300 transition-colors">
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold text-zinc-900">
+                    Jumlah Tiket yang Ingin Dikompensasi <span className="text-red-500">*</span>
+                  </label>
+                  <p className="text-[11px] text-zinc-500 mt-0.5">Maksimal 10 Tiket per pengajuan.</p>
                 </div>
+
+                {/* Quick Select Preset Pills for Mobile Ease */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  {['1 Tiket', '2 Tiket', '3 Tiket', '4 Tiket', '5 Tiket'].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => {
+                        setTicketCount(preset);
+                        setErrorMsg('');
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                        ticketCount === preset
+                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                          : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-700 border-zinc-200'
+                      }`}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+
                 <input
                   type="text"
                   required
@@ -416,11 +592,11 @@ export function CompensationModal({ isOpen, onClose, title, subtitle }: Compensa
                       setErrorMsg('');
                     }
                   }}
-                  placeholder="Your answer"
-                  className={`w-full px-3 py-2 text-sm border-b focus:outline-none bg-transparent transition-colors ${
+                  placeholder="Atau ketik sendiri, misal: 2 Tiket"
+                  className={`w-full px-3 py-2 text-xs sm:text-sm border-b focus:outline-none bg-transparent transition-colors font-medium ${
                     (parseInt(ticketCount.replace(/\D/g, ''), 10) || 0) > 10
                       ? 'border-red-500 text-red-600 font-bold focus:border-red-600'
-                      : 'border-zinc-300 focus:border-zinc-900'
+                      : 'border-zinc-300 focus:border-emerald-600 text-zinc-900'
                   }`}
                 />
                 {(parseInt(ticketCount.replace(/\D/g, ''), 10) || 0) > 10 && (
