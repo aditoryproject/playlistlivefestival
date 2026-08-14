@@ -79,6 +79,36 @@ export default function AdminPage() {
     }
   };
 
+  const formatCsvCell = (val: any): string => {
+    if (val === null || val === undefined) return '""';
+    const str = String(val).replace(/"/g, '""');
+    return `"${str}"`;
+  };
+
+  const formatFullUrl = (path?: string): string => {
+    if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    return `${origin}${path.startsWith('/') ? '' : '/'}${path}`;
+  };
+
+  const downloadCsv = (filename: string, headers: string[], rows: (string | number | boolean)[][]) => {
+    const csvLines = [
+      headers.map(formatCsvCell).join(','),
+      ...rows.map((row) => row.map(formatCsvCell).join(',')),
+    ];
+    const csvContent = csvLines.join('\n');
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const exportTenantCsv = () => {
     if (!tenantList || tenantList.length === 0) {
       alert('Belum ada data pendaftar tenant F&B untuk diexport.');
@@ -102,29 +132,22 @@ export default function AdminPage() {
     ];
     const rows = tenantList.map((item) => [
       item.id,
-      new Date(item.createdAt).toLocaleString('id-ID'),
-      `"${(item.brandName || '').replace(/"/g, '""')}"`,
-      `"${(item.category || '').replace(/"/g, '""')}"`,
-      `"${(item.menuDescription || '').replace(/"/g, '""')}"`,
-      `"${(item.priceRange || '').replace(/"/g, '""')}"`,
-      `"${(item.instagramCatalog || '').replace(/"/g, '""')}"`,
-      `"${(item.picName || '').replace(/"/g, '""')}"`,
-      `"${(item.whatsapp || '').replace(/"/g, '""')}"`,
-      `"${(item.email || '').replace(/"/g, '""')}"`,
-      `"${(item.city || '').replace(/"/g, '""')}"`,
-      `"${(item.powerRequirement || '').replace(/"/g, '""')}"`,
-      `"${(item.equipmentList || '').replace(/"/g, '""')}"`,
-      `"${(item.eventExperience || '').replace(/"/g, '""')}"`,
+      item.createdAt ? new Date(item.createdAt).toLocaleString('id-ID') : '',
+      item.brandName || '',
+      item.category || '',
+      item.menuDescription || '',
+      item.priceRange || '',
+      formatFullUrl(item.instagramCatalog),
+      item.picName || '',
+      item.whatsapp || '',
+      item.email || '',
+      item.city || '',
+      item.powerRequirement || '',
+      item.equipmentList || '',
+      item.eventExperience || '',
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `tenant_fb_pendaftar_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadCsv(`tenant_fb_pendaftar_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
   };
 
 
@@ -184,23 +207,16 @@ export default function AdminPage() {
     const headers = ['ID', 'Waktu Daftar', 'Nama Lengkap', 'WhatsApp', 'Email', 'Sosmed', 'Kota', 'Pengalaman'];
     const rows = affiliateList.map((item) => [
       item.id,
-      new Date(item.createdAt).toLocaleString('id-ID'),
-      `"${(item.fullName || '').replace(/"/g, '""')}"`,
-      `"${(item.whatsapp || '').replace(/"/g, '""')}"`,
-      `"${(item.email || '').replace(/"/g, '""')}"`,
-      `"${(item.instagramTiktok || '').replace(/"/g, '""')}"`,
-      `"${(item.city || '').replace(/"/g, '""')}"`,
-      `"${(item.experience || '').replace(/"/g, '""')}"`,
+      item.createdAt ? new Date(item.createdAt).toLocaleString('id-ID') : '',
+      item.fullName || '',
+      item.whatsapp || '',
+      item.email || '',
+      item.instagramTiktok || '',
+      item.city || '',
+      item.experience || '',
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `affiliate_pendaftar_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadCsv(`affiliate_pendaftar_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
   };
 
   const fetchCompensationData = async () => {
@@ -303,26 +319,19 @@ export default function AdminPage() {
     ];
     const rows = compensationList.map((item) => [
       item.id,
-      new Date(item.createdAt).toLocaleString('id-ID'),
-      `"${item.curation?.status || 'UNMATCHED'}"`,
-      `"${item.curation?.purchasedQty || 0} Tiket"`,
-      `"${(item.fullName || '').replace(/"/g, '""')}"`,
-      `"${(item.identityNumber || '').replace(/"/g, '""')}"`,
-      `"${(item.ktpImageUrl || '').replace(/"/g, '""')}"`,
-      `"${(item.whatsapp || '').replace(/"/g, '""')}"`,
-      `"${(item.email || '').replace(/"/g, '""')}"`,
-      `"${(item.ticketProofUrl || '').replace(/"/g, '""')}"`,
-      `"${(item.ticketCount || '').replace(/"/g, '""')}"`,
+      item.createdAt ? new Date(item.createdAt).toLocaleString('id-ID') : '',
+      item.curation?.status || 'UNMATCHED',
+      `${item.curation?.purchasedQty || 0} Tiket`,
+      item.fullName || '',
+      item.identityNumber || '',
+      formatFullUrl(item.ktpImageUrl),
+      item.whatsapp || '',
+      item.email || '',
+      formatFullUrl(item.ticketProofUrl),
+      item.ticketCount || 0,
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `kompensasi_pendaftar_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadCsv(`kompensasi_pendaftar_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
   };
 
 
