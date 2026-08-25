@@ -186,32 +186,32 @@ export default function LineupSection({
           </div>
         )}
 
-        {/* Fixed 12-Column Compact Bento Grid Matching PLF26 Poster Layout */}
-        <div className="w-full max-w-4xl mx-auto grid grid-cols-12 gap-2.5 sm:gap-3.5 md:gap-4 auto-rows-[90px] sm:auto-rows-[115px] md:auto-rows-[130px]">
+        {/* Fully Responsive Bento Grid: 6 columns on Mobile, 12 columns on Desktop */}
+        <div className="w-full max-w-4xl mx-auto grid grid-cols-6 md:grid-cols-12 gap-2 sm:gap-3 md:gap-4 auto-rows-[85px] sm:auto-rows-[110px] md:auto-rows-[130px]">
           
           {/* ROW 1 */}
-          {/* 1. peterpan (col 1 to 6 = 50% width) */}
-          {renderArtistCard(artistMap.get('peterpan') || { id: '1', name: 'peterpan', cardSize: 'extrawide' }, 'col-span-6 row-span-1')}
-          {/* 2. BURGERKILL (col 7 to 9 = 25% width) */}
-          {renderArtistCard(artistMap.get('burgerkill') || { id: '2', name: 'BURGERKILL', cardSize: 'normal' }, 'col-span-3 row-span-1')}
-          {/* 3. KOTAK (col 10 to 12 = 25% width) */}
-          {renderArtistCard(artistMap.get('kotak') || { id: '3', name: 'KOTAK', cardSize: 'normal' }, 'col-span-3 row-span-1')}
+          {/* 1. peterpan (col-span-6 on mobile = 100%, md:col-span-6 on desktop = 50%) */}
+          {renderArtistCard(artistMap.get('peterpan') || { id: '1', name: 'peterpan', cardSize: 'extrawide' }, 'col-span-6 md:col-span-6 row-span-1')}
+          {/* 2. BURGERKILL (col-span-3 on mobile = 50%, md:col-span-3 on desktop = 25%) */}
+          {renderArtistCard(artistMap.get('burgerkill') || { id: '2', name: 'BURGERKILL', cardSize: 'normal' }, 'col-span-3 md:col-span-3 row-span-1')}
+          {/* 3. KOTAK (col-span-3 on mobile = 50%, md:col-span-3 on desktop = 25%) */}
+          {renderArtistCard(artistMap.get('kotak') || { id: '3', name: 'KOTAK', cardSize: 'normal' }, 'col-span-3 md:col-span-3 row-span-1')}
 
           {/* ROW 2 */}
-          {/* 4. GEISHA (col 1 to 2) */}
-          {renderArtistCard(artistMap.get('geisha') || { id: '4', name: 'GEISHA', cardSize: 'normal' }, 'col-span-2 row-span-1')}
-          {/* 5. PERUNGGU (col 3 to 4) */}
-          {renderArtistCard(artistMap.get('perunggu') || { id: '5', name: 'PERUNGGU', cardSize: 'normal' }, 'col-span-2 row-span-1')}
-          {/* 6. enau (col 5 to 6) */}
-          {renderArtistCard(artistMap.get('enau') || { id: '6', name: 'enau', cardSize: 'normal' }, 'col-span-2 row-span-1')}
-          {/* 7. Charly SETIA BAND (col 7 to 8) */}
-          {renderArtistCard(artistMap.get('charly setia band') || { id: '7', name: 'Charly SETIA BAND', cardSize: 'normal' }, 'col-span-2 row-span-1')}
-          {/* 8. Gigi (col 9 to 12, spans 2 rows) */}
-          {renderArtistCard(artistMap.get('gigi') || { id: '8', name: 'Gigi', cardSize: 'large' }, 'col-span-4 row-span-2')}
+          {/* 4. GEISHA (col-span-3 on mobile = 50%, md:col-span-2 on desktop) */}
+          {renderArtistCard(artistMap.get('geisha') || { id: '4', name: 'GEISHA', cardSize: 'normal' }, 'col-span-3 md:col-span-2 row-span-1')}
+          {/* 5. PERUNGGU (col-span-3 on mobile = 50%, md:col-span-2 on desktop) */}
+          {renderArtistCard(artistMap.get('perunggu') || { id: '5', name: 'PERUNGGU', cardSize: 'normal' }, 'col-span-3 md:col-span-2 row-span-1')}
+          {/* 6. enau (col-span-3 on mobile = 50%, md:col-span-2 on desktop) */}
+          {renderArtistCard(artistMap.get('enau') || { id: '6', name: 'enau', cardSize: 'normal' }, 'col-span-3 md:col-span-2 row-span-1')}
+          {/* 7. Charly SETIA BAND (col-span-3 on mobile = 50%, md:col-span-2 on desktop) */}
+          {renderArtistCard(artistMap.get('charly setia band') || { id: '7', name: 'Charly SETIA BAND', cardSize: 'normal' }, 'col-span-3 md:col-span-2 row-span-1')}
+          {/* 8. Gigi (col-span-6 on mobile = 100%, md:col-span-4 md:row-span-2 on desktop) */}
+          {renderArtistCard(artistMap.get('gigi') || { id: '8', name: 'Gigi', cardSize: 'large' }, 'col-span-6 md:col-span-4 row-span-2 md:row-span-2')}
 
           {/* ROW 3 */}
-          {/* 9. SPECIAL TILE: All Lineup Phase 1 & 2 Text Box (col 1 to 6) */}
-          <div className="col-span-6 row-span-1 rounded-2xl md:rounded-3xl bg-transparent p-3 sm:p-5 flex flex-col justify-center text-left">
+          {/* 9. SPECIAL TILE: All Lineup Phase 1 & 2 Text Box */}
+          <div className="col-span-6 md:col-span-6 row-span-1 rounded-2xl md:rounded-3xl bg-transparent p-3 sm:p-5 flex flex-col justify-center text-left">
             <span className="text-zinc-700 font-medium text-base sm:text-2xl tracking-tight leading-none mb-1">
               All Lineup
             </span>
@@ -224,13 +224,12 @@ export default function LineupSection({
               </span>
             </div>
           </div>
-          {/* 10. t-Five (col 7 to 8) */}
-          {renderArtistCard(artistMap.get('t-five') || { id: '9', name: 't-Five', cardSize: 'normal' }, 'col-span-2 row-span-1')}
-          {/* Gigi occupies col 9 to 12 here */}
+          {/* 10. t-Five (col-span-3 on mobile, md:col-span-2 on desktop) */}
+          {renderArtistCard(artistMap.get('t-five') || { id: '9', name: 't-Five', cardSize: 'normal' }, 'col-span-3 md:col-span-2 row-span-1')}
 
           {/* ROW 4 */}
-          {/* 11. SPECIAL TILE: Vinyl 3D Disc Hologram Card (col 1 to 2) */}
-          <div className="col-span-2 row-span-1 rounded-2xl md:rounded-3xl bg-gradient-to-b from-white to-zinc-50/90 border border-zinc-200/90 shadow-md p-2 flex items-center justify-center relative overflow-hidden group hover:scale-[1.02] transition-transform">
+          {/* 11. SPECIAL TILE: Vinyl 3D Disc Hologram Card */}
+          <div className="col-span-3 md:col-span-2 row-span-1 rounded-2xl md:rounded-3xl bg-gradient-to-b from-white to-zinc-50/90 border border-zinc-200/90 shadow-md p-2 flex items-center justify-center relative overflow-hidden group hover:scale-[1.02] transition-transform">
             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-pink-300 via-purple-300 to-indigo-300 p-0.5 sm:p-1 flex items-center justify-center shadow-lg shadow-pink-200/50 animate-pulse">
               <div className="w-full h-full rounded-full bg-gradient-to-tr from-purple-900 to-indigo-950 flex items-center justify-center border border-white/40">
                 <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center border border-white/60">
@@ -239,20 +238,20 @@ export default function LineupSection({
               </div>
             </div>
           </div>
-          {/* 12. ARMAND MAULANA (col 3 to 4) */}
-          {renderArtistCard(artistMap.get('armand maulana') || { id: '10', name: 'ARMAND MAULANA', cardSize: 'normal' }, 'col-span-2 row-span-1')}
-          {/* 13. RONY PARULIAN (col 5 to 6) */}
-          {renderArtistCard(artistMap.get('rony parulian') || { id: '11', name: 'RONY PARULIAN', cardSize: 'normal' }, 'col-span-2 row-span-1')}
-          {/* 14. Letto (col 7 to 8) */}
-          {renderArtistCard(artistMap.get('letto') || { id: '12', name: 'Letto', cardSize: 'normal' }, 'col-span-2 row-span-1')}
-          {/* 15. THE CHANGCUTERS (col 9 to 10) */}
-          {renderArtistCard(artistMap.get('the changcuters') || { id: '13', name: 'THE CHANGCUTERS', cardSize: 'normal' }, 'col-span-2 row-span-1')}
-          {/* 16. KANGEN BAND (col 11 to 12) */}
-          {renderArtistCard(artistMap.get('kangen band') || { id: '14', name: 'KANGEN BAND', cardSize: 'normal' }, 'col-span-2 row-span-1')}
+          {/* 12. ARMAND MAULANA */}
+          {renderArtistCard(artistMap.get('armand maulana') || { id: '10', name: 'ARMAND MAULANA', cardSize: 'normal' }, 'col-span-3 md:col-span-2 row-span-1')}
+          {/* 13. RONY PARULIAN */}
+          {renderArtistCard(artistMap.get('rony parulian') || { id: '11', name: 'RONY PARULIAN', cardSize: 'normal' }, 'col-span-3 md:col-span-2 row-span-1')}
+          {/* 14. Letto */}
+          {renderArtistCard(artistMap.get('letto') || { id: '12', name: 'Letto', cardSize: 'normal' }, 'col-span-3 md:col-span-2 row-span-1')}
+          {/* 15. THE CHANGCUTERS */}
+          {renderArtistCard(artistMap.get('the changcuters') || { id: '13', name: 'THE CHANGCUTERS', cardSize: 'normal' }, 'col-span-3 md:col-span-2 row-span-1')}
+          {/* 16. KANGEN BAND */}
+          {renderArtistCard(artistMap.get('kangen band') || { id: '14', name: 'KANGEN BAND', cardSize: 'normal' }, 'col-span-3 md:col-span-2 row-span-1')}
 
           {/* ROW 5 */}
-          {/* 17. SPECIAL TILE: Soundwave Equalizer Graphic Card (col 1 to 6) */}
-          <div className="col-span-6 row-span-1 rounded-2xl md:rounded-3xl bg-gradient-to-r from-zinc-100 via-white to-zinc-100 border border-zinc-200/90 shadow-md p-3 sm:p-5 flex items-center justify-center overflow-hidden">
+          {/* 17. SPECIAL TILE: Soundwave Equalizer Graphic Card */}
+          <div className="col-span-6 md:col-span-6 row-span-1 rounded-2xl md:rounded-3xl bg-gradient-to-r from-zinc-100 via-white to-zinc-100 border border-zinc-200/90 shadow-md p-3 sm:p-5 flex items-center justify-center overflow-hidden">
             <div className="flex items-center gap-1 sm:gap-1.5 h-8 sm:h-10 w-full justify-center opacity-70">
               {[40, 65, 30, 85, 50, 95, 40, 70, 30, 90, 60, 45, 80, 55, 90, 35, 75, 45, 85, 60, 30, 90, 50, 70, 40, 80].map((h, i) => (
                 <div
@@ -263,10 +262,10 @@ export default function LineupSection({
               ))}
             </div>
           </div>
-          {/* 18. ANDRA AND THE BACKBONE (col 7 to 10) */}
-          {renderArtistCard(artistMap.get('andra and the backbone') || { id: '15', name: 'ANDRA AND THE BACKBONE', cardSize: 'wide' }, 'col-span-4 row-span-1')}
-          {/* 19. SPECIAL TILE: More to Come Text Card (col 11 to 12) */}
-          <div className="col-span-2 row-span-1 rounded-2xl md:rounded-3xl bg-transparent p-2 flex flex-col justify-center items-center text-center">
+          {/* 18. ANDRA AND THE BACKBONE */}
+          {renderArtistCard(artistMap.get('andra and the backbone') || { id: '15', name: 'ANDRA AND THE BACKBONE', cardSize: 'wide' }, 'col-span-6 md:col-span-4 row-span-1')}
+          {/* 19. SPECIAL TILE: More to Come Text Card */}
+          <div className="col-span-6 md:col-span-2 row-span-1 rounded-2xl md:rounded-3xl bg-transparent p-2 flex flex-col justify-center items-center text-center">
             <span className="bg-gradient-to-r from-[#DB5494] to-[#3B82F6] bg-clip-text text-transparent font-bold text-base sm:text-2xl leading-none">
               More
             </span>
@@ -277,7 +276,7 @@ export default function LineupSection({
 
           {/* Additional custom artists added dynamically via CMS */}
           {currentArtists.filter(a => !['peterpan', 'burgerkill', 'kotak', 'geisha', 'perunggu', 'enau', 'charly setia band', 'gigi', 't-five', 'armand maulana', 'rony parulian', 'letto', 'the changcuters', 'kangen band', 'andra and the backbone'].includes(a.name.toLowerCase().trim())).map(a => (
-            renderArtistCard(a, a.cardSize === 'extrawide' ? 'col-span-6' : a.cardSize === 'large' ? 'col-span-4 row-span-2' : a.cardSize === 'wide' ? 'col-span-4' : 'col-span-2')
+            renderArtistCard(a, a.cardSize === 'extrawide' ? 'col-span-6' : a.cardSize === 'large' ? 'col-span-6 md:col-span-4 row-span-2' : a.cardSize === 'wide' ? 'col-span-6 md:col-span-4' : 'col-span-3 md:col-span-2')
           ))}
 
         </div>
