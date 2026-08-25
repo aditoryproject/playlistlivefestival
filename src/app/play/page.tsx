@@ -671,6 +671,7 @@ export default function AdminPage() {
       time: '19:00 WIB',
       phaseId: firstPhaseId,
       featured: false,
+      cardSize: 'normal',
     };
     setConfig({ ...config, lineup: [...config.lineup, newArtist] });
   };
@@ -1093,7 +1094,7 @@ export default function AdminPage() {
                       key={artist.id}
                       className="p-5 rounded-2xl border border-zinc-200 bg-zinc-50/50 space-y-4 shadow-2xs"
                     >
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         <div>
                           <label className="block text-[11px] font-semibold text-zinc-500 uppercase">Nama Artis / Band</label>
                           <input
@@ -1117,6 +1118,20 @@ export default function AdminPage() {
                                 {p.name} Lineup
                               </option>
                             ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-pink-600 uppercase">Ukuran Card (Bento Grid)</label>
+                          <select
+                            value={artist.cardSize || 'normal'}
+                            onChange={(e) => handleUpdateArtist(artist.id, 'cardSize', e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl border border-pink-200 bg-pink-50/50 text-zinc-900 text-sm font-bold focus:ring-pink-500"
+                          >
+                            <option value="normal">▫️ Normal (1x1)</option>
+                            <option value="wide">▬ Lebar (2x1)</option>
+                            <option value="large">⏹️ Besar Highlight (2x2 - Gigi Style)</option>
+                            <option value="extrawide">⬛ Extra Lebar (3x1 - Peterpan Style)</option>
                           </select>
                         </div>
 

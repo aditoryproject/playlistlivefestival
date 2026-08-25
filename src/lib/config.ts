@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { getDbSiteConfig, saveDbSiteConfig, recordBuyNowClick } from './db';
 
+export type ArtistCardSize = 'normal' | 'wide' | 'large' | 'extrawide';
+
 export interface Artist {
   id: string;
   name: string;
@@ -12,6 +14,7 @@ export interface Artist {
   logoUrl?: string;
   phaseId?: string;
   featured?: boolean;
+  cardSize?: ArtistCardSize;
 }
 
 export interface LineupPhase {

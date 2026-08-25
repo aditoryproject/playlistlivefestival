@@ -80,34 +80,65 @@ export default function LineupSection({
           </div>
         )}
 
-        {/* Artist Logo Cards Grid - Clean Apple minimalist white design */}
-        <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
+        {/* Artist Logo Cards Bento Grid - Inspired by PLF26 Poster Layout */}
+        <div className="w-full grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 sm:gap-4 md:gap-5 auto-rows-[115px] sm:auto-rows-[135px] md:auto-rows-[150px]">
           {currentArtists.map((artist) => {
             const rawLogoSrc = artist.logoUrl || artist.image;
             const isFailed = failedLogos[artist.id];
             const logoSrc = (!isFailed && rawLogoSrc) ? rawLogoSrc : null;
             const displayName = (artist.name && artist.name.trim().length > 0) ? artist.name.trim() : 'ARTIST';
 
+            // Determine bento grid span classes based on artist.cardSize
+            const cardSize = artist.cardSize || 'normal';
+            let spanClasses = 'col-span-1 row-span-1';
+            let imgSizeClass = 'max-h-12 sm:max-h-16 md:max-h-18';
+
+            if (cardSize === 'extrawide') {
+              spanClasses = 'col-span-2 sm:col-span-4 md:col-span-3 row-span-1';
+              imgSizeClass = 'max-h-16 sm:max-h-20 md:max-h-24';
+            } else if (cardSize === 'large') {
+              spanClasses = 'col-span-2 row-span-2';
+              imgSizeClass = 'max-h-28 sm:max-h-36 md:max-h-44';
+            } else if (cardSize === 'wide') {
+              spanClasses = 'col-span-2 row-span-1';
+              imgSizeClass = 'max-h-14 sm:max-h-18 md:max-h-20';
+            }
+
             return (
               <div
                 key={artist.id}
-                className="group relative overflow-hidden rounded-3xl bg-gradient-to-b from-white to-zinc-50/90 border border-zinc-200/80 shadow-lg shadow-zinc-200/40 p-6 sm:p-8 flex flex-col items-center justify-center min-h-[130px] sm:min-h-[150px] hover:shadow-xl hover:scale-[1.03] transition-all duration-300 cursor-pointer"
+                className={`group relative overflow-hidden rounded-3xl bg-gradient-to-b from-white via-white to-zinc-50/90 border border-zinc-200/90 shadow-md shadow-zinc-200/40 p-4 sm:p-6 flex flex-col items-center justify-center hover:shadow-xl hover:scale-[1.02] hover:border-pink-300/80 transition-all duration-300 cursor-pointer ${spanClasses}`}
               >
-                {/* Subtle hover highlight */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                {/* Subtle shine / hover highlight */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                 {logoSrc ? (
                   <img
                     src={logoSrc}
                     alt={displayName}
                     onError={() => handleImageError(artist.id)}
-                    className="max-h-16 sm:max-h-20 max-w-full object-contain filter group-hover:scale-105 transition-transform duration-300"
+                    className={`${imgSizeClass} max-w-full object-contain filter group-hover:scale-105 transition-transform duration-300`}
                   />
                 ) : (
                   <div className="text-center px-2">
-                    <span className="text-base sm:text-lg font-black tracking-tight text-zinc-950 uppercase font-sans leading-snug group-hover:text-pink-600 transition-colors">
+                    <span
+                      className={`font-black tracking-tight text-zinc-950 uppercase font-sans leading-snug group-hover:text-pink-600 transition-colors ${
+                        cardSize === 'large'
+                          ? 'text-2xl sm:text-4xl'
+                          : cardSize === 'extrawide'
+                          ? 'text-xl sm:text-3xl'
+                          : cardSize === 'wide'
+                          ? 'text-lg sm:text-2xl'
+                          : 'text-sm sm:text-base'
+                      }`}
+                    >
                       {displayName}
                     </span>
+                    {artist.genre && (
+                      <span className="block text-[10px] sm:text-xs text-zinc-400 font-medium uppercase mt-1 tracking-wider">
+                        {artist.genre}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>

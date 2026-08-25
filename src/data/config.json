@@ -23,30 +23,33 @@
   "lineup": [
     {
       "id": "1",
-      "name": "peterpan ft. ARMAND MAULANA",
+      "name": "peterpan",
       "genre": "Pop Rock",
       "day": "Day 1",
       "time": "20:30 WIB",
       "phaseId": "phase-1",
-      "featured": true
+      "featured": true,
+      "cardSize": "extrawide"
     },
     {
       "id": "2",
-      "name": "PERUNGGU",
-      "genre": "Indie Rock",
-      "day": "Day 1",
-      "time": "19:00 WIB",
-      "phaseId": "phase-1",
-      "featured": true
-    },
-    {
-      "id": "3",
       "name": "BURGERKILL",
       "genre": "Metalcore",
       "day": "Day 2",
       "time": "21:00 WIB",
       "phaseId": "phase-1",
-      "featured": true
+      "featured": true,
+      "cardSize": "normal"
+    },
+    {
+      "id": "3",
+      "name": "KOTAK",
+      "genre": "Rock",
+      "day": "Day 2",
+      "time": "16:45 WIB",
+      "phaseId": "phase-1",
+      "featured": false,
+      "cardSize": "normal"
     },
     {
       "id": "4",
@@ -55,25 +58,68 @@
       "day": "Day 2",
       "time": "18:15 WIB",
       "phaseId": "phase-1",
-      "featured": false
+      "featured": false,
+      "cardSize": "normal"
     },
     {
       "id": "5",
+      "name": "PERUNGGU",
+      "genre": "Indie Rock",
+      "day": "Day 1",
+      "time": "19:00 WIB",
+      "phaseId": "phase-1",
+      "featured": true,
+      "cardSize": "normal"
+    },
+    {
+      "id": "6",
       "name": "enau",
       "genre": "Folk Pop",
       "day": "Day 1",
       "time": "17:30 WIB",
       "phaseId": "phase-1",
-      "featured": false
+      "featured": false,
+      "cardSize": "normal"
     },
     {
-      "id": "6",
-      "name": "KOTAK",
+      "id": "7",
+      "name": "Charly SETIA BAND",
+      "genre": "Pop Rock",
+      "day": "Day 1",
+      "time": "18:00 WIB",
+      "phaseId": "phase-1",
+      "featured": false,
+      "cardSize": "normal"
+    },
+    {
+      "id": "8",
+      "name": "Gigi",
+      "genre": "Pop Rock",
+      "day": "Day 2",
+      "time": "20:00 WIB",
+      "phaseId": "phase-1",
+      "featured": true,
+      "cardSize": "large"
+    },
+    {
+      "id": "9",
+      "name": "ARMAND MAULANA",
+      "genre": "Pop",
+      "day": "Day 1",
+      "time": "19:30 WIB",
+      "phaseId": "phase-1",
+      "featured": false,
+      "cardSize": "normal"
+    },
+    {
+      "id": "10",
+      "name": "ANDRA AND THE BACKBONE",
       "genre": "Rock",
       "day": "Day 2",
-      "time": "16:45 WIB",
+      "time": "21:30 WIB",
       "phaseId": "phase-1",
-      "featured": false
+      "featured": true,
+      "cardSize": "wide"
     }
   ],
   "showVideoSection": false,
