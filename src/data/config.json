@@ -103,6 +103,16 @@
     },
     {
       "id": "9",
+      "name": "t-Five",
+      "genre": "R&B Pop",
+      "day": "Day 1",
+      "time": "18:30 WIB",
+      "phaseId": "phase-1",
+      "featured": false,
+      "cardSize": "normal"
+    },
+    {
+      "id": "10",
       "name": "ARMAND MAULANA",
       "genre": "Pop",
       "day": "Day 1",
@@ -112,7 +122,47 @@
       "cardSize": "normal"
     },
     {
-      "id": "10",
+      "id": "11",
+      "name": "RONY PARULIAN",
+      "genre": "Pop Rock",
+      "day": "Day 1",
+      "time": "17:00 WIB",
+      "phaseId": "phase-1",
+      "featured": false,
+      "cardSize": "normal"
+    },
+    {
+      "id": "12",
+      "name": "Letto",
+      "genre": "Pop Rock",
+      "day": "Day 2",
+      "time": "17:30 WIB",
+      "phaseId": "phase-1",
+      "featured": false,
+      "cardSize": "normal"
+    },
+    {
+      "id": "13",
+      "name": "THE CHANGCUTERS",
+      "genre": "Rock n Roll",
+      "day": "Day 2",
+      "time": "19:15 WIB",
+      "phaseId": "phase-1",
+      "featured": true,
+      "cardSize": "normal"
+    },
+    {
+      "id": "14",
+      "name": "KANGEN BAND",
+      "genre": "Pop Melayu",
+      "day": "Day 1",
+      "time": "21:00 WIB",
+      "phaseId": "phase-1",
+      "featured": true,
+      "cardSize": "normal"
+    },
+    {
+      "id": "15",
       "name": "ANDRA AND THE BACKBONE",
       "genre": "Rock",
       "day": "Day 2",
