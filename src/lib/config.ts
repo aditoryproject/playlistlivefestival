@@ -374,11 +374,10 @@ export function sanitizeConfig(cfg: SiteConfig): SiteConfig {
     c.venueName = 'Bandung';
   }
 
-  // Ensure all 15 poster artists exist in c.lineup and have correct cardSize defaults
+  // Ensure c.lineup exists and has cardSize defaults if missing
   if (!c.lineup || !Array.isArray(c.lineup)) {
     c.lineup = [...defaultConfig.lineup];
   } else {
-    // 1. Merge default cardSize if missing on existing artists
     c.lineup = c.lineup.map((art) => {
       const matchDef = defaultConfig.lineup.find(
         (d) => d.name.toLowerCase().trim() === art.name.toLowerCase().trim()
@@ -388,16 +387,6 @@ export function sanitizeConfig(cfg: SiteConfig): SiteConfig {
         cardSize: art.cardSize || matchDef?.cardSize || 'normal',
       };
     });
-
-    // 2. Append any missing poster artists from defaultConfig into c.lineup
-    for (const defArtist of defaultConfig.lineup) {
-      const exists = c.lineup.some(
-        (a) => a.name.toLowerCase().trim() === defArtist.name.toLowerCase().trim()
-      );
-      if (!exists) {
-        c.lineup.push(defArtist);
-      }
-    }
   }
 
   return c;

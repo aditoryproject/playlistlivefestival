@@ -191,29 +191,29 @@ export default function LineupSection({
           
           {/* ROW 1 */}
           {/* peterpan (3 small cards width = col-span-6 on 12-col grid) */}
-          {renderArtistCard(artistMap.get('peterpan') || { id: '1', name: 'peterpan', cardSize: 'extrawide' }, 'col-span-2 sm:col-span-3 lg:col-span-6 row-span-1')}
+          {artistMap.get('peterpan') && renderArtistCard(artistMap.get('peterpan')!, 'col-span-2 sm:col-span-3 lg:col-span-6 row-span-1')}
           
           {/* BURGERKILL (1.5 small cards width = col-span-3) */}
-          {renderArtistCard(artistMap.get('burgerkill') || { id: '2', name: 'BURGERKILL', cardSize: 'normal' }, 'col-span-1 sm:col-span-3 lg:col-span-3 row-span-1')}
+          {artistMap.get('burgerkill') && renderArtistCard(artistMap.get('burgerkill')!, 'col-span-1 sm:col-span-3 lg:col-span-3 row-span-1')}
           
           {/* KOTAK (1.5 small cards width = col-span-3) */}
-          {renderArtistCard(artistMap.get('kotak') || { id: '3', name: 'KOTAK', cardSize: 'normal' }, 'col-span-1 sm:col-span-3 lg:col-span-3 row-span-1')}
+          {artistMap.get('kotak') && renderArtistCard(artistMap.get('kotak')!, 'col-span-1 sm:col-span-3 lg:col-span-3 row-span-1')}
 
           {/* ROW 2 */}
           {/* GEISHA (1 small card = col-span-2) */}
-          {renderArtistCard(artistMap.get('geisha') || { id: '4', name: 'GEISHA', cardSize: 'normal' }, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
+          {artistMap.get('geisha') && renderArtistCard(artistMap.get('geisha')!, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
           
           {/* PERUNGGU (1 small card = col-span-2) */}
-          {renderArtistCard(artistMap.get('perunggu') || { id: '5', name: 'PERUNGGU', cardSize: 'normal' }, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
+          {artistMap.get('perunggu') && renderArtistCard(artistMap.get('perunggu')!, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
           
           {/* enau (1 small card = col-span-2) */}
-          {renderArtistCard(artistMap.get('enau') || { id: '6', name: 'enau', cardSize: 'normal' }, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
+          {artistMap.get('enau') && renderArtistCard(artistMap.get('enau')!, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
           
           {/* Charly SETIA BAND (1 small card = col-span-2) */}
-          {renderArtistCard(artistMap.get('charly setia band') || { id: '7', name: 'Charly SETIA BAND', cardSize: 'normal' }, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
+          {artistMap.get('charly setia band') && renderArtistCard(artistMap.get('charly setia band')!, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
           
           {/* Gigi (2 small cards width x 2 rows height = col-span-4 row-span-2) */}
-          {renderArtistCard(artistMap.get('gigi') || { id: '8', name: 'Gigi', cardSize: 'large' }, 'col-span-2 sm:col-span-4 lg:col-span-4 row-span-2')}
+          {artistMap.get('gigi') && renderArtistCard(artistMap.get('gigi')!, 'col-span-2 sm:col-span-4 lg:col-span-4 row-span-2')}
 
           {/* ROW 3 */}
           {/* SPECIAL TILE: All Lineup Phase 1 & 2 Text Box (3 small cards = col-span-6) */}
@@ -232,7 +232,7 @@ export default function LineupSection({
           </div>
           
           {/* t-Five (1 small card = col-span-2) */}
-          {renderArtistCard(artistMap.get('t-five') || { id: '9', name: 't-Five', cardSize: 'normal' }, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
+          {artistMap.get('t-five') && renderArtistCard(artistMap.get('t-five')!, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
 
           {/* ROW 4 */}
           {/* SPECIAL TILE: Vinyl 3D Disc Hologram Card */}
@@ -247,19 +247,19 @@ export default function LineupSection({
           </div>
           
           {/* ARMAND MAULANA */}
-          {renderArtistCard(artistMap.get('armand maulana') || { id: '10', name: 'ARMAND MAULANA', cardSize: 'normal' }, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
+          {artistMap.get('armand maulana') && renderArtistCard(artistMap.get('armand maulana')!, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
           
           {/* RONY PARULIAN */}
-          {renderArtistCard(artistMap.get('rony parulian') || { id: '11', name: 'RONY PARULIAN', cardSize: 'normal' }, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
+          {artistMap.get('rony parulian') && renderArtistCard(artistMap.get('rony parulian')!, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
           
           {/* Letto */}
-          {renderArtistCard(artistMap.get('letto') || { id: '12', name: 'Letto', cardSize: 'normal' }, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
+          {artistMap.get('letto') && renderArtistCard(artistMap.get('letto')!, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
           
           {/* THE CHANGCUTERS */}
-          {renderArtistCard(artistMap.get('the changcuters') || { id: '13', name: 'THE CHANGCUTERS', cardSize: 'normal' }, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
+          {artistMap.get('the changcuters') && renderArtistCard(artistMap.get('the changcuters')!, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
           
           {/* KANGEN BAND */}
-          {renderArtistCard(artistMap.get('kangen band') || { id: '14', name: 'KANGEN BAND', cardSize: 'normal' }, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
+          {artistMap.get('kangen band') && renderArtistCard(artistMap.get('kangen band')!, 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1')}
 
           {/* ROW 5 */}
           {/* SPECIAL TILE: Soundwave Equalizer Graphic Card */}
@@ -276,7 +276,7 @@ export default function LineupSection({
           </div>
           
           {/* ANDRA AND THE BACKBONE */}
-          {renderArtistCard(artistMap.get('andra and the backbone') || { id: '15', name: 'ANDRA AND THE BACKBONE', cardSize: 'wide' }, 'col-span-2 sm:col-span-4 lg:col-span-4 row-span-1')}
+          {artistMap.get('andra and the backbone') && renderArtistCard(artistMap.get('andra and the backbone')!, 'col-span-2 sm:col-span-4 lg:col-span-4 row-span-1')}
           
           {/* SPECIAL TILE: More to Come Text Card */}
           <div className="col-span-2 sm:col-span-2 lg:col-span-2 row-span-1 rounded-3xl bg-transparent p-4 flex flex-col justify-center items-start sm:items-center text-left sm:text-center">
