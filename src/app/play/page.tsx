@@ -613,7 +613,7 @@ export default function AdminPage() {
         if (config) {
           setConfig({
             ...config,
-            lineup: config.lineup.map((a) => (a.id === artistId ? { ...a, logoUrl: data.url, image: '' } : a)),
+            lineup: config.lineup.map((a) => (String(a.id) === String(artistId) ? { ...a, logoUrl: data.url, image: '' } : a)),
           });
         }
       } else {
@@ -664,7 +664,7 @@ export default function AdminPage() {
     if (!config) return;
     const firstPhaseId = defaultPhaseId || (config.lineupPhases && config.lineupPhases.length > 0 ? config.lineupPhases[0].id : 'phase-1');
     const newArtist: Artist = {
-      id: Date.now().toString(),
+      id: `artist-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       name: 'Nama Artis / Band Baru',
       genre: 'Pop',
       day: 'Day 1',
@@ -680,7 +680,7 @@ export default function AdminPage() {
     if (!config) return;
     setConfig({
       ...config,
-      lineup: config.lineup.filter((a) => a.id !== id),
+      lineup: config.lineup.filter((a) => String(a.id) !== String(id)),
     });
   };
 
@@ -689,7 +689,7 @@ export default function AdminPage() {
     setConfig({
       ...config,
       lineup: config.lineup.map((a) => {
-        if (a.id === id) {
+        if (String(a.id) === String(id)) {
           const updated = { ...a, [field]: value };
           if (field === 'logoUrl' && value) {
             updated.image = '';
@@ -705,7 +705,7 @@ export default function AdminPage() {
     if (!config) return;
     setConfig({
       ...config,
-      lineup: config.lineup.map((a) => (a.id === id ? { ...a, logoUrl: '', image: '' } : a)),
+      lineup: config.lineup.map((a) => (String(a.id) === String(id) ? { ...a, logoUrl: '', image: '' } : a)),
     });
   };
 

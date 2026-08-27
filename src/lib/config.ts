@@ -374,16 +374,24 @@ export function sanitizeConfig(cfg: SiteConfig): SiteConfig {
     c.venueName = 'Bandung';
   }
 
-  // Ensure c.lineup exists and has cardSize defaults if missing
+  // Ensure c.lineup exists and has valid unique string IDs & cardSize defaults
   if (!c.lineup || !Array.isArray(c.lineup)) {
     c.lineup = [...defaultConfig.lineup];
   } else {
-    c.lineup = c.lineup.map((art) => {
+    const seenIds = new Set<string>();
+    c.lineup = c.lineup.map((art, idx) => {
+      let validId = art.id ? String(art.id) : String(idx + 1);
+      if (seenIds.has(validId)) {
+        validId = `artist-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`;
+      }
+      seenIds.add(validId);
+
       const matchDef = defaultConfig.lineup.find(
         (d) => d.name.toLowerCase().trim() === art.name.toLowerCase().trim()
       );
       return {
         ...art,
+        id: validId,
         cardSize: art.cardSize || matchDef?.cardSize || 'normal',
       };
     });
