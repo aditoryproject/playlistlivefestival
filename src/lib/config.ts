@@ -380,8 +380,11 @@ export function sanitizeConfig(cfg: SiteConfig): SiteConfig {
   }
 
   const seenIds = new Set<string>();
+  const seenLogos = new Map<string, string>(); // logoUrl -> artistName
+
   c.lineup = c.lineup.map((art, idx) => {
     const rawId = art.id ? String(art.id).trim() : '';
+    const nameUpper = (art.name || '').toUpperCase().trim();
     const nameSlug = (art.name || '').toLowerCase().replace(/[^a-z0-9]/g, '') || 'artist';
     let validId = rawId;
 
@@ -391,12 +394,34 @@ export function sanitizeConfig(cfg: SiteConfig): SiteConfig {
     }
     seenIds.add(validId);
 
+    let logoUrl = art.logoUrl || art.image || '';
+
+    // Fix known cross-contamination: BURGERKILL should never have KOTAK's uploaded logo URL
+    if (nameUpper.includes('BURGERKILL') && (logoUrl.includes('f427efcd') || logoUrl.includes('273ca9db'))) {
+      logoUrl = '';
+    }
+
+    // Prevent duplicate logo URL assignment across different bands
+    if (logoUrl) {
+      const existingOwner = seenLogos.get(logoUrl);
+      if (existingOwner && existingOwner !== nameUpper) {
+        // Different band sharing same logo URL -> clear contaminated logo
+        if (!nameUpper.includes(existingOwner) && !existingOwner.includes(nameUpper)) {
+          logoUrl = '';
+        }
+      } else {
+        seenLogos.set(logoUrl, nameUpper);
+      }
+    }
+
     const matchDef = defaultConfig.lineup.find(
       (d) => d.name.toLowerCase().trim() === art.name.toLowerCase().trim()
     );
     return {
       ...art,
       id: validId,
+      logoUrl,
+      image: logoUrl ? '' : art.image,
       cardSize: art.cardSize || matchDef?.cardSize || 'normal',
     };
   });

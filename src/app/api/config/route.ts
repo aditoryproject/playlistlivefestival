@@ -5,6 +5,8 @@ import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 export async function GET() {
   try {
     const config = await getSiteConfigAsync();
+    // Auto-persist sanitized config back to DB/file to purge legacy contaminated rows
+    await saveSiteConfigAsync(config).catch(() => {});
     return NextResponse.json(config);
   } catch (error) {
     console.error('API GET /api/config error:', error);
