@@ -439,13 +439,49 @@ export function getSiteConfig(): SiteConfig {
 }
 
 /**
- * Async config reader: tries MySQL first, falls back to JSON file
+ * Async config reader: tries MySQL first, falls back to JSON file.
+ * Also restores any default artists missing from MySQL (e.g. KOTAK deleted by corrupt data).
  */
 export async function getSiteConfigAsync(): Promise<SiteConfig> {
   // 1. Try MySQL Database
   const dbConfig = await getDbSiteConfig();
   if (dbConfig) {
-    return sanitizeConfig({ ...defaultConfig, ...dbConfig });
+    const sanitized = sanitizeConfig({ ...defaultConfig, ...dbConfig });
+
+    // Restore any default artists that are missing from the MySQL lineup
+    // This fixes cases where MySQL data lost an artist (e.g. KOTAK) due to corruption.
+    const existingNames = new Set(
+      sanitized.lineup.map((a) => a.name.toLowerCase().trim())
+    );
+    const missingArtists = defaultConfig.lineup.filter(
+      (a) => !existingNames.has(a.name.toLowerCase().trim())
+    );
+    if (missingArtists.length > 0) {
+      // Insert missing artists at their original positions from defaultConfig
+      const rebuiltLineup: typeof sanitized.lineup = [];
+      const currentByName = new Map(
+        sanitized.lineup.map((a) => [a.name.toLowerCase().trim(), a])
+      );
+      for (const def of defaultConfig.lineup) {
+        const nameKey = def.name.toLowerCase().trim();
+        if (currentByName.has(nameKey)) {
+          rebuiltLineup.push(currentByName.get(nameKey)!);
+        } else {
+          // Artist was missing from MySQL — restore from defaultConfig
+          rebuiltLineup.push({ ...def });
+        }
+      }
+      // Append any extra artists that exist in MySQL but not in defaultConfig
+      for (const art of sanitized.lineup) {
+        const nameKey = art.name.toLowerCase().trim();
+        if (!defaultConfig.lineup.find((d) => d.name.toLowerCase().trim() === nameKey)) {
+          rebuiltLineup.push(art);
+        }
+      }
+      sanitized.lineup = rebuiltLineup;
+    }
+
+    return sanitized;
   }
 
   // 2. Fallback to Local JSON file
