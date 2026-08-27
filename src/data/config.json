@@ -22,17 +22,18 @@
   "activePhaseId": "phase-1",
   "lineup": [
     {
-      "id": "1",
+      "id": "artist-1-peterpan",
       "name": "peterpan",
       "genre": "Pop Rock",
       "day": "Day 1",
       "time": "20:30 WIB",
       "phaseId": "phase-1",
       "featured": true,
-      "cardSize": "extrawide"
+      "cardSize": "extrawide",
+      "logoUrl": ""
     },
     {
-      "id": "2",
+      "id": "artist-2-burgerkill",
       "name": "BURGERKILL",
       "genre": "Metalcore",
       "day": "Day 2",
@@ -43,7 +44,7 @@
       "logoUrl": ""
     },
     {
-      "id": "3",
+      "id": "artist-3-kotak",
       "name": "KOTAK",
       "genre": "Rock",
       "day": "Day 2",
@@ -54,124 +55,136 @@
       "logoUrl": "/uploads/f427efcd-9151-4744-81f9-1198300fbcd9.png"
     },
     {
-      "id": "4",
+      "id": "artist-4-geisha",
       "name": "GEISHA",
       "genre": "Pop",
       "day": "Day 2",
       "time": "18:15 WIB",
       "phaseId": "phase-1",
       "featured": false,
-      "cardSize": "normal"
+      "cardSize": "normal",
+      "logoUrl": ""
     },
     {
-      "id": "5",
+      "id": "artist-5-perunggu",
       "name": "PERUNGGU",
       "genre": "Indie Rock",
       "day": "Day 1",
       "time": "19:00 WIB",
       "phaseId": "phase-1",
       "featured": true,
-      "cardSize": "normal"
+      "cardSize": "normal",
+      "logoUrl": ""
     },
     {
-      "id": "6",
+      "id": "artist-6-enau",
       "name": "enau",
       "genre": "Folk Pop",
       "day": "Day 1",
       "time": "17:30 WIB",
       "phaseId": "phase-1",
       "featured": false,
-      "cardSize": "normal"
+      "cardSize": "normal",
+      "logoUrl": ""
     },
     {
-      "id": "7",
+      "id": "artist-7-charlysetiaband",
       "name": "Charly SETIA BAND",
       "genre": "Pop Rock",
       "day": "Day 1",
       "time": "18:00 WIB",
       "phaseId": "phase-1",
       "featured": false,
-      "cardSize": "normal"
+      "cardSize": "normal",
+      "logoUrl": ""
     },
     {
-      "id": "8",
+      "id": "artist-8-gigi",
       "name": "Gigi",
       "genre": "Pop Rock",
       "day": "Day 2",
       "time": "20:00 WIB",
       "phaseId": "phase-1",
       "featured": true,
-      "cardSize": "large"
+      "cardSize": "large",
+      "logoUrl": ""
     },
     {
-      "id": "9",
+      "id": "artist-9-tfive",
       "name": "t-Five",
       "genre": "R&B Pop",
       "day": "Day 1",
       "time": "18:30 WIB",
       "phaseId": "phase-1",
       "featured": false,
-      "cardSize": "normal"
+      "cardSize": "normal",
+      "logoUrl": ""
     },
     {
-      "id": "10",
+      "id": "artist-10-armandmaulana",
       "name": "ARMAND MAULANA",
       "genre": "Pop",
       "day": "Day 1",
       "time": "19:30 WIB",
       "phaseId": "phase-1",
       "featured": false,
-      "cardSize": "normal"
+      "cardSize": "normal",
+      "logoUrl": ""
     },
     {
-      "id": "11",
+      "id": "artist-11-ronyparulian",
       "name": "RONY PARULIAN",
       "genre": "Pop Rock",
       "day": "Day 1",
       "time": "17:00 WIB",
       "phaseId": "phase-1",
       "featured": false,
-      "cardSize": "normal"
+      "cardSize": "normal",
+      "logoUrl": ""
     },
     {
-      "id": "12",
+      "id": "artist-12-letto",
       "name": "Letto",
       "genre": "Pop Rock",
       "day": "Day 2",
       "time": "17:30 WIB",
       "phaseId": "phase-1",
       "featured": false,
-      "cardSize": "normal"
+      "cardSize": "normal",
+      "logoUrl": ""
     },
     {
-      "id": "13",
+      "id": "artist-13-thechangcuters",
       "name": "THE CHANGCUTERS",
       "genre": "Rock n Roll",
       "day": "Day 2",
       "time": "19:15 WIB",
       "phaseId": "phase-1",
       "featured": true,
-      "cardSize": "normal"
+      "cardSize": "normal",
+      "logoUrl": ""
     },
     {
-      "id": "14",
+      "id": "artist-14-kangenband",
       "name": "KANGEN BAND",
       "genre": "Pop Melayu",
       "day": "Day 1",
       "time": "21:00 WIB",
       "phaseId": "phase-1",
       "featured": true,
-      "cardSize": "normal"
+      "cardSize": "normal",
+      "logoUrl": ""
     },
     {
-      "id": "15",
+      "id": "artist-15-andraandthebackbone",
       "name": "ANDRA AND THE BACKBONE",
       "genre": "Rock",
       "day": "Day 2",
       "time": "21:30 WIB",
       "phaseId": "phase-1",
       "featured": true,
-      "cardSize": "wide"
+      "cardSize": "wide",
+      "logoUrl": ""
     }
   ],
   "showVideoSection": false,

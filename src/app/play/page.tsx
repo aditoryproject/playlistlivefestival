@@ -593,12 +593,12 @@ export default function AdminPage() {
   };
 
   // Upload Logo File Handler
-  const handleLogoUpload = async (artistId: string, file: File) => {
+  const handleLogoUpload = async (artistTarget: string | number, file: File) => {
     if (file.size > 10 * 1024 * 1024) {
       alert('Ukuran file terlalu besar. Maksimal 10 MB.');
       return;
     }
-    setUploadingId(artistId);
+    setUploadingId(String(artistTarget));
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -613,7 +613,10 @@ export default function AdminPage() {
         if (config) {
           setConfig({
             ...config,
-            lineup: config.lineup.map((a) => (String(a.id) === String(artistId) ? { ...a, logoUrl: data.url, image: '' } : a)),
+            lineup: config.lineup.map((a, idx) => {
+              const isMatch = typeof artistTarget === 'number' ? idx === artistTarget : String(a.id) === String(artistTarget);
+              return isMatch ? { ...a, logoUrl: data.url, image: '' } : a;
+            }),
           });
         }
       } else {
@@ -676,20 +679,24 @@ export default function AdminPage() {
     setConfig({ ...config, lineup: [...config.lineup, newArtist] });
   };
 
-  const handleRemoveArtist = (id: string) => {
+  const handleRemoveArtist = (artistTarget: string | number) => {
     if (!config) return;
     setConfig({
       ...config,
-      lineup: config.lineup.filter((a) => String(a.id) !== String(id)),
+      lineup: config.lineup.filter((a, idx) => {
+        if (typeof artistTarget === 'number') return idx !== artistTarget;
+        return String(a.id) !== String(artistTarget);
+      }),
     });
   };
 
-  const handleUpdateArtist = (id: string, field: keyof Artist, value: any) => {
+  const handleUpdateArtist = (artistTarget: string | number, field: keyof Artist, value: any) => {
     if (!config) return;
     setConfig({
       ...config,
-      lineup: config.lineup.map((a) => {
-        if (String(a.id) === String(id)) {
+      lineup: config.lineup.map((a, idx) => {
+        const isMatch = typeof artistTarget === 'number' ? idx === artistTarget : String(a.id) === String(artistTarget);
+        if (isMatch) {
           const updated = { ...a, [field]: value };
           if (field === 'logoUrl' && value) {
             updated.image = '';
@@ -701,11 +708,14 @@ export default function AdminPage() {
     });
   };
 
-  const handleRemoveLogo = (id: string) => {
+  const handleRemoveLogo = (artistTarget: string | number) => {
     if (!config) return;
     setConfig({
       ...config,
-      lineup: config.lineup.map((a) => (String(a.id) === String(id) ? { ...a, logoUrl: '', image: '' } : a)),
+      lineup: config.lineup.map((a, idx) => {
+        const isMatch = typeof artistTarget === 'number' ? idx === artistTarget : String(a.id) === String(artistTarget);
+        return isMatch ? { ...a, logoUrl: '', image: '' } : a;
+      }),
     });
   };
 
@@ -1086,12 +1096,13 @@ export default function AdminPage() {
 
 
               <div className="space-y-4">
-                {config.lineup.map((artist) => {
+                {config.lineup.map((artist, artistIdx) => {
                   const logoSrc = artist.logoUrl || artist.image;
-                  const isUploading = uploadingId === artist.id;
+                  const itemKey = artist.id ? `art-${artist.id}-${artistIdx}` : `art-idx-${artistIdx}`;
+                  const isUploading = uploadingId === String(artistIdx) || uploadingId === artist.id;
                   return (
                     <div
-                      key={artist.id}
+                      key={itemKey}
                       className="p-5 rounded-2xl border border-zinc-200 bg-zinc-50/50 space-y-4 shadow-2xs"
                     >
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -1100,7 +1111,7 @@ export default function AdminPage() {
                           <input
                             type="text"
                             value={artist.name}
-                            onChange={(e) => handleUpdateArtist(artist.id, 'name', e.target.value)}
+                            onChange={(e) => handleUpdateArtist(artistIdx, 'name', e.target.value)}
                             placeholder="Contoh: peterpan ft. ARMAND MAULANA"
                             className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 text-sm font-semibold"
                           />
@@ -1110,7 +1121,7 @@ export default function AdminPage() {
                           <label className="block text-[11px] font-semibold text-zinc-500 uppercase">Phase Lineup</label>
                           <select
                             value={artist.phaseId || (config.lineupPhases?.[0]?.id || 'phase-1')}
-                            onChange={(e) => handleUpdateArtist(artist.id, 'phaseId', e.target.value)}
+                            onChange={(e) => handleUpdateArtist(artistIdx, 'phaseId', e.target.value)}
                             className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 text-sm font-medium"
                           >
                             {(config.lineupPhases || [{ id: 'phase-1', name: 'Phase 1' }]).map((p) => (
@@ -1125,7 +1136,7 @@ export default function AdminPage() {
                           <label className="block text-[11px] font-bold text-pink-600 uppercase">Ukuran Card (Bento Grid)</label>
                           <select
                             value={artist.cardSize || 'normal'}
-                            onChange={(e) => handleUpdateArtist(artist.id, 'cardSize', e.target.value)}
+                            onChange={(e) => handleUpdateArtist(artistIdx, 'cardSize', e.target.value)}
                             className="w-full px-3 py-2 rounded-xl border border-pink-200 bg-pink-50/50 text-zinc-900 text-sm font-bold focus:ring-pink-500"
                           >
                             <option value="normal">▫️ Normal (1x1)</option>
@@ -1139,7 +1150,7 @@ export default function AdminPage() {
                           <label className="block text-[11px] font-semibold text-zinc-500 uppercase">Hari Performance (Opsional)</label>
                           <select
                             value={artist.day || 'Day 1'}
-                            onChange={(e) => handleUpdateArtist(artist.id, 'day', e.target.value)}
+                            onChange={(e) => handleUpdateArtist(artistIdx, 'day', e.target.value)}
                             className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-white text-zinc-900 text-sm"
                           >
                             <option value="Day 1">Day 1</option>
@@ -1166,7 +1177,7 @@ export default function AdminPage() {
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
-                                  handleLogoUpload(artist.id, file);
+                                  handleLogoUpload(artistIdx, file);
                                 }
                               }}
                             />
@@ -1180,9 +1191,9 @@ export default function AdminPage() {
                             onChange={(e) => {
                               const val = e.target.value;
                               if (!val) {
-                                handleRemoveLogo(artist.id);
+                                handleRemoveLogo(artistIdx);
                               } else {
-                                handleUpdateArtist(artist.id, 'logoUrl', val);
+                                handleUpdateArtist(artistIdx, 'logoUrl', val);
                               }
                             }}
                             placeholder="/uploads/my_logo.png atau https://..."
@@ -1214,7 +1225,7 @@ export default function AdminPage() {
 
                             <button
                               type="button"
-                              onClick={() => handleRemoveLogo(artist.id)}
+                              onClick={() => handleRemoveLogo(artistIdx)}
                               className="text-xs text-red-500 hover:text-red-700 font-semibold px-2 py-1 rounded-lg hover:bg-red-50 transition-colors"
                             >
                               Hapus Logo
@@ -1225,7 +1236,7 @@ export default function AdminPage() {
 
                       <div className="flex items-center justify-end pt-2 border-t border-zinc-200">
                         <button
-                          onClick={() => handleRemoveArtist(artist.id)}
+                          onClick={() => handleRemoveArtist(artistIdx)}
                           className="inline-flex items-center gap-1 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 rounded-xl font-medium transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5" /> Hapus Artis

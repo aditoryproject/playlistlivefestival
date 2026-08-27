@@ -374,28 +374,32 @@ export function sanitizeConfig(cfg: SiteConfig): SiteConfig {
     c.venueName = 'Bandung';
   }
 
-  // Ensure c.lineup exists and has valid unique string IDs & cardSize defaults
+  // Ensure c.lineup exists and has valid deterministic unique string IDs & cardSize defaults
   if (!c.lineup || !Array.isArray(c.lineup)) {
     c.lineup = [...defaultConfig.lineup];
-  } else {
-    const seenIds = new Set<string>();
-    c.lineup = c.lineup.map((art, idx) => {
-      let validId = art.id ? String(art.id) : String(idx + 1);
-      if (seenIds.has(validId)) {
-        validId = `artist-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`;
-      }
-      seenIds.add(validId);
-
-      const matchDef = defaultConfig.lineup.find(
-        (d) => d.name.toLowerCase().trim() === art.name.toLowerCase().trim()
-      );
-      return {
-        ...art,
-        id: validId,
-        cardSize: art.cardSize || matchDef?.cardSize || 'normal',
-      };
-    });
   }
+
+  const seenIds = new Set<string>();
+  c.lineup = c.lineup.map((art, idx) => {
+    const rawId = art.id ? String(art.id).trim() : '';
+    const nameSlug = (art.name || '').toLowerCase().replace(/[^a-z0-9]/g, '') || 'artist';
+    let validId = rawId;
+
+    // If ID is missing, empty, or duplicate, assign a deterministic stable unique ID
+    if (!validId || seenIds.has(validId)) {
+      validId = `artist-${idx + 1}-${nameSlug}`;
+    }
+    seenIds.add(validId);
+
+    const matchDef = defaultConfig.lineup.find(
+      (d) => d.name.toLowerCase().trim() === art.name.toLowerCase().trim()
+    );
+    return {
+      ...art,
+      id: validId,
+      cardSize: art.cardSize || matchDef?.cardSize || 'normal',
+    };
+  });
 
   return c;
 }
