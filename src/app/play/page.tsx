@@ -610,15 +610,16 @@ export default function AdminPage() {
 
       const data = await res.json();
       if (data.success && data.url) {
-        if (config) {
-          setConfig({
-            ...config,
-            lineup: config.lineup.map((a, idx) => {
+        setConfig((prevConfig) => {
+          if (!prevConfig) return prevConfig;
+          return {
+            ...prevConfig,
+            lineup: prevConfig.lineup.map((a, idx) => {
               const isMatch = typeof artistTarget === 'number' ? idx === artistTarget : String(a.id) === String(artistTarget);
               return isMatch ? { ...a, logoUrl: data.url, image: '' } : a;
             }),
-          });
-        }
+          };
+        });
       } else {
         alert(data.error || 'Gagal mengunggah logo');
       }
@@ -633,7 +634,6 @@ export default function AdminPage() {
 
   // Generic Upload File Handler for Site Config (ogImage, videoCoverImage, etc.)
   const handleGenericFileUpload = async (field: keyof SiteConfig, file: File) => {
-    if (!config) return;
     if (file.size > 10 * 1024 * 1024) {
       alert('Ukuran file terlalu besar. Maksimal 10 MB.');
       return;
@@ -650,7 +650,7 @@ export default function AdminPage() {
 
       const data = await res.json();
       if (data.success && data.url) {
-        setConfig({ ...config, [field]: data.url });
+        setConfig((prevConfig) => (prevConfig ? { ...prevConfig, [field]: data.url } : prevConfig));
       } else {
         alert(data.error || 'Gagal mengunggah file gambar');
       }
@@ -664,58 +664,66 @@ export default function AdminPage() {
 
   // Artist lineup manager handlers
   const handleAddArtist = (defaultPhaseId?: string) => {
-    if (!config) return;
-    const firstPhaseId = defaultPhaseId || (config.lineupPhases && config.lineupPhases.length > 0 ? config.lineupPhases[0].id : 'phase-1');
-    const newArtist: Artist = {
-      id: `artist-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      name: 'Nama Artis / Band Baru',
-      genre: 'Pop',
-      day: 'Day 1',
-      time: '19:00 WIB',
-      phaseId: firstPhaseId,
-      featured: false,
-      cardSize: 'normal',
-    };
-    setConfig({ ...config, lineup: [...config.lineup, newArtist] });
+    setConfig((prevConfig) => {
+      if (!prevConfig) return prevConfig;
+      const firstPhaseId = defaultPhaseId || (prevConfig.lineupPhases && prevConfig.lineupPhases.length > 0 ? prevConfig.lineupPhases[0].id : 'phase-1');
+      const newArtist: Artist = {
+        id: `artist-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        name: 'Nama Artis / Band Baru',
+        genre: 'Pop',
+        day: 'Day 1',
+        time: '19:00 WIB',
+        phaseId: firstPhaseId,
+        featured: false,
+        cardSize: 'normal',
+      };
+      return { ...prevConfig, lineup: [...prevConfig.lineup, newArtist] };
+    });
   };
 
   const handleRemoveArtist = (artistTarget: string | number) => {
-    if (!config) return;
-    setConfig({
-      ...config,
-      lineup: config.lineup.filter((a, idx) => {
-        if (typeof artistTarget === 'number') return idx !== artistTarget;
-        return String(a.id) !== String(artistTarget);
-      }),
+    setConfig((prevConfig) => {
+      if (!prevConfig) return prevConfig;
+      return {
+        ...prevConfig,
+        lineup: prevConfig.lineup.filter((a, idx) => {
+          if (typeof artistTarget === 'number') return idx !== artistTarget;
+          return String(a.id) !== String(artistTarget);
+        }),
+      };
     });
   };
 
   const handleUpdateArtist = (artistTarget: string | number, field: keyof Artist, value: any) => {
-    if (!config) return;
-    setConfig({
-      ...config,
-      lineup: config.lineup.map((a, idx) => {
-        const isMatch = typeof artistTarget === 'number' ? idx === artistTarget : String(a.id) === String(artistTarget);
-        if (isMatch) {
-          const updated = { ...a, [field]: value };
-          if (field === 'logoUrl' && value) {
-            updated.image = '';
+    setConfig((prevConfig) => {
+      if (!prevConfig) return prevConfig;
+      return {
+        ...prevConfig,
+        lineup: prevConfig.lineup.map((a, idx) => {
+          const isMatch = typeof artistTarget === 'number' ? idx === artistTarget : String(a.id) === String(artistTarget);
+          if (isMatch) {
+            const updated = { ...a, [field]: value };
+            if (field === 'logoUrl' && value) {
+              updated.image = '';
+            }
+            return updated;
           }
-          return updated;
-        }
-        return a;
-      }),
+          return a;
+        }),
+      };
     });
   };
 
   const handleRemoveLogo = (artistTarget: string | number) => {
-    if (!config) return;
-    setConfig({
-      ...config,
-      lineup: config.lineup.map((a, idx) => {
-        const isMatch = typeof artistTarget === 'number' ? idx === artistTarget : String(a.id) === String(artistTarget);
-        return isMatch ? { ...a, logoUrl: '', image: '' } : a;
-      }),
+    setConfig((prevConfig) => {
+      if (!prevConfig) return prevConfig;
+      return {
+        ...prevConfig,
+        lineup: prevConfig.lineup.map((a, idx) => {
+          const isMatch = typeof artistTarget === 'number' ? idx === artistTarget : String(a.id) === String(artistTarget);
+          return isMatch ? { ...a, logoUrl: '', image: '' } : a;
+        }),
+      };
     });
   };
 
@@ -1166,10 +1174,14 @@ export default function AdminPage() {
                         </label>
                         
                         <div className="flex flex-wrap items-center gap-3">
-                          <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold cursor-pointer transition-colors shadow-xs">
+                          <label
+                            htmlFor={`logo-file-input-${artistIdx}`}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold cursor-pointer transition-colors shadow-xs"
+                          >
                             <Upload className="w-3.5 h-3.5" />
                             <span>{isUploading ? 'Mengunggah...' : 'Pilih File Logo...'}</span>
                             <input
+                              id={`logo-file-input-${artistIdx}`}
                               type="file"
                               accept="image/*"
                               disabled={isUploading}
@@ -1179,6 +1191,7 @@ export default function AdminPage() {
                                 if (file) {
                                   handleLogoUpload(artistIdx, file);
                                 }
+                                e.target.value = '';
                               }}
                             />
                           </label>
