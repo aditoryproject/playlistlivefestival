@@ -546,6 +546,10 @@ export default function AdminPage() {
     setLoading(true);
     setSaveSuccess(false);
 
+    // Snapshot the current client lineup BEFORE the async save
+    // so the server response can NEVER overwrite what the user sees
+    const clientLineupSnapshot = config.lineup.map((a) => ({ ...a }));
+
     try {
       const res = await fetch('/api/config', {
         method: 'POST',
@@ -554,9 +558,24 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setConfig(data.config);
+        // IMPORTANT: do NOT use setConfig(data.config).
+        // The server may return stale/sanitized data from MySQL that conflicts
+        // with what the user intentionally set in this session.
+        // Instead, keep the client's own lineup state as the truth,
+        // and only take non-lineup fields from the server response.
+        if (data.config) {
+          setConfig((prev) => {
+            if (!prev) return prev;
+            return {
+              ...data.config,        // take server-confirmed non-lineup fields
+              lineup: clientLineupSnapshot, // keep the client's lineup exactly as-is
+            };
+          });
+        }
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
+      } else {
+        alert('Gagal menyimpan: ' + (data.error || 'Unknown error'));
       }
     } catch (err) {
       alert('Gagal menyimpan konfigurasi');

@@ -379,46 +379,27 @@ export function sanitizeConfig(cfg: SiteConfig): SiteConfig {
     c.lineup = [...defaultConfig.lineup];
   }
 
-  // STEP 1: Deduplicate lineup by artist name (keep first occurrence, discard duplicates)
-  // This fixes the "two BURGERKILL" problem caused by corrupt MySQL data
+  // Deduplicate lineup by artist name (keep first occurrence, discard duplicates)
+  // This removes the "two BURGERKILL" corrupt data problem
   const seenNames = new Set<string>();
   c.lineup = c.lineup.filter((art) => {
     const nameKey = (art.name || '').toUpperCase().trim();
-    if (!nameKey || nameKey === 'NAMA ARTIS / BAND BARU' || seenNames.has(nameKey)) {
-      return false; // skip unnamed placeholder or duplicate band
-    }
+    if (!nameKey || seenNames.has(nameKey)) return false;
     seenNames.add(nameKey);
     return true;
   });
 
-  // STEP 2: Assign deterministic stable IDs and fix cross-contaminated logos
+  // Assign deterministic stable IDs
   const seenIds = new Set<string>();
-  const seenLogos = new Map<string, string>(); // logoUrl -> artistName
-
   c.lineup = c.lineup.map((art, idx) => {
     const rawId = art.id ? String(art.id).trim() : '';
-    const nameUpper = (art.name || '').toUpperCase().trim();
     const nameSlug = (art.name || '').toLowerCase().replace(/[^a-z0-9]/g, '') || 'artist';
     let validId = rawId;
 
-    // If ID is missing, empty, or duplicate, assign a deterministic stable unique ID
     if (!validId || seenIds.has(validId)) {
       validId = `artist-${idx + 1}-${nameSlug}`;
     }
     seenIds.add(validId);
-
-    let logoUrl = art.logoUrl || art.image || '';
-
-    // Prevent duplicate logo URL assignment across different bands (cross-contamination fix)
-    if (logoUrl) {
-      const existingOwner = seenLogos.get(logoUrl);
-      if (existingOwner && existingOwner !== nameUpper) {
-        // Another band already owns this logo URL -> clear it for this band
-        logoUrl = '';
-      } else {
-        seenLogos.set(logoUrl, nameUpper);
-      }
-    }
 
     const matchDef = defaultConfig.lineup.find(
       (d) => d.name.toLowerCase().trim() === art.name.toLowerCase().trim()
@@ -426,7 +407,7 @@ export function sanitizeConfig(cfg: SiteConfig): SiteConfig {
     return {
       ...art,
       id: validId,
-      logoUrl,
+      logoUrl: art.logoUrl || '',
       image: '',
       cardSize: art.cardSize || matchDef?.cardSize || 'normal',
     };
