@@ -379,6 +379,19 @@ export function sanitizeConfig(cfg: SiteConfig): SiteConfig {
     c.lineup = [...defaultConfig.lineup];
   }
 
+  // STEP 1: Deduplicate lineup by artist name (keep first occurrence, discard duplicates)
+  // This fixes the "two BURGERKILL" problem caused by corrupt MySQL data
+  const seenNames = new Set<string>();
+  c.lineup = c.lineup.filter((art) => {
+    const nameKey = (art.name || '').toUpperCase().trim();
+    if (!nameKey || nameKey === 'NAMA ARTIS / BAND BARU' || seenNames.has(nameKey)) {
+      return false; // skip unnamed placeholder or duplicate band
+    }
+    seenNames.add(nameKey);
+    return true;
+  });
+
+  // STEP 2: Assign deterministic stable IDs and fix cross-contaminated logos
   const seenIds = new Set<string>();
   const seenLogos = new Map<string, string>(); // logoUrl -> artistName
 
@@ -396,19 +409,12 @@ export function sanitizeConfig(cfg: SiteConfig): SiteConfig {
 
     let logoUrl = art.logoUrl || art.image || '';
 
-    // Fix known cross-contamination: BURGERKILL should never have KOTAK's uploaded logo URL
-    if (nameUpper.includes('BURGERKILL') && (logoUrl.includes('f427efcd') || logoUrl.includes('273ca9db'))) {
-      logoUrl = '';
-    }
-
-    // Prevent duplicate logo URL assignment across different bands
+    // Prevent duplicate logo URL assignment across different bands (cross-contamination fix)
     if (logoUrl) {
       const existingOwner = seenLogos.get(logoUrl);
       if (existingOwner && existingOwner !== nameUpper) {
-        // Different band sharing same logo URL -> clear contaminated logo
-        if (!nameUpper.includes(existingOwner) && !existingOwner.includes(nameUpper)) {
-          logoUrl = '';
-        }
+        // Another band already owns this logo URL -> clear it for this band
+        logoUrl = '';
       } else {
         seenLogos.set(logoUrl, nameUpper);
       }
@@ -421,7 +427,7 @@ export function sanitizeConfig(cfg: SiteConfig): SiteConfig {
       ...art,
       id: validId,
       logoUrl,
-      image: logoUrl ? '' : art.image,
+      image: '',
       cardSize: art.cardSize || matchDef?.cardSize || 'normal',
     };
   });
@@ -488,9 +494,18 @@ export function saveSiteConfig(newConfig: Partial<SiteConfig>): SiteConfig {
  * Async config saver: updates MySQL DB AND syncs to local JSON file
  */
 export async function saveSiteConfigAsync(newConfig: Partial<SiteConfig>): Promise<SiteConfig> {
-
+  // IMPORTANT: read current config only for non-lineup fields.
+  // The incoming newConfig.lineup (if provided) MUST win completely — never merge with stale DB lineup.
   const current = await getSiteConfigAsync();
-  const updated = sanitizeConfig({ ...current, ...newConfig });
+
+  const merged: Partial<SiteConfig> = { ...current, ...newConfig };
+
+  // If the caller provides an explicit lineup array, use it as-is (do not let old DB data bleed in)
+  if (Array.isArray(newConfig.lineup)) {
+    merged.lineup = newConfig.lineup;
+  }
+
+  const updated = sanitizeConfig(merged as SiteConfig);
 
   // Save to MySQL DB if available
   await saveDbSiteConfig(updated);
