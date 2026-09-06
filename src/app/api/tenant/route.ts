@@ -136,21 +136,14 @@ export async function POST(req: NextRequest) {
       responses,
     });
 
-    // Helper to format absolute URL for file uploads, while preserving plain text / social handles
-    const formatLinkOrUrl = (rawVal?: string) => {
+    // Helper to preserve exact social media handle or URL without prepending playlist domain
+    const cleanSocialOrText = (rawVal?: string) => {
       if (!rawVal) return '';
-      const val = rawVal.trim();
-      // Already a full web link (e.g. https://instagram.com/... or https://drive.google.com/...)
-      if (val.startsWith('http://') || val.startsWith('https://')) return val;
-      // Internal uploaded file (e.g. /uploads/...)
-      if (val.startsWith('/uploads/') || (val.startsWith('/') && !val.includes(' '))) {
-        const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
-        const proto = req.headers.get('x-forwarded-proto') || 'https';
-        const baseUrl = host ? `${proto}://${host}` : '';
-        return `${baseUrl}${val}`;
-      }
-      // Social media username, handle, or plain text -> preserve exactly as typed!
-      return val;
+      let val = String(rawVal).trim();
+      // Remove any unwanted playlist/playmaker host prefix if previously attached
+      val = val.replace(/^https?:\/\/[^\/]*playlist[^\/]*\//i, '');
+      val = val.replace(/^https?:\/\/[^\/]*letsplaymaker[^\/]*\//i, '');
+      return val.trim();
     };
 
     // 2. Fetch site config for WA group URL & Google Sheets Webhook URL
@@ -164,7 +157,7 @@ export async function POST(req: NextRequest) {
         label: r.label,
         value:
           r.id === 'instagramCatalog' || (r.label && r.label.toLowerCase().includes('instagram'))
-            ? formatLinkOrUrl(r.value)
+            ? cleanSocialOrText(r.value)
             : r.value,
       }));
 
@@ -178,7 +171,7 @@ export async function POST(req: NextRequest) {
           category: application.category,
           menuDescription: application.menuDescription,
           priceRange: application.priceRange,
-          instagramCatalog: formatLinkOrUrl(application.instagramCatalog),
+          instagramCatalog: cleanSocialOrText(application.instagramCatalog),
           picName: application.picName,
           whatsapp: application.whatsapp,
           email: application.email,
