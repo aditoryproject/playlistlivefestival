@@ -258,7 +258,7 @@ export function TenantModal({ isOpen, onClose, title, subtitle, config }: Tenant
               {/* DENAH LAYOUT BOOTH TENANT */}
               <TenantLayoutViewer
                 imageSrc="/layout-tenant.png"
-                versionTitle="LAYOUT TENANT PLAYLIST REWIND"
+                versionTitle="LAYOUT TENANT"
                 compact={true}
               />
 
