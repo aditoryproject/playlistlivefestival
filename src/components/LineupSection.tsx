@@ -45,10 +45,22 @@ export default function LineupSection({
     const logoSrc = (!isFailed && rawLogoSrc) ? rawLogoSrc : null;
     const nameLower = artist.name.toLowerCase();
 
+    const isLarge = artist.cardSize === 'large' || nameLower.includes('gigi');
+    const isExtraWide = artist.cardSize === 'extrawide' || nameLower.includes('peterpan');
+    const isWide = artist.cardSize === 'wide' || nameLower.includes('andra');
+
+    const cardPadding = isLarge
+      ? 'p-2 sm:p-5 md:p-6'
+      : isExtraWide
+      ? 'p-2 sm:p-4 md:p-5'
+      : isWide
+      ? 'p-1.5 sm:p-3 md:p-4'
+      : 'p-1 sm:p-2.5 md:p-3';
+
     return (
       <div
         key={artist.id}
-        className={`group relative overflow-hidden rounded-xl sm:rounded-3xl bg-gradient-to-b from-white via-white to-zinc-50/90 border border-zinc-200/90 shadow-xs sm:shadow-md shadow-zinc-200/40 p-1 sm:p-4 md:p-5 flex flex-col items-center justify-center hover:shadow-xl hover:scale-[1.02] hover:border-pink-300/80 transition-all duration-300 cursor-pointer ${customClasses}`}
+        className={`group relative overflow-hidden rounded-xl sm:rounded-3xl bg-gradient-to-b from-white via-white to-zinc-50/90 border border-zinc-200/90 shadow-xs sm:shadow-md shadow-zinc-200/40 ${cardPadding} flex flex-col items-center justify-center hover:shadow-xl hover:scale-[1.02] hover:border-pink-300/80 transition-all duration-300 cursor-pointer ${customClasses}`}
       >
         {/* Subtle shine hover effect */}
         <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
@@ -58,10 +70,18 @@ export default function LineupSection({
             src={logoSrc}
             alt={artist.name}
             onError={() => handleImageError(artist.id)}
-            className="max-h-8 sm:max-h-16 md:max-h-24 max-w-full object-contain filter group-hover:scale-105 transition-transform duration-300"
+            className={`${
+              isLarge
+                ? 'max-h-[88%] max-w-[88%] sm:max-h-[85%] sm:max-w-[85%]'
+                : isExtraWide
+                ? 'max-h-12 sm:max-h-20 md:max-h-24 max-w-[92%]'
+                : isWide
+                ? 'max-h-10 sm:max-h-16 md:max-h-20 max-w-[92%]'
+                : 'max-h-10 sm:max-h-16 md:max-h-20 max-w-[94%]'
+            } w-auto object-contain filter group-hover:scale-105 transition-transform duration-300`}
           />
         ) : (
-          <div className="text-center px-0.5 sm:px-2 flex items-center justify-center w-full overflow-hidden">
+          <div className="text-center px-0.5 sm:px-1 flex items-center justify-center w-full overflow-hidden">
             {/* Custom stylized logo font typography matching original poster */}
             {nameLower.includes('peterpan') && (
               <span className="font-sans font-black text-xl sm:text-4xl md:text-5xl text-zinc-950 lowercase tracking-tighter group-hover:text-pink-600 transition-colors">
@@ -100,7 +120,7 @@ export default function LineupSection({
               </div>
             )}
             {nameLower.includes('gigi') && (
-              <span className="font-serif italic font-black text-3xl sm:text-6xl md:text-7xl text-zinc-950 tracking-tighter group-hover:text-pink-600 transition-colors leading-none">
+              <span className="font-serif italic font-black text-5xl sm:text-8xl md:text-9xl text-zinc-950 tracking-tighter group-hover:text-pink-600 transition-colors leading-none">
                 Gigi
               </span>
             )}
@@ -119,7 +139,7 @@ export default function LineupSection({
                 RONY<br />PARULIAN
               </span>
             )}
-            {nameLower.includes('petto') || nameLower.includes('letto') && (
+            {nameLower.includes('letto') && (
               <span className="font-sans font-black text-[7px] sm:text-xs bg-zinc-950 text-white rounded-full px-2 py-0.5 sm:px-4 sm:py-1.5 uppercase group-hover:bg-pink-600 transition-colors">
                 Letto
               </span>
@@ -130,7 +150,7 @@ export default function LineupSection({
               </span>
             )}
             {nameLower.includes('kangen') && (
-              <span className="font-sans font-black text-[6.5px] sm:text-[10px] md:text-xs tracking-tight sm:tracking-widest text-zinc-950 uppercase group-hover:text-pink-600 transition-colors">
+              <span className="font-sans font-black text-[8px] xs:text-[10px] sm:text-xs md:text-sm tracking-tight sm:tracking-wider text-zinc-950 uppercase group-hover:text-pink-600 transition-colors whitespace-nowrap">
                 KANGEN BAND
               </span>
             )}
