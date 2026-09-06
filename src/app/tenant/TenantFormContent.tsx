@@ -268,33 +268,18 @@ export default function TenantFormContent({
           <div className="space-y-2">
             <h2 className="text-2xl font-black text-zinc-900">Pendaftaran Tenant Berhasil!</h2>
             <p className="text-sm text-zinc-600 leading-relaxed max-w-md mx-auto">
-              Terima kasih <strong className="text-zinc-900">{submittedData?.picName}</strong>. Formulir pendaftaran untuk <strong className="text-amber-700">{submittedData?.brandName}</strong> telah kami terima.
+              Terima kasih <strong className="text-zinc-900">{submittedData?.picName || 'Bapak/Ibu'}</strong>. Formulir pendaftaran booth tenant untuk <strong className="text-amber-700">{submittedData?.brandName}</strong> telah berhasil kami terima dan tersimpan secara aman.
             </p>
           </div>
 
-          <div className="bg-amber-50 border border-amber-200 text-amber-900 text-xs p-5 rounded-2xl text-left space-y-3">
+          <div className="bg-amber-50 border border-amber-200 text-amber-900 text-xs p-5 rounded-2xl text-left space-y-2">
             <p className="font-bold text-amber-950 flex items-center gap-1.5 text-sm">
               <Sparkles className="w-4 h-4 text-amber-600" />
-              Langkah Selanjutnya:
+              Status Pendaftaran:
             </p>
             <p className="leading-relaxed">
-              Silakan bergabung ke <strong>Grup WhatsApp Resmi Tenant F&B</strong> untuk mendapatkan informasi mengenai jadwal kurasi, technical meeting, dan denah layout booth.
+              Tim kurasi festival Playlist Rewind akan memverifikasi data dan proposal menu Anda. Informasi hasil kurasi dan petunjuk teknis selanjutnya akan dikonfirmasikan langsung melalui kontak WhatsApp & Email yang Anda cantumkan.
             </p>
-
-            {waGroupUrl && (
-              <div className="pt-2">
-                <a
-                  href={waGroupUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => triggerJoinTenantWaGroupPixels()}
-                  className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg text-sm"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  <span>Gabung WhatsApp Group Tenant F&B</span>
-                </a>
-              </div>
-            )}
           </div>
 
           <div className="pt-2">

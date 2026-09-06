@@ -209,29 +209,14 @@ export function TenantModal({ isOpen, onClose, title, subtitle, config }: Tenant
                 </p>
               </div>
 
-              <div className="bg-amber-50 border border-amber-200 text-amber-900 text-xs p-4 rounded-xl text-left space-y-2">
+              <div className="bg-amber-50 border border-amber-200 text-amber-900 text-xs p-4 rounded-xl text-left space-y-1.5">
                 <p className="font-bold text-amber-950 flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-amber-600" />
-                  Gabung Grup WhatsApp Tenant:
+                  Status Pendaftaran:
                 </p>
                 <p className="text-[11px] text-zinc-700 leading-relaxed">
-                  Dapatkan update informasi denah booth, jadwal kurasi, dan koordinasi teknis langsung via grup WhatsApp panitia.
+                  Tim kurasi festival Playlist Rewind akan memverifikasi data dan proposal menu Anda. Informasi hasil kurasi serta petunjuk teknis selanjutnya akan dikonfirmasikan langsung melalui kontak WhatsApp & Email yang Anda cantumkan.
                 </p>
-
-                {waGroupUrl && (
-                  <div className="pt-2">
-                    <a
-                      href={waGroupUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => triggerJoinTenantWaGroupPixels()}
-                      className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-sm text-xs"
-                    >
-                      <MessageSquare className="w-4 h-4" />
-                      <span>Gabung WhatsApp Group Tenant F&B</span>
-                    </a>
-                  </div>
-                )}
               </div>
 
               <div className="pt-2 flex items-center justify-center gap-4">
