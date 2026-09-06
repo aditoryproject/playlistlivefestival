@@ -21,7 +21,7 @@ import {
   triggerTenantSubmitPixels,
   triggerJoinTenantWaGroupPixels,
 } from '@/lib/pixels';
-import { SiteConfig, TenantFormField, getDefaultTenantFormFields } from '@/lib/config';
+import { SiteConfig, TenantFormField, getDefaultTenantFormFields } from '@/lib/types';
 
 interface TenantFormContentProps {
   config: SiteConfig;

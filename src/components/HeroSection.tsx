@@ -2,7 +2,7 @@
 
 import React from 'react';
 import BuyNowButton from './BuyNowButton';
-import { SiteConfig } from '@/lib/config';
+import { SiteConfig } from '@/lib/types';
 import { Sparkles, MapPin, Calendar } from 'lucide-react';
 import { CompensationClientWrapper } from './CompensationClientWrapper';
 

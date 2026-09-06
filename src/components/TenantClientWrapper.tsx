@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { SiteConfig } from '@/lib/config';
+import { SiteConfig } from '@/lib/types';
 import { TenantSection } from './TenantSection';
 import { TenantModal } from './TenantModal';
 import { triggerTenantClickPixels } from '@/lib/pixels';

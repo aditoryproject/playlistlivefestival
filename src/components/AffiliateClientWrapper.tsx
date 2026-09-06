@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { SiteConfig } from '@/lib/config';
+import { SiteConfig } from '@/lib/types';
 import { AffiliateSection } from './AffiliateSection';
 import { AffiliateModal } from './AffiliateModal';
 import { triggerAffiliateClickPixels } from '@/lib/pixels';

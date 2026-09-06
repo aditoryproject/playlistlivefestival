@@ -16,7 +16,7 @@ import {
   triggerCompensationSubmitPixels,
   triggerJoinCompensationWaGroupPixels,
 } from '@/lib/pixels';
-import { SiteConfig } from '@/lib/config';
+import { SiteConfig } from '@/lib/types';
 
 interface CompensationFormContentProps {
   config: SiteConfig;

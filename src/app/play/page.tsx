@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { SiteConfig, Artist, LineupPhase, TenantFormField, FormFieldType, getDefaultTenantFormFields } from '@/lib/config';
+import { SiteConfig, Artist, LineupPhase, TenantFormField, FormFieldType, getDefaultTenantFormFields } from '@/lib/types';
 import {
   Lock,
   Save,

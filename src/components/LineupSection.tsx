@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Artist, LineupPhase } from '@/lib/config';
+import { Artist, LineupPhase } from '@/lib/types';
 
 interface LineupSectionProps {
   lineup: Artist[];

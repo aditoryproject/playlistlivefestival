@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { SiteConfig } from '@/lib/config';
+import { SiteConfig } from '@/lib/types';
 import { CompensationSection } from './CompensationSection';
 import { CompensationModal } from './CompensationModal';
 import { triggerCompensationClickPixels } from '@/lib/pixels';

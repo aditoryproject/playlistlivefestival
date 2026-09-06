@@ -21,7 +21,7 @@ import {
   Clock,
   Lock,
 } from 'lucide-react';
-import { SiteConfig } from '@/lib/config';
+import { SiteConfig } from '@/lib/types';
 
 interface AffiliateFormContentProps {
   config: SiteConfig;
