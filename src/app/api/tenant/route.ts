@@ -159,12 +159,14 @@ export async function POST(req: NextRequest) {
 
     // 3. Optional: Sync to Google Sheets Webhook in background
     if (webhookUrl && webhookUrl.startsWith('http')) {
-      // Create a flat dictionary of dynamic fields for Google Sheets
-      const dynamicFieldsDict: Record<string, any> = {};
-      responses.forEach((r) => {
-        dynamicFieldsDict[`field_${r.id}`] = r.value;
-        dynamicFieldsDict[r.label] = r.value;
-      });
+      const sanitizedResponses = responses.map((r) => ({
+        id: r.id,
+        label: r.label,
+        value:
+          r.id === 'instagramCatalog' || (r.label && r.label.toLowerCase().includes('instagram'))
+            ? formatLinkOrUrl(r.value)
+            : r.value,
+      }));
 
       fetch(webhookUrl, {
         method: 'POST',
@@ -184,15 +186,8 @@ export async function POST(req: NextRequest) {
           powerRequirement: application.powerRequirement,
           equipmentList: application.equipmentList,
           eventExperience: application.eventExperience,
-          responses: responses.map((r) => ({
-            id: r.id,
-            label: r.label,
-            value: r.id === 'instagramCatalog' || (r.label && r.label.toLowerCase().includes('instagram'))
-              ? formatLinkOrUrl(r.value)
-              : r.value,
-          })),
-          responsesJson: JSON.stringify(responses),
-          ...dynamicFieldsDict,
+          responses: sanitizedResponses,
+          responsesJson: JSON.stringify(sanitizedResponses),
         }),
       }).catch((err) => {
         console.error('[Tenant Webhook] Error posting to Google Sheets:', err);
