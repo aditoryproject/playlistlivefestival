@@ -21,6 +21,7 @@ import {
   triggerJoinTenantWaGroupPixels,
 } from '@/lib/pixels';
 import { SiteConfig, TenantFormField, getDefaultTenantFormFields } from '@/lib/types';
+import TenantLayoutViewer from '@/components/TenantLayoutViewer';
 
 interface TenantModalProps {
   isOpen: boolean;
@@ -253,7 +254,15 @@ export function TenantModal({ isOpen, onClose, title, subtitle, config }: Tenant
             </div>
           ) : (
             /* FORM STATE */
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              {/* DENAH LAYOUT BOOTH TENANT VERSION 3.0 */}
+              <TenantLayoutViewer
+                imageSrc="/layout-tenant.png"
+                versionTitle="LAYOUT TENANT PLAYLIST REWIND Version 3.0"
+                compact={true}
+              />
+
+              <form onSubmit={handleSubmit} className="space-y-4">
               {errorMsg && (
                 <div className="p-3.5 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2 sticky top-0 z-10 shadow-xs">
                   <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
@@ -460,6 +469,7 @@ export function TenantModal({ isOpen, onClose, title, subtitle, config }: Tenant
                 </button>
               </div>
             </form>
+          </div>
           )}
         </div>
       </div>

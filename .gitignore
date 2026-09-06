@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+/LAYOUT TENANT_PLAYLIST REWIND Version 3.0.png
 
 # debug
 npm-debug.log*

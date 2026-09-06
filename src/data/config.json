@@ -5,7 +5,7 @@
   "topBadgeText": "Festival Experience by PLAYMAKER!",
   "ticketUrl": "https://loket.com",
   "buyButtonText": "Buy Now!",
-  "ticketStatusText": "🔥 Presale 1 • Limited Tickets Remaining!",
+  "ticketStatusText": "\ud83d\udd25 Presale 1 \u2022 Limited Tickets Remaining!",
   "showTicketStatus": true,
   "theme": "light",
   "showCountdown": false,
@@ -22,7 +22,7 @@
   "activePhaseId": "phase-1",
   "lineup": [
     {
-      "id": "artist-1-peterpan",
+      "id": "1",
       "name": "peterpan",
       "genre": "Pop Rock",
       "day": "Day 1",
@@ -30,10 +30,11 @@
       "phaseId": "phase-1",
       "featured": true,
       "cardSize": "extrawide",
-      "logoUrl": ""
+      "logoUrl": "/uploads/4f25c274-43de-4e0b-b49d-e977e4e9ba30.png",
+      "image": ""
     },
     {
-      "id": "artist-2-burgerkill",
+      "id": "3",
       "name": "BURGERKILL",
       "genre": "Metalcore",
       "day": "Day 2",
@@ -41,7 +42,8 @@
       "phaseId": "phase-1",
       "featured": true,
       "cardSize": "normal",
-      "logoUrl": ""
+      "logoUrl": "/uploads/38f096cb-264d-4bcf-b2f3-d6685ea99bd1.png",
+      "image": ""
     },
     {
       "id": "artist-3-kotak",
@@ -52,10 +54,11 @@
       "phaseId": "phase-1",
       "featured": false,
       "cardSize": "normal",
-      "logoUrl": "/uploads/f427efcd-9151-4744-81f9-1198300fbcd9.png"
+      "logoUrl": "/uploads/a8ab2728-fa90-4b12-8d14-fd73904ef877.png",
+      "image": ""
     },
     {
-      "id": "artist-4-geisha",
+      "id": "4",
       "name": "GEISHA",
       "genre": "Pop",
       "day": "Day 2",
@@ -63,10 +66,11 @@
       "phaseId": "phase-1",
       "featured": false,
       "cardSize": "normal",
-      "logoUrl": ""
+      "logoUrl": "",
+      "image": ""
     },
     {
-      "id": "artist-5-perunggu",
+      "id": "5",
       "name": "PERUNGGU",
       "genre": "Indie Rock",
       "day": "Day 1",
@@ -74,10 +78,11 @@
       "phaseId": "phase-1",
       "featured": true,
       "cardSize": "normal",
-      "logoUrl": ""
+      "logoUrl": "",
+      "image": ""
     },
     {
-      "id": "artist-6-enau",
+      "id": "6",
       "name": "enau",
       "genre": "Folk Pop",
       "day": "Day 1",
@@ -85,10 +90,11 @@
       "phaseId": "phase-1",
       "featured": false,
       "cardSize": "normal",
-      "logoUrl": ""
+      "logoUrl": "/uploads/2b30b938-9422-46d8-b0a9-1a5a4fb6ec48.png",
+      "image": ""
     },
     {
-      "id": "artist-7-charlysetiaband",
+      "id": "7",
       "name": "Charly SETIA BAND",
       "genre": "Pop Rock",
       "day": "Day 1",
@@ -96,10 +102,11 @@
       "phaseId": "phase-1",
       "featured": false,
       "cardSize": "normal",
-      "logoUrl": ""
+      "logoUrl": "",
+      "image": ""
     },
     {
-      "id": "artist-8-gigi",
+      "id": "8",
       "name": "Gigi",
       "genre": "Pop Rock",
       "day": "Day 2",
@@ -107,10 +114,11 @@
       "phaseId": "phase-1",
       "featured": true,
       "cardSize": "large",
-      "logoUrl": ""
+      "logoUrl": "/uploads/6d9b20ec-7d51-408f-b17a-b755cd7d6ecf.png",
+      "image": ""
     },
     {
-      "id": "artist-9-tfive",
+      "id": "9",
       "name": "t-Five",
       "genre": "R&B Pop",
       "day": "Day 1",
@@ -118,10 +126,11 @@
       "phaseId": "phase-1",
       "featured": false,
       "cardSize": "normal",
-      "logoUrl": ""
+      "logoUrl": "/uploads/5347a5b6-4e81-4021-98d7-c91629db72aa.png",
+      "image": ""
     },
     {
-      "id": "artist-10-armandmaulana",
+      "id": "10",
       "name": "ARMAND MAULANA",
       "genre": "Pop",
       "day": "Day 1",
@@ -129,10 +138,11 @@
       "phaseId": "phase-1",
       "featured": false,
       "cardSize": "normal",
-      "logoUrl": ""
+      "logoUrl": "/uploads/27d539f4-177c-4336-b7c2-c6cddd6aea3d.png",
+      "image": ""
     },
     {
-      "id": "artist-11-ronyparulian",
+      "id": "11",
       "name": "RONY PARULIAN",
       "genre": "Pop Rock",
       "day": "Day 1",
@@ -140,10 +150,11 @@
       "phaseId": "phase-1",
       "featured": false,
       "cardSize": "normal",
-      "logoUrl": ""
+      "logoUrl": "/uploads/01620fba-a2a5-42b0-ace8-1b49ddf06c39.png",
+      "image": ""
     },
     {
-      "id": "artist-12-letto",
+      "id": "12",
       "name": "Letto",
       "genre": "Pop Rock",
       "day": "Day 2",
@@ -151,10 +162,11 @@
       "phaseId": "phase-1",
       "featured": false,
       "cardSize": "normal",
-      "logoUrl": ""
+      "logoUrl": "/uploads/6156e8d0-998c-4f9c-a9ce-57ee911d230e.png",
+      "image": ""
     },
     {
-      "id": "artist-13-thechangcuters",
+      "id": "13",
       "name": "THE CHANGCUTERS",
       "genre": "Rock n Roll",
       "day": "Day 2",
@@ -162,10 +174,11 @@
       "phaseId": "phase-1",
       "featured": true,
       "cardSize": "normal",
-      "logoUrl": ""
+      "logoUrl": "/uploads/4f7bbf64-5ad6-4262-a467-999cf8838302.png",
+      "image": ""
     },
     {
-      "id": "artist-14-kangenband",
+      "id": "14",
       "name": "KANGEN BAND",
       "genre": "Pop Melayu",
       "day": "Day 1",
@@ -173,10 +186,11 @@
       "phaseId": "phase-1",
       "featured": true,
       "cardSize": "normal",
-      "logoUrl": ""
+      "logoUrl": "/uploads/c67fb592-f6f4-47e7-9d83-1a9650638bc8.png",
+      "image": ""
     },
     {
-      "id": "artist-15-andraandthebackbone",
+      "id": "15",
       "name": "ANDRA AND THE BACKBONE",
       "genre": "Rock",
       "day": "Day 2",
@@ -184,7 +198,8 @@
       "phaseId": "phase-1",
       "featured": true,
       "cardSize": "wide",
-      "logoUrl": ""
+      "logoUrl": "/uploads/fbc39797-e6d8-4bf5-932f-2811e3773342.png",
+      "image": ""
     }
   ],
   "showVideoSection": false,

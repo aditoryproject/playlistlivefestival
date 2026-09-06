@@ -1,5 +1,5 @@
 import React from 'react';
-import { getSiteConfig } from '@/lib/config';
+import { getSiteConfigAsync } from '@/lib/config';
 import HeroSection from '@/components/HeroSection';
 import CountdownTimer from '@/components/CountdownTimer';
 import LineupSection from '@/components/LineupSection';
@@ -15,8 +15,8 @@ import { TenantClientWrapper } from '@/components/TenantClientWrapper';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default function HomePage() {
-  const config = getSiteConfig();
+export default async function HomePage() {
+  const config = await getSiteConfigAsync();
 
   return (
     <main className="min-h-screen flex flex-col justify-between bg-white text-zinc-900">

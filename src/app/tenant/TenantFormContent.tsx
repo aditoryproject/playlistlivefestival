@@ -22,6 +22,7 @@ import {
   triggerJoinTenantWaGroupPixels,
 } from '@/lib/pixels';
 import { SiteConfig, TenantFormField, getDefaultTenantFormFields } from '@/lib/types';
+import TenantLayoutViewer from '@/components/TenantLayoutViewer';
 
 interface TenantFormContentProps {
   config: SiteConfig;
@@ -310,7 +311,14 @@ export default function TenantFormContent({
         </div>
       ) : (
         /* FORM STATE */
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          {/* DENAH LAYOUT BOOTH TENANT VERSION 3.0 */}
+          <TenantLayoutViewer
+            imageSrc="/layout-tenant.png"
+            versionTitle="LAYOUT TENANT PLAYLIST REWIND Version 3.0"
+          />
+
+          <form onSubmit={handleSubmit} className="space-y-4">
           {errorMsg && (
             <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-2xl flex items-center gap-2.5 shadow-xs sticky top-20 z-20">
               <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
@@ -522,6 +530,7 @@ export default function TenantFormContent({
             </button>
           </div>
         </form>
+      </div>
       )}
     </div>
   );
