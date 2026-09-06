@@ -312,10 +312,10 @@ export default function TenantFormContent({
       ) : (
         /* FORM STATE */
         <div>
-          {/* DENAH LAYOUT BOOTH TENANT VERSION 3.0 */}
+          {/* DENAH LAYOUT BOOTH TENANT */}
           <TenantLayoutViewer
             imageSrc="/layout-tenant.png"
-            versionTitle="LAYOUT TENANT PLAYLIST REWIND Version 3.0"
+            versionTitle="LAYOUT TENANT PLAYLIST REWIND"
           />
 
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -11,7 +11,7 @@ interface TenantLayoutViewerProps {
 
 export default function TenantLayoutViewer({
   imageSrc = '/layout-tenant.png',
-  versionTitle = 'LAYOUT TENANT PLAYLIST REWIND Version 3.0',
+  versionTitle = 'LAYOUT TENANT PLAYLIST REWIND',
   compact = false,
 }: TenantLayoutViewerProps) {
   const [isOpen, setIsOpen] = useState(false);
