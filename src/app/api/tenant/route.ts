@@ -170,7 +170,8 @@ export async function POST(req: NextRequest) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          timestamp: application.createdAt,
+          timestamp: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
+          createdAt: application.createdAt,
           brandName: application.brandName,
           category: application.category,
           menuDescription: application.menuDescription,
@@ -183,6 +184,13 @@ export async function POST(req: NextRequest) {
           powerRequirement: application.powerRequirement,
           equipmentList: application.equipmentList,
           eventExperience: application.eventExperience,
+          responses: responses.map((r) => ({
+            id: r.id,
+            label: r.label,
+            value: r.id === 'instagramCatalog' || (r.label && r.label.toLowerCase().includes('instagram'))
+              ? formatLinkOrUrl(r.value)
+              : r.value,
+          })),
           responsesJson: JSON.stringify(responses),
           ...dynamicFieldsDict,
         }),
