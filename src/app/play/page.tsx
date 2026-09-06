@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { SiteConfig, Artist, LineupPhase } from '@/lib/config';
+import { SiteConfig, Artist, LineupPhase, TenantFormField, FormFieldType, getDefaultTenantFormFields } from '@/lib/config';
 import {
   Lock,
   Save,
@@ -29,7 +29,19 @@ import {
   FileText,
   Utensils,
   Clock,
-  X
+  X,
+  ArrowUp,
+  ArrowDown,
+  CheckSquare,
+  CircleDot,
+  AlignLeft,
+  Type,
+  Hash,
+  Mail,
+  Phone,
+  ListPlus,
+  RotateCcw,
+  Sparkles,
 } from 'lucide-react';
 
 import Link from 'next/link';
@@ -46,10 +58,12 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'hero' | 'pixels' | 'seo' | 'lineup' | 'video' | 'features' | 'analytics' | 'affiliate' | 'compensation' | 'tenant'>('hero');
   const [config, setConfig] = useState<SiteConfig | null>(null);
 
-  // Tenant F&B Submissions State
+  // Tenant F&B Submissions & Form Builder State
   const [tenantList, setTenantList] = useState<any[]>([]);
   const [loadingTenant, setLoadingTenant] = useState<boolean>(false);
   const [tenantSearch, setTenantSearch] = useState<string>('');
+  const [tenantSubTab, setTenantSubTab] = useState<'builder' | 'submissions' | 'settings'>('builder');
+  const [selectedTenantDetail, setSelectedTenantDetail] = useState<any | null>(null);
 
   const fetchTenantData = async () => {
     setLoadingTenant(true);
@@ -73,10 +87,134 @@ export default function AdminPage() {
       const data = await res.json();
       if (data.success) {
         setTenantList((prev) => prev.filter((item) => String(item.id) !== String(id)));
+        if (selectedTenantDetail && String(selectedTenantDetail.id) === String(id)) {
+          setSelectedTenantDetail(null);
+        }
       }
     } catch (err) {
       console.error('Failed to delete tenant record:', err);
     }
+  };
+
+  // Form Builder Handlers for Tenant
+  const handleAddTenantField = () => {
+    if (!config) return;
+    const currentFields = config.tenantFormFields && config.tenantFormFields.length > 0
+      ? config.tenantFormFields
+      : getDefaultTenantFormFields();
+
+    const newField: TenantFormField = {
+      id: `custom_${Date.now()}`,
+      label: 'Pertanyaan Baru',
+      type: 'text',
+      placeholder: 'Jawaban Anda',
+      helperText: '',
+      required: false,
+    };
+
+    setConfig({
+      ...config,
+      tenantFormFields: [...currentFields, newField],
+    });
+  };
+
+  const handleUpdateTenantField = (index: number, updates: Partial<TenantFormField>) => {
+    if (!config) return;
+    const currentFields = [...(config.tenantFormFields && config.tenantFormFields.length > 0 ? config.tenantFormFields : getDefaultTenantFormFields())];
+    currentFields[index] = { ...currentFields[index], ...updates };
+
+    // If changing type to dropdown/radio/checkbox and no options exist, provide default options
+    if (
+      (updates.type === 'dropdown' || updates.type === 'radio' || updates.type === 'checkbox') &&
+      (!currentFields[index].options || currentFields[index].options!.length === 0)
+    ) {
+      currentFields[index].options = ['Pilihan 1', 'Pilihan 2'];
+    }
+
+    setConfig({
+      ...config,
+      tenantFormFields: currentFields,
+    });
+  };
+
+  const handleDeleteTenantField = (index: number) => {
+    if (!config) return;
+    if (!confirm('Hapus pertanyaan ini dari formulir?')) return;
+    const currentFields = [...(config.tenantFormFields && config.tenantFormFields.length > 0 ? config.tenantFormFields : getDefaultTenantFormFields())];
+    currentFields.splice(index, 1);
+    setConfig({
+      ...config,
+      tenantFormFields: currentFields,
+    });
+  };
+
+  const handleMoveTenantField = (index: number, direction: 'up' | 'down') => {
+    if (!config) return;
+    const currentFields = [...(config.tenantFormFields && config.tenantFormFields.length > 0 ? config.tenantFormFields : getDefaultTenantFormFields())];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= currentFields.length) return;
+
+    const temp = currentFields[index];
+    currentFields[index] = currentFields[targetIndex];
+    currentFields[targetIndex] = temp;
+
+    setConfig({
+      ...config,
+      tenantFormFields: currentFields,
+    });
+  };
+
+  const handleResetTenantFields = () => {
+    if (!config) return;
+    if (!confirm('Kembalikan semua pertanyaan form tenant ke template standar? Semua kustomisasi pertanyaan yang belum disimpan akan direset.')) return;
+    setConfig({
+      ...config,
+      tenantFormFields: getDefaultTenantFormFields(),
+    });
+  };
+
+  const handleAddFieldOption = (fieldIndex: number) => {
+    if (!config) return;
+    const currentFields = [...(config.tenantFormFields && config.tenantFormFields.length > 0 ? config.tenantFormFields : getDefaultTenantFormFields())];
+    const opts = currentFields[fieldIndex].options || [];
+    currentFields[fieldIndex] = {
+      ...currentFields[fieldIndex],
+      options: [...opts, `Pilihan ${opts.length + 1}`],
+    };
+    setConfig({
+      ...config,
+      tenantFormFields: currentFields,
+    });
+  };
+
+  const handleUpdateFieldOption = (fieldIndex: number, optionIndex: number, val: string) => {
+    if (!config) return;
+    const currentFields = [...(config.tenantFormFields && config.tenantFormFields.length > 0 ? config.tenantFormFields : getDefaultTenantFormFields())];
+    const opts = [...(currentFields[fieldIndex].options || [])];
+    opts[optionIndex] = val;
+    currentFields[fieldIndex] = {
+      ...currentFields[fieldIndex],
+      options: opts,
+    };
+    setConfig({
+      ...config,
+      tenantFormFields: currentFields,
+    });
+  };
+
+  const handleDeleteFieldOption = (fieldIndex: number, optionIndex: number) => {
+    if (!config) return;
+    const currentFields = [...(config.tenantFormFields && config.tenantFormFields.length > 0 ? config.tenantFormFields : getDefaultTenantFormFields())];
+    const opts = [...(currentFields[fieldIndex].options || [])];
+    opts.splice(optionIndex, 1);
+    currentFields[fieldIndex] = {
+      ...currentFields[fieldIndex],
+      options: opts,
+    };
+    setConfig({
+      ...config,
+      tenantFormFields: currentFields,
+    });
   };
 
   const formatCsvCell = (val: any): string => {
@@ -114,38 +252,38 @@ export default function AdminPage() {
       alert('Belum ada data pendaftar tenant F&B untuk diexport.');
       return;
     }
+
+    const currentFields = (config?.tenantFormFields && config.tenantFormFields.length > 0)
+      ? config.tenantFormFields
+      : getDefaultTenantFormFields();
+
     const headers = [
       'ID',
       'Waktu Daftar',
-      'Nama Brand / Usaha',
-      'Kategori',
-      'Deskripsi Menu',
-      'Kisaran Harga',
-      'Link Sosmed / Catalog',
-      'Nama PIC',
-      'WhatsApp',
-      'Email',
-      'Kota',
-      'Kebutuhan Listrik',
-      'Peralatan Listrik',
-      'Pengalaman Event',
+      ...currentFields.map((f) => f.label),
     ];
-    const rows = tenantList.map((item) => [
-      item.id,
-      item.createdAt ? new Date(item.createdAt).toLocaleString('id-ID') : '',
-      item.brandName || '',
-      item.category || '',
-      item.menuDescription || '',
-      item.priceRange || '',
-      formatFullUrl(item.instagramCatalog),
-      item.picName || '',
-      item.whatsapp || '',
-      item.email || '',
-      item.city || '',
-      item.powerRequirement || '',
-      item.equipmentList || '',
-      item.eventExperience || '',
-    ]);
+
+    const rows = tenantList.map((item) => {
+      const fieldValues = currentFields.map((f) => {
+        if (Array.isArray(item.responses) && item.responses.length > 0) {
+          const matched = item.responses.find((r: any) => r.id === f.id || r.label === f.label);
+          if (matched && matched.value !== undefined && matched.value !== null) {
+            return String(matched.value);
+          }
+        }
+        const topVal = item[f.id];
+        if (topVal !== undefined && topVal !== null) {
+          return Array.isArray(topVal) ? topVal.join(', ') : String(topVal);
+        }
+        return '';
+      });
+
+      return [
+        item.id,
+        item.createdAt ? new Date(item.createdAt).toLocaleString('id-ID') : '',
+        ...fieldValues,
+      ];
+    });
 
     downloadCsv(`tenant_fb_pendaftar_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
   };
@@ -2765,282 +2903,722 @@ export default function AdminPage() {
 
           {/* TAB 10: PENDAFTARAN TENANT F&B */}
           {activeTab === 'tenant' && (
-            <div className="space-y-8">
+            <div className="space-y-6">
               {/* Section Header */}
-              <div>
-                <h2 className="text-xl font-bold text-zinc-900">Pengaturan Pendaftaran Tenant F&B</h2>
-                <p className="text-xs text-zinc-500 mt-1">
-                  Kelola status aktif pendaftaran booth F&B, kata-kata banner, countdown timer deadline, link WA Group, serta sinkronisasi Webhook Google Sheets.
-                </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-bold text-zinc-900 flex items-center gap-2">
+                    <Utensils className="w-5 h-5 text-amber-600" />
+                    <span>Manajemen & Form Builder Tenant F&B</span>
+                  </h2>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Buat dan kustomisasi formulir pendaftaran tenant seperti Google Form, kelola data pendaftar, dan atur deadline otomatis.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <a
+                    href="/tenant"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 text-xs font-bold transition-all shadow-xs"
+                  >
+                    <Eye className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Lihat Form Publik</span>
+                    <ExternalLink className="w-3 h-3 text-amber-600" />
+                  </a>
+                </div>
               </div>
 
-              {/* Section 1: Settings */}
-              <div className="bg-zinc-50 p-5 rounded-2xl border border-zinc-200 space-y-4">
-                <h3 className="text-sm font-bold text-zinc-900 flex items-center justify-between">
-                  <span>1. Status & Pengaturan Form Tenant F&B</span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={config.showTenantSection ?? true}
-                      onChange={(e) => setConfig({ ...config, showTenantSection: e.target.checked })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
-                    <span className="ml-3 text-xs font-semibold text-zinc-700">
-                      {config.showTenantSection ? 'Fitur Tampil (ON)' : 'Fitur Sembunyi (OFF)'}
-                    </span>
-                  </label>
-                </h3>
+              {/* Sub-tabs Navigation */}
+              <div className="flex items-center gap-1 p-1 bg-zinc-100 rounded-2xl border border-zinc-200 text-xs font-semibold w-fit">
+                <button
+                  onClick={() => setTenantSubTab('builder')}
+                  className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
+                    tenantSubTab === 'builder'
+                      ? 'bg-white text-zinc-950 shadow-xs font-bold'
+                      : 'text-zinc-600 hover:text-zinc-900'
+                  }`}
+                >
+                  <FileText className="w-4 h-4 text-amber-600" />
+                  <span>Form Builder (Google Form Style)</span>
+                  <span className="px-1.5 py-0.2 bg-amber-100 text-amber-800 rounded-full text-[10px] font-mono font-bold">
+                    {(config.tenantFormFields && config.tenantFormFields.length > 0
+                      ? config.tenantFormFields
+                      : getDefaultTenantFormFields()
+                    ).length}
+                  </span>
+                </button>
 
-                {/* Countdown Control for Tenant */}
-                <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-200/80 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-amber-700" />
-                      <span className="text-xs font-bold text-amber-950">Countdown Timer & Auto-Close Deadline Tenant</span>
+                <button
+                  onClick={() => setTenantSubTab('submissions')}
+                  className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
+                    tenantSubTab === 'submissions'
+                      ? 'bg-white text-zinc-950 shadow-xs font-bold'
+                      : 'text-zinc-600 hover:text-zinc-900'
+                  }`}
+                >
+                  <Users className="w-4 h-4 text-blue-600" />
+                  <span>Daftar Pendaftar</span>
+                  <span className="px-1.5 py-0.2 bg-blue-100 text-blue-800 rounded-full text-[10px] font-mono font-bold">
+                    {tenantList.length}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setTenantSubTab('settings')}
+                  className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
+                    tenantSubTab === 'settings'
+                      ? 'bg-white text-zinc-950 shadow-xs font-bold'
+                      : 'text-zinc-600 hover:text-zinc-900'
+                  }`}
+                >
+                  <Clock className="w-4 h-4 text-zinc-600" />
+                  <span>Pengaturan & Deadline</span>
+                </button>
+              </div>
+
+              {/* SUBTAB 1: FORM BUILDER (GOOGLE FORM STYLE) */}
+              {tenantSubTab === 'builder' && (
+                <div className="space-y-6">
+                  {/* Top Builder Actions Bar */}
+                  <div className="bg-gradient-to-r from-amber-50/80 via-white to-amber-50/50 p-4 sm:p-5 rounded-2xl border border-amber-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-bold text-amber-950 flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-600" />
+                        <span>Kustomisasi Pertanyaan Formulir Tenant</span>
+                      </h3>
+                      <p className="text-xs text-zinc-600">
+                        Tambah pertanyaan baru, pilih tipe input (Teks, Paragraf, Dropdown, Radio, Kotak Centang), atur opsi, dan ubah urutan pertanyaan.
+                      </p>
                     </div>
+
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <button
+                        onClick={handleAddTenantField}
+                        className="flex-1 sm:flex-none px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-1.5 transition-all"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>+ Tambah Pertanyaan</span>
+                      </button>
+
+                      <button
+                        onClick={handleResetTenantFields}
+                        className="px-3 py-2 bg-white hover:bg-zinc-100 text-zinc-700 border border-zinc-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs"
+                        title="Kembalikan semua pertanyaan ke template standar"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Reset Standar</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* List of Questions */}
+                  <div className="space-y-4">
+                    {(() => {
+                      const formFields =
+                        config.tenantFormFields && config.tenantFormFields.length > 0
+                          ? config.tenantFormFields
+                          : getDefaultTenantFormFields();
+
+                      return formFields.map((field, fIdx) => (
+                        <div
+                          key={field.id}
+                          className="bg-white rounded-2xl p-5 sm:p-6 border border-zinc-200 shadow-xs hover:border-amber-400 transition-all space-y-4"
+                        >
+                          {/* Row 1: Header (Number, Label, Type Selector, Controls) */}
+                          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
+                            <div className="flex items-center gap-2 w-full lg:w-3/5">
+                              <span className="w-7 h-7 rounded-xl bg-amber-100 text-amber-900 font-bold text-xs flex items-center justify-center shrink-0">
+                                #{fIdx + 1}
+                              </span>
+                              <input
+                                type="text"
+                                value={field.label}
+                                onChange={(e) => handleUpdateTenantField(fIdx, { label: e.target.value })}
+                                placeholder="Tuliskan Pertanyaan..."
+                                className="w-full px-3 py-2 text-xs sm:text-sm font-bold border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-600 bg-zinc-50/50 focus:bg-white"
+                              />
+                            </div>
+
+                            <div className="flex items-center justify-between lg:justify-end gap-2 w-full lg:w-2/5">
+                              {/* Type Selector */}
+                              <div className="w-1/2 lg:w-48">
+                                <select
+                                  value={field.type}
+                                  onChange={(e) =>
+                                    handleUpdateTenantField(fIdx, { type: e.target.value as FormFieldType })
+                                  }
+                                  className="w-full px-3 py-2 text-xs font-medium border border-zinc-200 rounded-xl bg-zinc-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-600 cursor-pointer"
+                                >
+                                  <option value="text">Teks Singkat</option>
+                                  <option value="textarea">Paragraf / Teks Panjang</option>
+                                  <option value="dropdown">Menu Dropdown</option>
+                                  <option value="radio">Pilihan Ganda (Radio)</option>
+                                  <option value="checkbox">Kotak Centang (Multi)</option>
+                                  <option value="number">Angka (Number)</option>
+                                  <option value="email">Email</option>
+                                  <option value="phone">WhatsApp / Telepon</option>
+                                </select>
+                              </div>
+
+                              {/* Move & Delete Controls */}
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveTenantField(fIdx, 'up')}
+                                  disabled={fIdx === 0}
+                                  className="p-1.5 text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 rounded-lg disabled:opacity-30 transition-colors"
+                                  title="Pindah ke Atas"
+                                >
+                                  <ArrowUp className="w-4 h-4" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveTenantField(fIdx, 'down')}
+                                  disabled={fIdx === formFields.length - 1}
+                                  className="p-1.5 text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 rounded-lg disabled:opacity-30 transition-colors"
+                                  title="Pindah ke Bawah"
+                                >
+                                  <ArrowDown className="w-4 h-4" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteTenantField(fIdx)}
+                                  className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors ml-1"
+                                  title="Hapus Pertanyaan"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Row 2: Secondary Settings (Helper Text & Placeholder) */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                            <div>
+                              <label className="block text-[11px] font-semibold text-zinc-500 mb-1">
+                                Petunjuk / Deskripsi Bantuan (Opsional)
+                              </label>
+                              <input
+                                type="text"
+                                value={field.helperText || ''}
+                                onChange={(e) => handleUpdateTenantField(fIdx, { helperText: e.target.value })}
+                                placeholder="Contoh: Cantumkan link akun sosial media atau foto menu"
+                                className="w-full px-3 py-1.5 text-xs border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-600"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-semibold text-zinc-500 mb-1">
+                                Placeholder Text (Opsional)
+                              </label>
+                              <input
+                                type="text"
+                                value={field.placeholder || ''}
+                                onChange={(e) => handleUpdateTenantField(fIdx, { placeholder: e.target.value })}
+                                placeholder="Contoh: Kopi Senja Bandung..."
+                                className="w-full px-3 py-1.5 text-xs border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-600"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Row 3: Options Editor (for dropdown, radio, checkbox) */}
+                          {(field.type === 'dropdown' || field.type === 'radio' || field.type === 'checkbox') && (
+                            <div className="p-4 bg-zinc-50 rounded-xl border border-zinc-200/80 space-y-2.5">
+                              <div className="flex items-center justify-between">
+                                <label className="text-xs font-bold text-zinc-700 flex items-center gap-1.5">
+                                  {field.type === 'dropdown' && <ListPlus className="w-3.5 h-3.5 text-amber-600" />}
+                                  {field.type === 'radio' && <CircleDot className="w-3.5 h-3.5 text-amber-600" />}
+                                  {field.type === 'checkbox' && <CheckSquare className="w-3.5 h-3.5 text-amber-600" />}
+                                  <span>Daftar Opsi Pilihan ({field.options?.length || 0})</span>
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={() => handleAddFieldOption(fIdx)}
+                                  className="text-xs text-amber-700 hover:text-amber-900 font-bold flex items-center gap-1"
+                                >
+                                  <Plus className="w-3.5 h-3.5" />
+                                  <span>Tambah Opsi</span>
+                                </button>
+                              </div>
+
+                              <div className="space-y-2">
+                                {(field.options || []).map((opt, optIdx) => (
+                                  <div key={optIdx} className="flex items-center gap-2">
+                                    <span className="text-[11px] font-mono text-zinc-400 w-4 text-center">
+                                      {optIdx + 1}.
+                                    </span>
+                                    <input
+                                      type="text"
+                                      value={opt}
+                                      onChange={(e) => handleUpdateFieldOption(fIdx, optIdx, e.target.value)}
+                                      placeholder={`Opsi ${optIdx + 1}`}
+                                      className="flex-1 px-3 py-1.5 text-xs border border-zinc-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-amber-600"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteFieldOption(fIdx, optIdx)}
+                                      disabled={(field.options?.length || 0) <= 1}
+                                      className="p-1 text-zinc-400 hover:text-red-600 disabled:opacity-30 transition-colors"
+                                      title="Hapus Opsi"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Row 4: Bottom Required Toggle */}
+                          <div className="pt-2 border-t border-zinc-100 flex items-center justify-between">
+                            <label className="relative inline-flex items-center cursor-pointer select-none">
+                              <input
+                                type="checkbox"
+                                checked={field.required ?? false}
+                                onChange={(e) => handleUpdateTenantField(fIdx, { required: e.target.checked })}
+                                className="sr-only peer"
+                              />
+                              <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-500"></div>
+                              <span className="ml-2.5 text-xs font-bold text-zinc-700">
+                                {field.required ? (
+                                  <span className="text-red-600">Wajib Diisi (Required) *</span>
+                                ) : (
+                                  <span className="text-zinc-500">Opsional (Optional)</span>
+                                )}
+                              </span>
+                            </label>
+
+                            <span className="text-[10px] text-zinc-400 font-mono">
+                              ID: {field.id}
+                            </span>
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+
+                  {/* Add Question Floating Footer CTA */}
+                  <div className="flex justify-center pt-2">
+                    <button
+                      onClick={handleAddTenantField}
+                      className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-full text-xs font-bold shadow-md hover:shadow-lg flex items-center gap-2 transition-all"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>+ Tambah Pertanyaan Baru</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* SUBTAB 2: SUBMISSIONS LIST TABLE */}
+              {tenantSubTab === 'submissions' && (
+                <div className="space-y-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-base font-bold text-zinc-900">
+                        Daftar Pendaftar Tenant F&B ({tenantList.length})
+                      </h3>
+                      <p className="text-xs text-zinc-500">
+                        Data calon tenant yang mengisi formulir via website
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={fetchTenantData}
+                        disabled={loadingTenant}
+                        className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${loadingTenant ? 'animate-spin' : ''}`} />
+                        <span>Refresh</span>
+                      </button>
+
+                      <button
+                        onClick={exportTenantCsv}
+                        className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Export CSV Lengkap</span>
+                      </button>
+
+                      <button
+                        onClick={handleSyncTenantToSheets}
+                        disabled={syncingTenant}
+                        className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
+                        title="Kirim ulang data pendaftar tenant ke Webhook Google Sheets"
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${syncingTenant ? 'animate-spin' : ''}`} />
+                        <span>{syncingTenant ? 'Menyinkronkan...' : 'Sinkronkan ke GSheet'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Search */}
+                  <div className="relative">
+                    <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      value={tenantSearch}
+                      onChange={(e) => setTenantSearch(e.target.value)}
+                      placeholder="Cari berdasarkan nama brand, PIC, WhatsApp, kategori, kota..."
+                      className="w-full pl-9 pr-4 py-2 text-xs border border-zinc-200 rounded-xl bg-zinc-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-800"
+                    />
+                  </div>
+
+                  {/* Table */}
+                  <div className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white shadow-xs">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-zinc-50 text-zinc-600 font-semibold border-b border-zinc-200">
+                        <tr>
+                          <th className="p-3">Waktu</th>
+                          <th className="p-3">Nama Brand</th>
+                          <th className="p-3">Kategori</th>
+                          <th className="p-3">Nama PIC</th>
+                          <th className="p-3">WhatsApp</th>
+                          <th className="p-3">Kota</th>
+                          <th className="p-3 text-center">Jawaban Lengkap</th>
+                          <th className="p-3 text-center">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-100">
+                        {tenantList && tenantList.length > 0 ? (
+                          tenantList
+                            .filter((item) => {
+                              if (!tenantSearch) return true;
+                              const q = tenantSearch.toLowerCase();
+                              return (
+                                (item.brandName || '').toLowerCase().includes(q) ||
+                                (item.picName || '').toLowerCase().includes(q) ||
+                                (item.whatsapp || '').toLowerCase().includes(q) ||
+                                (item.category || '').toLowerCase().includes(q) ||
+                                (item.city || '').toLowerCase().includes(q)
+                              );
+                            })
+                            .map((item) => {
+                              const cleanPhone = (item.whatsapp || '').replace(/\D/g, '');
+                              const waUrl = `https://wa.me/${cleanPhone.startsWith('0') ? '62' + cleanPhone.slice(1) : cleanPhone}`;
+
+                              return (
+                                <tr key={item.id} className="hover:bg-zinc-50/80 transition-colors">
+                                  <td className="p-3 text-zinc-500 font-mono text-[11px] whitespace-nowrap">
+                                    {new Date(item.createdAt).toLocaleDateString('id-ID', {
+                                      day: 'numeric',
+                                      month: 'short',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })}
+                                  </td>
+                                  <td className="p-3 font-bold text-amber-950">{item.brandName || '-'}</td>
+                                  <td className="p-3 font-medium text-zinc-700">
+                                    <span className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-lg text-[10px] font-bold">
+                                      {item.category || 'Umum'}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 font-semibold text-zinc-900">{item.picName || '-'}</td>
+                                  <td className="p-3 whitespace-nowrap">
+                                    <a
+                                      href={waUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono font-medium hover:bg-emerald-100 transition-colors"
+                                    >
+                                      <MessageSquare className="w-3 h-3" />
+                                      {item.whatsapp}
+                                    </a>
+                                  </td>
+                                  <td className="p-3 text-zinc-600">{item.city || '-'}</td>
+                                  <td className="p-3 text-center">
+                                    <button
+                                      onClick={() => setSelectedTenantDetail(item)}
+                                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold transition-colors"
+                                    >
+                                      <Eye className="w-3 h-3 text-amber-700" />
+                                      <span>Lihat Respon</span>
+                                    </button>
+                                  </td>
+                                  <td className="p-3 text-center">
+                                    <button
+                                      onClick={() => handleDeleteTenant(item.id)}
+                                      className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                      title="Hapus Record Tenant"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </td>
+                                </tr>
+                              );
+                            })
+                        ) : (
+                          <tr>
+                            <td colSpan={8} className="p-8 text-center text-zinc-400 text-xs">
+                              {loadingTenant ? (
+                                <div className="flex items-center justify-center gap-2">
+                                  <RefreshCw className="w-4 h-4 animate-spin" />
+                                  Memuat data tenant...
+                                </div>
+                              ) : (
+                                'Belum ada pendaftaran tenant F&B.'
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* SUBTAB 3: SETTINGS & DEADLINE */}
+              {tenantSubTab === 'settings' && (
+                <div className="bg-zinc-50 p-5 rounded-2xl border border-zinc-200 space-y-5">
+                  <h3 className="text-sm font-bold text-zinc-900 flex items-center justify-between">
+                    <span>Pengaturan Umum & Status Form Tenant F&B</span>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={config.showTenantCountdown ?? false}
-                        onChange={(e) => setConfig({ ...config, showTenantCountdown: e.target.checked })}
+                        checked={config.showTenantSection ?? true}
+                        onChange={(e) => setConfig({ ...config, showTenantSection: e.target.checked })}
                         className="sr-only peer"
                       />
-                      <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
+                      <div className="w-11 h-6 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                      <span className="ml-3 text-xs font-semibold text-zinc-700">
+                        {config.showTenantSection ? 'Fitur Tampil (ON)' : 'Fitur Sembunyi (OFF)'}
+                      </span>
                     </label>
+                  </h3>
+
+                  {/* Countdown Control for Tenant */}
+                  <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-200/80 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-amber-700" />
+                        <span className="text-xs font-bold text-amber-950">Countdown Timer & Auto-Close Deadline Tenant</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={config.showTenantCountdown ?? false}
+                          onChange={(e) => setConfig({ ...config, showTenantCountdown: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
+                      </label>
+                    </div>
+                    {config.showTenantCountdown && (
+                      <div>
+                        <label className="block text-xs font-semibold text-amber-900 mb-1">
+                          Tanggal & Jam Batas Pendaftaran Tenant (Form Auto-Off saat Waktu Habis)
+                        </label>
+                        <input
+                          type="datetime-local"
+                          value={config.tenantTargetDate ? config.tenantTargetDate.slice(0, 16) : ''}
+                          onChange={(e) => setConfig({ ...config, tenantTargetDate: e.target.value })}
+                          className="w-full px-3 py-2 text-xs border border-amber-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-600 font-medium"
+                        />
+                      </div>
+                    )}
                   </div>
-                  {config.showTenantCountdown && (
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-amber-900 mb-1">
-                        Tanggal & Jam Batas Pendaftaran Tenant (Form Auto-Off saat Waktu Habis)
+                      <label className="block text-xs font-bold text-zinc-700 mb-1">
+                        Judul Section Tenant F&B
                       </label>
                       <input
-                        type="datetime-local"
-                        value={config.tenantTargetDate ? config.tenantTargetDate.slice(0, 16) : ''}
-                        onChange={(e) => setConfig({ ...config, tenantTargetDate: e.target.value })}
-                        className="w-full px-3 py-2 text-xs border border-amber-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-600 font-medium"
+                        type="text"
+                        value={config.tenantTitle || ''}
+                        onChange={(e) => setConfig({ ...config, tenantTitle: e.target.value })}
+                        placeholder="Open Recruitment Tenant F&B Playlist Rewind 2026"
+                        className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800"
                       />
                     </div>
-                  )}
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-700 mb-1">
+                        Teks Tombol CTA Tenant
+                      </label>
+                      <input
+                        type="text"
+                        value={config.tenantButtonText || ''}
+                        onChange={(e) => setConfig({ ...config, tenantButtonText: e.target.value })}
+                        placeholder="Daftar Tenant F&B"
+                        className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800"
+                      />
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-xs font-bold text-zinc-700 mb-1">
-                      Judul Section Tenant F&B
+                      Subtitle / Deskripsi Singkat Tenant
                     </label>
-                    <input
-                      type="text"
-                      value={config.tenantTitle || ''}
-                      onChange={(e) => setConfig({ ...config, tenantTitle: e.target.value })}
-                      placeholder="Open Recruitment Tenant F&B Playlist Rewind 2026"
+                    <textarea
+                      rows={2}
+                      value={config.tenantSubtitle || ''}
+                      onChange={(e) => setConfig({ ...config, tenantSubtitle: e.target.value })}
+                      placeholder="Bergabunglah bersama puluhan ribu pengunjung..."
                       className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-zinc-700 mb-1">
-                      Teks Tombol CTA Tenant
-                    </label>
-                    <input
-                      type="text"
-                      value={config.tenantButtonText || ''}
-                      onChange={(e) => setConfig({ ...config, tenantButtonText: e.target.value })}
-                      placeholder="Daftar Tenant F&B"
-                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-700 mb-1">
+                        Link WhatsApp Group khusus Tenant F&B
+                      </label>
+                      <input
+                        type="text"
+                        value={config.tenantWaGroupUrl || ''}
+                        onChange={(e) => setConfig({ ...config, tenantWaGroupUrl: e.target.value })}
+                        placeholder="https://chat.whatsapp.com/..."
+                        className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800 font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-zinc-700 mb-1">
+                        Webhook Google Sheets (Auto-Sync Data)
+                      </label>
+                      <input
+                        type="text"
+                        value={config.tenantGoogleSheetWebhook || ''}
+                        onChange={(e) => setConfig({ ...config, tenantGoogleSheetWebhook: e.target.value })}
+                        placeholder="https://script.google.com/macros/s/xxxx/exec"
+                        className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800 font-mono"
+                      />
+                    </div>
                   </div>
                 </div>
+              )}
 
-                <div>
-                  <label className="block text-xs font-bold text-zinc-700 mb-1">
-                    Subtitle / Deskripsi Singkat Tenant
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={config.tenantSubtitle || ''}
-                    onChange={(e) => setConfig({ ...config, tenantSubtitle: e.target.value })}
-                    placeholder="Bergabunglah bersama puluhan ribu pengunjung..."
-                    className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800"
-                  />
-                </div>
+              {/* MODAL: DETAIL JAWABAN FORM LENGKAP PENDAFTAR (GOOGLE FORM RESPONSES VIEWER) */}
+              {selectedTenantDetail && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+                  <div className="relative w-full max-w-2xl bg-white border border-zinc-200 rounded-3xl shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col text-zinc-900">
+                    {/* Header */}
+                    <div className="p-6 bg-gradient-to-r from-zinc-950 via-amber-950 to-orange-950 text-white flex items-start justify-between shrink-0">
+                      <div className="space-y-1">
+                        <div className="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-300 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-1">
+                          <Utensils className="w-3 h-3" />
+                          Detail Respon Pendaftar Tenant
+                        </div>
+                        <h3 className="text-xl font-black text-white">
+                          {selectedTenantDetail.brandName || 'Tenant Tanpa Nama'}
+                        </h3>
+                        <p className="text-xs text-zinc-300">
+                          Diajukan pada{' '}
+                          {new Date(selectedTenantDetail.createdAt).toLocaleString('id-ID', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setSelectedTenantDetail(null)}
+                        className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white transition-colors"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-zinc-700 mb-1">
-                      Link WhatsApp Group khusus Tenant F&B
-                    </label>
-                    <input
-                      type="text"
-                      value={config.tenantWaGroupUrl || ''}
-                      onChange={(e) => setConfig({ ...config, tenantWaGroupUrl: e.target.value })}
-                      placeholder="https://chat.whatsapp.com/..."
-                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800 font-mono"
-                    />
-                  </div>
+                    {/* Body: All Questions and Submitted Answers */}
+                    <div className="p-6 overflow-y-auto space-y-4 flex-1 bg-zinc-50/70">
+                      {(() => {
+                        // Gather questions list
+                        const configuredFields =
+                          config.tenantFormFields && config.tenantFormFields.length > 0
+                            ? config.tenantFormFields
+                            : getDefaultTenantFormFields();
 
-                  <div>
-                    <label className="block text-xs font-bold text-zinc-700 mb-1">
-                      Webhook Google Sheets (Auto-Sync Data)
-                    </label>
-                    <input
-                      type="text"
-                      value={config.tenantGoogleSheetWebhook || ''}
-                      onChange={(e) => setConfig({ ...config, tenantGoogleSheetWebhook: e.target.value })}
-                      placeholder="https://script.google.com/macros/s/xxxx/exec"
-                      className="w-full px-3 py-2 text-xs border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-800 font-mono"
-                    />
-                  </div>
-                </div>
-              </div>
+                        const submittedResponses: any[] = Array.isArray(selectedTenantDetail.responses)
+                          ? selectedTenantDetail.responses
+                          : [];
 
-              {/* Section 2: Table Submissions */}
-              <div className="space-y-4 pt-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="text-base font-bold text-zinc-900">
-                      Daftar Pendaftar Tenant F&B ({tenantList.length})
-                    </h3>
-                    <p className="text-xs text-zinc-500">
-                      Pendaftar tenant yang mengisi form via website & modal
-                    </p>
-                  </div>
+                        return configuredFields.map((field, idx) => {
+                          // Find answer from responses array or top-level properties
+                          let answer: any = '';
+                          const matchInResponses = submittedResponses.find(
+                            (r) => r.id === field.id || r.label === field.label
+                          );
+                          if (matchInResponses && matchInResponses.value !== undefined) {
+                            answer = matchInResponses.value;
+                          } else if (selectedTenantDetail[field.id] !== undefined) {
+                            answer = selectedTenantDetail[field.id];
+                          }
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={fetchTenantData}
-                      disabled={loadingTenant}
-                      className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                    >
-                      <RefreshCw className={`w-3.5 h-3.5 ${loadingTenant ? 'animate-spin' : ''}`} />
-                      <span>Refresh</span>
-                    </button>
+                          const isLink =
+                            typeof answer === 'string' &&
+                            (answer.startsWith('http://') ||
+                              answer.startsWith('https://') ||
+                              answer.startsWith('@'));
 
-                    <button
-                      onClick={exportTenantCsv}
-                      className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Export CSV Data Tenant</span>
-                    </button>
-
-                    <button
-                      onClick={handleSyncTenantToSheets}
-                      disabled={syncingTenant}
-                      className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
-                      title="Kirim ulang data pendaftar tenant ke Webhook Google Sheets"
-                    >
-                      <RefreshCw className={`w-3.5 h-3.5 ${syncingTenant ? 'animate-spin' : ''}`} />
-                      <span>{syncingTenant ? 'Menyinkronkan...' : 'Sinkronkan ke GSheet'}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Search */}
-                <div className="relative">
-                  <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
-                  <input
-                    type="text"
-                    value={tenantSearch}
-                    onChange={(e) => setTenantSearch(e.target.value)}
-                    placeholder="Cari berdasarkan nama brand, PIC, WhatsApp, kategori, kota..."
-                    className="w-full pl-9 pr-4 py-2 text-xs border border-zinc-200 rounded-xl bg-zinc-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-800"
-                  />
-                </div>
-
-                {/* Table */}
-                <div className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white shadow-xs">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-zinc-50 text-zinc-600 font-semibold border-b border-zinc-200">
-                      <tr>
-                        <th className="p-3">Waktu</th>
-                        <th className="p-3">Nama Brand</th>
-                        <th className="p-3">Kategori</th>
-                        <th className="p-3">Nama PIC</th>
-                        <th className="p-3">WhatsApp</th>
-                        <th className="p-3">Daya Listrik</th>
-                        <th className="p-3">Kota</th>
-                        <th className="p-3 text-center">Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-100">
-                      {tenantList && tenantList.length > 0 ? (
-                        tenantList
-                          .filter((item) => {
-                            if (!tenantSearch) return true;
-                            const q = tenantSearch.toLowerCase();
-                            return (
-                              (item.brandName || '').toLowerCase().includes(q) ||
-                              (item.picName || '').toLowerCase().includes(q) ||
-                              (item.whatsapp || '').toLowerCase().includes(q) ||
-                              (item.category || '').toLowerCase().includes(q) ||
-                              (item.city || '').toLowerCase().includes(q)
-                            );
-                          })
-                          .map((item) => {
-                            const cleanPhone = (item.whatsapp || '').replace(/\D/g, '');
-                            const waUrl = `https://wa.me/${cleanPhone.startsWith('0') ? '62' + cleanPhone.slice(1) : cleanPhone}`;
-
-                            return (
-                              <tr key={item.id} className="hover:bg-zinc-50/80 transition-colors">
-                                <td className="p-3 text-zinc-500 font-mono text-[11px] whitespace-nowrap">
-                                  {new Date(item.createdAt).toLocaleDateString('id-ID', {
-                                    day: 'numeric',
-                                    month: 'short',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                  })}
-                                </td>
-                                <td className="p-3 font-bold text-amber-950">{item.brandName}</td>
-                                <td className="p-3 font-medium text-zinc-700">
-                                  <span className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-lg text-[10px] font-bold">
-                                    {item.category}
-                                  </span>
-                                </td>
-                                <td className="p-3 font-semibold text-zinc-900">{item.picName}</td>
-                                <td className="p-3 whitespace-nowrap">
-                                  <a
-                                    href={waUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono font-medium hover:bg-emerald-100 transition-colors"
-                                  >
-                                    <MessageSquare className="w-3 h-3" />
-                                    {item.whatsapp}
-                                  </a>
-                                </td>
-                                <td className="p-3 text-zinc-700 font-medium">{item.powerRequirement || '-'}</td>
-                                <td className="p-3 text-zinc-600">{item.city || '-'}</td>
-                                <td className="p-3 text-center">
-                                  <button
-                                    onClick={() => handleDeleteTenant(item.id)}
-                                    className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                    title="Hapus Record Tenant"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </td>
-                              </tr>
-                            );
-                          })
-                      ) : (
-                        <tr>
-                          <td colSpan={8} className="p-8 text-center text-zinc-400 text-xs">
-                            {loadingTenant ? (
-                              <div className="flex items-center justify-center gap-2">
-                                <RefreshCw className="w-4 h-4 animate-spin" />
-                                Memuat data tenant...
+                          return (
+                            <div
+                              key={field.id}
+                              className="bg-white rounded-2xl p-4 border border-zinc-200 shadow-xs space-y-1"
+                            >
+                              <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                                {idx + 1}. {field.label}
+                              </p>
+                              <div className="pt-1">
+                                {answer ? (
+                                  isLink ? (
+                                    <a
+                                      href={
+                                        answer.startsWith('@')
+                                          ? `https://instagram.com/${answer.slice(1)}`
+                                          : answer
+                                      }
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-sm font-semibold text-amber-700 hover:underline flex items-center gap-1"
+                                    >
+                                      <span>{String(answer)}</span>
+                                      <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                  ) : (
+                                    <p className="text-sm font-medium text-zinc-900 whitespace-pre-wrap">
+                                      {Array.isArray(answer) ? answer.join(', ') : String(answer)}
+                                    </p>
+                                  )
+                                ) : (
+                                  <p className="text-xs italic text-zinc-400">Tidak diisi (kosong)</p>
+                                )}
                               </div>
-                            ) : (
-                              'Belum ada pendaftaran tenant F&B.'
-                            )}
-                          </td>
-                        </tr>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+
+                    {/* Footer Actions */}
+                    <div className="p-4 bg-white border-t border-zinc-200 flex items-center justify-between gap-3">
+                      {selectedTenantDetail.whatsapp && (
+                        <a
+                          href={`https://wa.me/${selectedTenantDetail.whatsapp.replace(/\D/g, '').startsWith('0') ? '62' + selectedTenantDetail.whatsapp.replace(/\D/g, '').slice(1) : selectedTenantDetail.whatsapp.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                          <span>Hubungi via WhatsApp ({selectedTenantDetail.whatsapp})</span>
+                        </a>
                       )}
-                    </tbody>
-                  </table>
+
+                      <button
+                        onClick={() => setSelectedTenantDetail(null)}
+                        className="px-5 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-bold transition-all ml-auto"
+                      >
+                        Tutup
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 

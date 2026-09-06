@@ -77,18 +77,20 @@ export interface CurationEvaluation {
 }
 
 export interface TenantApplicationInput {
-  brandName: string;
-  category: string;
+  brandName?: string;
+  category?: string;
   menuDescription?: string;
   priceRange?: string;
   instagramCatalog?: string;
-  picName: string;
-  whatsapp: string;
+  picName?: string;
+  whatsapp?: string;
   email?: string;
   city?: string;
   powerRequirement?: string;
   equipmentList?: string;
   eventExperience?: string;
+  customData?: Record<string, any>;
+  responses?: { id: string; label: string; value: any; type?: string }[];
 }
 
 export interface TenantApplicationItem extends TenantApplicationInput {
@@ -247,6 +249,7 @@ export async function initDatabase(): Promise<boolean> {
         power_requirement VARCHAR(50) NULL,
         equipment_list TEXT NULL,
         event_experience TEXT NULL,
+        custom_data LONGTEXT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         status VARCHAR(20) DEFAULT 'active',
         INDEX idx_tenant_created (created_at),
@@ -254,6 +257,13 @@ export async function initDatabase(): Promise<boolean> {
         INDEX idx_tenant_category (category)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
+
+    // Ensure custom_data column exists on legacy tables
+    try {
+      await db.query(`ALTER TABLE tenant_applications ADD COLUMN custom_data LONGTEXT NULL`);
+    } catch (e) {
+      // Column might already exist, ignore error
+    }
 
 
     isInitialized = true;
@@ -849,20 +859,25 @@ export async function evaluateClaimCuration(claim: CompensationApplicationItem):
  */
 export async function recordTenantApplication(input: TenantApplicationInput): Promise<TenantApplicationItem> {
   const db = getDbPool();
+  const rawCustomData = input.customData || (input.responses ? { responses: input.responses } : {});
+  const customDataStr = typeof rawCustomData === 'string' ? rawCustomData : JSON.stringify(rawCustomData);
+
   const newItem: TenantApplicationItem = {
     id: Date.now(),
-    brandName: input.brandName,
-    category: input.category,
+    brandName: input.brandName || '',
+    category: input.category || '',
     menuDescription: input.menuDescription || '',
     priceRange: input.priceRange || '',
     instagramCatalog: input.instagramCatalog || '',
-    picName: input.picName,
-    whatsapp: input.whatsapp,
+    picName: input.picName || '',
+    whatsapp: input.whatsapp || '',
     email: input.email || '',
     city: input.city || '',
     powerRequirement: input.powerRequirement || '',
     equipmentList: input.equipmentList || '',
     eventExperience: input.eventExperience || '',
+    customData: typeof rawCustomData === 'object' ? rawCustomData : {},
+    responses: input.responses || [],
     createdAt: new Date().toISOString(),
     status: 'active',
   };
@@ -872,21 +887,22 @@ export async function recordTenantApplication(input: TenantApplicationInput): Pr
       await initDatabase();
       const [result]: any = await db.query(
         `INSERT INTO tenant_applications 
-         (brand_name, category, menu_description, price_range, instagram_catalog, pic_name, whatsapp, email, city, power_requirement, equipment_list, event_experience)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (brand_name, category, menu_description, price_range, instagram_catalog, pic_name, whatsapp, email, city, power_requirement, equipment_list, event_experience, custom_data)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          input.brandName,
-          input.category,
-          input.menuDescription || null,
-          input.priceRange || null,
-          input.instagramCatalog || null,
-          input.picName,
-          input.whatsapp,
-          input.email || null,
-          input.city || null,
-          input.powerRequirement || null,
-          input.equipmentList || null,
-          input.eventExperience || null,
+          newItem.brandName,
+          newItem.category,
+          newItem.menuDescription || null,
+          newItem.priceRange || null,
+          newItem.instagramCatalog || null,
+          newItem.picName,
+          newItem.whatsapp,
+          newItem.email || null,
+          newItem.city || null,
+          newItem.powerRequirement || null,
+          newItem.equipmentList || null,
+          newItem.eventExperience || null,
+          customDataStr,
         ]
       );
       newItem.id = result.insertId;
@@ -915,11 +931,42 @@ export async function getTenantApplicationsFromDb(): Promise<TenantApplicationIt
                 price_range as priceRange, instagram_catalog as instagramCatalog, 
                 pic_name as picName, whatsapp, email, city, 
                 power_requirement as powerRequirement, equipment_list as equipmentList, 
-                event_experience as eventExperience, created_at as createdAt, status
+                event_experience as eventExperience, custom_data as customDataRaw,
+                created_at as createdAt, status
          FROM tenant_applications
          ORDER BY created_at DESC`
       );
-      return rows || [];
+      return (rows || []).map((row: any) => {
+        let customData: Record<string, any> = {};
+        let responses: { id: string; label: string; value: any; type?: string }[] = [];
+        if (row.customDataRaw) {
+          try {
+            customData = typeof row.customDataRaw === 'string' ? JSON.parse(row.customDataRaw) : row.customDataRaw;
+            if (customData && Array.isArray((customData as any).responses)) {
+              responses = (customData as any).responses;
+            }
+          } catch (e) {}
+        }
+        return {
+          id: row.id,
+          brandName: row.brandName || '',
+          category: row.category || '',
+          menuDescription: row.menuDescription || '',
+          priceRange: row.priceRange || '',
+          instagramCatalog: row.instagramCatalog || '',
+          picName: row.picName || '',
+          whatsapp: row.whatsapp || '',
+          email: row.email || '',
+          city: row.city || '',
+          powerRequirement: row.powerRequirement || '',
+          equipmentList: row.equipmentList || '',
+          eventExperience: row.eventExperience || '',
+          customData,
+          responses,
+          createdAt: row.createdAt,
+          status: row.status || 'active',
+        };
+      });
     } catch (err) {
       console.warn('[MySQL DB] Error fetching tenant applications:', err);
       return memoryTenantApplications;

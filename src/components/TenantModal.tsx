@@ -10,55 +10,91 @@ import {
   MessageSquare,
   Sparkles,
   Zap,
+  Mail,
+  Phone,
+  HelpCircle,
+  Send,
+  RotateCcw,
 } from 'lucide-react';
 import {
   triggerTenantSubmitPixels,
   triggerJoinTenantWaGroupPixels,
 } from '@/lib/pixels';
+import { SiteConfig, TenantFormField, getDefaultTenantFormFields } from '@/lib/config';
 
 interface TenantModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
   subtitle?: string;
+  config?: SiteConfig;
 }
 
-export function TenantModal({ isOpen, onClose, title, subtitle }: TenantModalProps) {
-  // Form Field States
-  const [brandName, setBrandName] = useState('');
-  const [category, setCategory] = useState('Makanan Berat');
-  const [menuDescription, setMenuDescription] = useState('');
-  const [priceRange, setPriceRange] = useState('');
-  const [instagramCatalog, setInstagramCatalog] = useState('');
-  const [picName, setPicName] = useState('');
-  const [whatsapp, setWhatsapp] = useState('');
-  const [email, setEmail] = useState('');
-  const [city, setCity] = useState('');
-  const [powerRequirement, setPowerRequirement] = useState('< 900 Watt');
-  const [equipmentList, setEquipmentList] = useState('');
-  const [eventExperience, setEventExperience] = useState('');
+export function TenantModal({ isOpen, onClose, title, subtitle, config }: TenantModalProps) {
+  const fields: TenantFormField[] =
+    config?.tenantFormFields && config.tenantFormFields.length > 0
+      ? config.tenantFormFields
+      : getDefaultTenantFormFields();
+
+  // Dynamic Form Values State
+  const [formData, setFormData] = useState<Record<string, any>>(() => {
+    const initial: Record<string, any> = {};
+    fields.forEach((f) => {
+      if (f.type === 'checkbox') {
+        initial[f.id] = [];
+      } else {
+        initial[f.id] = '';
+      }
+    });
+    return initial;
+  });
 
   // UI states
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const [waGroupUrl, setWaGroupUrl] = useState('https://chat.whatsapp.com/');
+  const [submittedData, setSubmittedData] = useState<any>(null);
+  const [waGroupUrl, setWaGroupUrl] = useState(
+    config?.tenantWaGroupUrl || 'https://chat.whatsapp.com/'
+  );
 
   if (!isOpen) return null;
 
+  const handleInputChange = (fieldId: string, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [fieldId]: value,
+    }));
+    if (errorMsg) setErrorMsg('');
+  };
+
+  const handleCheckboxToggle = (fieldId: string, optionValue: string) => {
+    setFormData((prev) => {
+      const currentList: string[] = Array.isArray(prev[fieldId]) ? prev[fieldId] : [];
+      let nextList: string[];
+      if (currentList.includes(optionValue)) {
+        nextList = currentList.filter((item) => item !== optionValue);
+      } else {
+        nextList = [...currentList, optionValue];
+      }
+      return {
+        ...prev,
+        [fieldId]: nextList,
+      };
+    });
+    if (errorMsg) setErrorMsg('');
+  };
+
   const handleClearForm = () => {
-    setBrandName('');
-    setCategory('Makanan Berat');
-    setMenuDescription('');
-    setPriceRange('');
-    setInstagramCatalog('');
-    setPicName('');
-    setWhatsapp('');
-    setEmail('');
-    setCity('');
-    setPowerRequirement('< 900 Watt');
-    setEquipmentList('');
-    setEventExperience('');
+    const resetValues: Record<string, any> = {};
+    fields.forEach((f) => {
+      if (f.type === 'checkbox') {
+        resetValues[f.id] = [];
+      } else {
+        resetValues[f.id] = '';
+      }
+    });
+    setFormData(resetValues);
     setErrorMsg('');
   };
 
@@ -66,39 +102,46 @@ export function TenantModal({ isOpen, onClose, title, subtitle }: TenantModalPro
     e.preventDefault();
     setErrorMsg('');
 
-    if (!brandName.trim()) {
-      setErrorMsg('Nama Brand / Usaha F&B wajib diisi.');
-      return;
-    }
-    if (!picName.trim()) {
-      setErrorMsg('Nama Lengkap PIC / Owner wajib diisi.');
-      return;
-    }
-    if (!whatsapp.trim()) {
-      setErrorMsg('Nomor WhatsApp wajib diisi.');
-      return;
+    // Dynamic Validation based on required fields
+    for (const field of fields) {
+      if (field.required) {
+        const val = formData[field.id];
+        const isEmpty =
+          val === undefined ||
+          val === null ||
+          (typeof val === 'string' && !val.trim()) ||
+          (Array.isArray(val) && val.length === 0);
+
+        if (isEmpty) {
+          setErrorMsg(`Pertanyaan "${field.label}" wajib diisi.`);
+          const el = document.getElementById(`modal-field-${field.id}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          return;
+        }
+      }
     }
 
     setLoading(true);
 
     try {
+      const responses = fields.map((f) => ({
+        id: f.id,
+        label: f.label,
+        value: Array.isArray(formData[f.id]) ? formData[f.id].join(', ') : formData[f.id] ?? '',
+        type: f.type,
+      }));
+
+      const payload: Record<string, any> = {
+        ...formData,
+        responses,
+      };
+
       const res = await fetch('/api/tenant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          brandName,
-          category,
-          menuDescription,
-          priceRange,
-          instagramCatalog,
-          picName,
-          whatsapp,
-          email,
-          city,
-          powerRequirement,
-          equipmentList,
-          eventExperience,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -110,74 +153,101 @@ export function TenantModal({ isOpen, onClose, title, subtitle }: TenantModalPro
         setWaGroupUrl(data.waGroupUrl);
       }
 
-      // Trigger Pixel Lead Event
-      triggerTenantSubmitPixels(title || 'Tenant Registration Submission');
+      setSubmittedData({
+        brandName: formData.brandName || formData[fields[0]?.id] || 'Brand Tenant',
+        picName: formData.picName || formData.pic_name || 'Penanggung Jawab',
+        whatsapp: formData.whatsapp || formData.phone || '',
+      });
 
+      triggerTenantSubmitPixels(title || 'Tenant Submission');
       setSubmitted(true);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Terjadi kesalahan sistem. Silakan coba lagi.');
+      setErrorMsg(err.message || 'Terjadi kesalahan sistem.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl bg-zinc-100 rounded-3xl shadow-2xl overflow-hidden my-8 border border-zinc-200 max-h-[90vh] flex flex-col">
-        {/* Header Bar */}
-        <div className="bg-gradient-to-r from-zinc-950 via-amber-950 to-orange-950 text-white px-6 py-5 flex items-start justify-between relative shrink-0">
-          <div>
-            <div className="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-2">
-              <Utensils className="w-3 h-3" />
-              Open Registration Tenant F&B
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-zinc-50 border border-zinc-200 rounded-3xl shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col text-zinc-900">
+        {/* Modal Header */}
+        <div className="p-6 bg-gradient-to-r from-zinc-950 via-amber-950 to-orange-950 text-white flex items-start justify-between relative shrink-0">
+          <div className="space-y-1 pr-6">
+            <div className="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-1">
+              <Sparkles className="w-3 h-3" />
+              Open Recruitment Tenant F&B 2026
             </div>
-            <h2 className="text-lg md:text-xl font-black tracking-tight text-white">
+            <h3 className="text-xl font-black text-white leading-tight">
               {title || 'Open Recruitment Tenant F&B Playlist Rewind 2026'}
-            </h2>
-            <p className="text-xs text-zinc-300 mt-1 max-w-lg leading-relaxed">
-              {subtitle ||
-                'Bergabunglah bersama puluhan ribu pengunjung di festival musik terbesar di Bandung!'}
+            </h3>
+            <p className="text-xs text-zinc-300">
+              {subtitle || 'Isi formulir pendaftaran tenant untuk bergabung di festival kami.'}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all shrink-0 ml-2"
-            aria-label="Tutup Form"
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-zinc-300 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Scrollable Body */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 text-zinc-800">
+        {/* Modal Body */}
+        <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-zinc-50/70">
           {submitted ? (
             /* SUCCESS STATE */
-            <div className="bg-white rounded-2xl p-6 sm:p-8 text-center space-y-5 shadow-sm border border-zinc-200 my-4">
-              <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-10 h-10" />
+            <div className="bg-white rounded-2xl p-6 sm:p-8 text-center space-y-5 border border-zinc-200 shadow-sm">
+              <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto ring-8 ring-amber-50">
+                <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-zinc-900">Pendaftaran Tenant Berhasil!</h3>
-              <p className="text-sm text-zinc-600 leading-relaxed max-w-md mx-auto">
-                Terima kasih <strong className="text-zinc-900">{picName}</strong>. Pendaftaran tenant F&B untuk <strong className="text-amber-700">{brandName}</strong> telah kami terima!
-              </p>
-              
+              <div className="space-y-1">
+                <h4 className="text-xl font-bold text-zinc-900">Pendaftaran Tenant Terkirim!</h4>
+                <p className="text-xs text-zinc-600 max-w-md mx-auto leading-relaxed">
+                  Terima kasih <strong className="text-zinc-900">{submittedData?.picName}</strong>. Formulir pendaftaran tenant untuk <strong className="text-amber-700">{submittedData?.brandName}</strong> telah berhasil kami terima.
+                </p>
+              </div>
+
               <div className="bg-amber-50 border border-amber-200 text-amber-900 text-xs p-4 rounded-xl text-left space-y-2">
                 <p className="font-bold text-amber-950 flex items-center gap-1.5">
                   <Sparkles className="w-4 h-4 text-amber-600" />
-                  Status Pendaftaran:
+                  Gabung Grup WhatsApp Tenant:
                 </p>
-                <p>
-                  Tim panitia akan meninjau pendaftaran tenant Anda dan menghubungi nomor WhatsApp / Email penanggung jawab untuk koordinasi selanjutnya.
+                <p className="text-[11px] text-zinc-700 leading-relaxed">
+                  Dapatkan update informasi denah booth, jadwal kurasi, dan koordinasi teknis langsung via grup WhatsApp panitia.
                 </p>
+
+                {waGroupUrl && (
+                  <div className="pt-2">
+                    <a
+                      href={waGroupUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => triggerJoinTenantWaGroupPixels()}
+                      className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-sm text-xs"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      <span>Gabung WhatsApp Group Tenant F&B</span>
+                    </a>
+                  </div>
+                )}
               </div>
 
-
-              <div className="pt-2 flex justify-center">
+              <div className="pt-2 flex items-center justify-center gap-4">
+                <button
+                  onClick={() => {
+                    setSubmitted(false);
+                    handleClearForm();
+                  }}
+                  className="text-xs text-amber-800 hover:text-amber-950 font-semibold underline"
+                >
+                  Kirim pendaftaran lagi
+                </button>
                 <button
                   onClick={onClose}
-                  className="w-full sm:w-auto px-8 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold rounded-xl transition-all"
+                  className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition-all"
                 >
-                  Tutup Halaman
+                  Tutup
                 </button>
               </div>
             </div>
@@ -185,215 +255,208 @@ export function TenantModal({ isOpen, onClose, title, subtitle }: TenantModalPro
             /* FORM STATE */
             <form onSubmit={handleSubmit} className="space-y-4">
               {errorMsg && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{errorMsg}</span>
+                <div className="p-3.5 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2 sticky top-0 z-10 shadow-xs">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                  <span className="font-medium">{errorMsg}</span>
                 </div>
               )}
 
-              <div className="bg-white rounded-xl p-4 border border-zinc-200 text-xs text-red-600 font-semibold">
-                * Indicates required question
+              <div className="bg-white rounded-xl p-3.5 border border-zinc-200 text-[11px] text-zinc-600 flex items-center justify-between shadow-xs">
+                <span className="flex items-center gap-1 font-medium">
+                  <HelpCircle className="w-3.5 h-3.5 text-amber-600" />
+                  Lengkapi pertanyaan di bawah ini:
+                </span>
+                <span className="text-red-500 font-bold">* Wajib diisi</span>
               </div>
 
-              {/* 1. Nama Brand */}
-              <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-xs space-y-2">
-                <label className="block text-sm font-bold text-zinc-900">
-                  Nama Brand / Usaha F&B <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={brandName}
-                  onChange={(e) => setBrandName(e.target.value)}
-                  placeholder="Contoh: Kopi Kenangan, Ayam Geprek Master"
-                  className="w-full px-3 py-2 text-sm border-b border-zinc-300 focus:border-zinc-900 focus:outline-none bg-transparent transition-colors"
-                />
-              </div>
+              {/* DYNAMIC QUESTIONS (GOOGLE FORM STYLE) */}
+              {fields.map((field, index) => {
+                const val = formData[field.id];
 
-              {/* 2. Kategori Produk F&B */}
-              <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-xs space-y-2">
-                <label className="block text-sm font-bold text-zinc-900">
-                  Kategori Produk F&B <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-zinc-300 rounded-xl focus:border-zinc-900 focus:outline-none bg-white font-medium"
-                >
-                  <option value="Makanan Berat">Makanan Berat (Heavy Meals)</option>
-                  <option value="Makanan Ringan">Makanan Ringan (Snacks & Finger Foods)</option>
-                  <option value="Minuman">Minuman (Beverages / Coffee / Tea)</option>
-                  <option value="Dessert & Pastry">Dessert & Pastry (Ice Cream, Bakery)</option>
-                  <option value="Lainnya">Lainnya</option>
-                </select>
-              </div>
-
-              {/* 3. Deskripsi Menu & Bestseller */}
-              <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-xs space-y-2">
-                <label className="block text-sm font-bold text-zinc-900">
-                  Deskripsi Menu & Produk Unggulan (Bestseller)
-                </label>
-                <textarea
-                  rows={3}
-                  value={menuDescription}
-                  onChange={(e) => setMenuDescription(e.target.value)}
-                  placeholder="Sebutkan menu favorit dan jenis makanan/minuman yang akan dijual..."
-                  className="w-full px-3 py-2 text-sm border border-zinc-300 rounded-xl focus:border-zinc-900 focus:outline-none bg-transparent transition-colors"
-                />
-              </div>
-
-              {/* 4. Kisaran Harga Menu & Link Catalog */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-xs space-y-2">
-                  <label className="block text-sm font-bold text-zinc-900">
-                    Kisaran Harga Menu
-                  </label>
-                  <input
-                    type="text"
-                    value={priceRange}
-                    onChange={(e) => setPriceRange(e.target.value)}
-                    placeholder="Contoh: Rp 15.000 - Rp 45.000"
-                    className="w-full px-3 py-2 text-sm border-b border-zinc-300 focus:border-zinc-900 focus:outline-none bg-transparent transition-colors"
-                  />
-                </div>
-
-                <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-xs space-y-2">
-                  <label className="block text-sm font-bold text-zinc-900">
-                    Link Social Media / Instagram / Catalog
-                  </label>
-                  <input
-                    type="text"
-                    value={instagramCatalog}
-                    onChange={(e) => setInstagramCatalog(e.target.value)}
-                    placeholder="https://instagram.com/nama_brand"
-                    className="w-full px-3 py-2 text-sm border-b border-zinc-300 focus:border-zinc-900 focus:outline-none bg-transparent transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* 5. Nama PIC & WhatsApp */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-xs space-y-2">
-                  <label className="block text-sm font-bold text-zinc-900">
-                    Nama Lengkap PIC / Owner <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={picName}
-                    onChange={(e) => setPicName(e.target.value)}
-                    placeholder="Nama Penanggung Jawab"
-                    className="w-full px-3 py-2 text-sm border-b border-zinc-300 focus:border-zinc-900 focus:outline-none bg-transparent transition-colors"
-                  />
-                </div>
-
-                <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-xs space-y-2">
-                  <label className="block text-sm font-bold text-zinc-900">
-                    Nomor WhatsApp Active <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={whatsapp}
-                    onChange={(e) => setWhatsapp(e.target.value)}
-                    placeholder="0812xxxx"
-                    className="w-full px-3 py-2 text-sm border-b border-zinc-300 focus:border-zinc-900 focus:outline-none bg-transparent transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* 6. Email & Kota Asal */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-xs space-y-2">
-                  <label className="block text-sm font-bold text-zinc-900">
-                    Email Active
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="email@domain.com"
-                    className="w-full px-3 py-2 text-sm border-b border-zinc-300 focus:border-zinc-900 focus:outline-none bg-transparent transition-colors"
-                  />
-                </div>
-
-                <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-xs space-y-2">
-                  <label className="block text-sm font-bold text-zinc-900">
-                    Kota Asal Brand
-                  </label>
-                  <input
-                    type="text"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="Bandung / Jakarta / dll"
-                    className="w-full px-3 py-2 text-sm border-b border-zinc-300 focus:border-zinc-900 focus:outline-none bg-transparent transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* 7. Kebutuhan Listrik & Peralatan */}
-              <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-xs space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-zinc-900 flex items-center gap-1.5">
-                    <Zap className="w-4 h-4 text-amber-500" />
-                    Estimasi Daya Listrik yang Dibutuhkan
-                  </label>
-                  <select
-                    value={powerRequirement}
-                    onChange={(e) => setPowerRequirement(e.target.value)}
-                    className="w-full mt-1.5 px-3 py-2 text-sm border border-zinc-300 rounded-xl focus:border-zinc-900 focus:outline-none bg-white font-medium"
+                return (
+                  <div
+                    key={field.id}
+                    id={`modal-field-${field.id}`}
+                    className="bg-white rounded-2xl p-4 sm:p-5 border border-zinc-200/90 shadow-xs hover:border-amber-400/80 transition-all space-y-2.5 focus-within:border-amber-600 focus-within:ring-2 focus-within:ring-amber-100"
                   >
-                    <option value="< 900 Watt">Standard (&lt; 900 Watt)</option>
-                    <option value="1300 Watt">Sedang (1300 Watt)</option>
-                    <option value="2200 Watt">Tinggi (2200 Watt)</option>
-                    <option value="> 2200 Watt / Daya Besar">Daya Besar (&gt; 2200 Watt / Deep Fryer / Espresso)</option>
-                  </select>
-                </div>
+                    <div>
+                      <label className="block text-xs sm:text-sm font-bold text-zinc-900 leading-snug">
+                        {index + 1}. {field.label}
+                        {field.required && <span className="text-red-500 ml-1 font-bold">*</span>}
+                      </label>
+                      {field.helperText && (
+                        <p className="text-[11px] text-zinc-500 mt-0.5 leading-relaxed">{field.helperText}</p>
+                      )}
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-bold text-zinc-900">
-                    Peralatan Listrik Utama yang Dibawa
-                  </label>
-                  <input
-                    type="text"
-                    value={equipmentList}
-                    onChange={(e) => setEquipmentList(e.target.value)}
-                    placeholder="Contoh: 1 Deep Fryer 1500W, 1 Chiller 300W, 1 Blender"
-                    className="w-full mt-1 px-3 py-2 text-sm border-b border-zinc-300 focus:border-zinc-900 focus:outline-none bg-transparent transition-colors"
-                  />
-                </div>
-              </div>
+                    <div className="pt-0.5">
+                      {/* TYPE: SHORT TEXT */}
+                      {field.type === 'text' && (
+                        <input
+                          type="text"
+                          value={val || ''}
+                          onChange={(e) => handleInputChange(field.id, e.target.value)}
+                          placeholder={field.placeholder || 'Jawaban Anda'}
+                          className="w-full px-3 py-2 text-xs border-b-2 border-zinc-200 focus:border-amber-600 outline-none bg-zinc-50/50 hover:bg-white rounded-t-lg transition-all text-zinc-900 placeholder-zinc-400"
+                        />
+                      )}
 
-              {/* 8. Pengalaman Event */}
-              <div className="bg-white rounded-xl p-5 border border-zinc-200 shadow-xs space-y-2">
-                <label className="block text-sm font-bold text-zinc-900">
-                  Pengalaman Festival / Event Sebelumnya
-                </label>
-                <input
-                  type="text"
-                  value={eventExperience}
-                  onChange={(e) => setEventExperience(e.target.value)}
-                  placeholder="Pernah ikut event musik/bazaar apa saja..."
-                  className="w-full px-3 py-2 text-sm border-b border-zinc-300 focus:border-zinc-900 focus:outline-none bg-transparent transition-colors"
-                />
-              </div>
+                      {/* TYPE: PARAGRAPH / TEXTAREA */}
+                      {field.type === 'textarea' && (
+                        <textarea
+                          rows={2}
+                          value={val || ''}
+                          onChange={(e) => handleInputChange(field.id, e.target.value)}
+                          placeholder={field.placeholder || 'Jawaban Anda'}
+                          className="w-full px-3 py-2 text-xs border border-zinc-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none bg-zinc-50/50 hover:bg-white transition-all text-zinc-900 placeholder-zinc-400"
+                        />
+                      )}
 
-              {/* Submit Buttons */}
-              <div className="pt-2 flex items-center justify-between gap-4">
+                      {/* TYPE: NUMBER */}
+                      {field.type === 'number' && (
+                        <input
+                          type="number"
+                          value={val || ''}
+                          onChange={(e) => handleInputChange(field.id, e.target.value)}
+                          placeholder={field.placeholder || 'Masukkan angka'}
+                          className="w-full sm:w-1/2 px-3 py-2 text-xs border-b-2 border-zinc-200 focus:border-amber-600 outline-none bg-zinc-50/50 hover:bg-white rounded-t-lg transition-all text-zinc-900 font-mono placeholder-zinc-400"
+                        />
+                      )}
+
+                      {/* TYPE: EMAIL */}
+                      {field.type === 'email' && (
+                        <div className="relative w-full">
+                          <Mail className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-2.5" />
+                          <input
+                            type="email"
+                            value={val || ''}
+                            onChange={(e) => handleInputChange(field.id, e.target.value)}
+                            placeholder={field.placeholder || 'nama@email.com'}
+                            className="w-full pl-9 pr-3 py-2 text-xs border-b-2 border-zinc-200 focus:border-amber-600 outline-none bg-zinc-50/50 hover:bg-white rounded-t-lg transition-all text-zinc-900 placeholder-zinc-400"
+                          />
+                        </div>
+                      )}
+
+                      {/* TYPE: PHONE */}
+                      {field.type === 'phone' && (
+                        <div className="relative w-full">
+                          <Phone className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-2.5" />
+                          <input
+                            type="tel"
+                            value={val || ''}
+                            onChange={(e) => handleInputChange(field.id, e.target.value)}
+                            placeholder={field.placeholder || '081234567890'}
+                            className="w-full pl-9 pr-3 py-2 text-xs border-b-2 border-zinc-200 focus:border-amber-600 outline-none bg-zinc-50/50 hover:bg-white rounded-t-lg transition-all text-zinc-900 font-mono placeholder-zinc-400"
+                          />
+                        </div>
+                      )}
+
+                      {/* TYPE: DROPDOWN */}
+                      {field.type === 'dropdown' && (
+                        <select
+                          value={val || ''}
+                          onChange={(e) => handleInputChange(field.id, e.target.value)}
+                          className="w-full px-3 py-2 text-xs border border-zinc-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none bg-zinc-50/50 hover:bg-white transition-all text-zinc-900 cursor-pointer font-medium"
+                        >
+                          <option value="" disabled>
+                            {field.placeholder || '-- Pilih salah satu opsi --'}
+                          </option>
+                          {(field.options || []).map((opt, i) => (
+                            <option key={i} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+
+                      {/* TYPE: RADIO */}
+                      {field.type === 'radio' && (
+                        <div className="space-y-1.5 pt-0.5">
+                          {(field.options || []).map((opt, i) => {
+                            const isSelected = val === opt;
+                            return (
+                              <label
+                                key={i}
+                                className={`flex items-center gap-2.5 p-2 rounded-lg border transition-all cursor-pointer select-none text-xs ${
+                                  isSelected
+                                    ? 'bg-amber-50/80 border-amber-500 text-amber-950 font-semibold shadow-xs'
+                                    : 'bg-zinc-50/40 border-zinc-200 text-zinc-800 hover:bg-zinc-100/60'
+                                }`}
+                              >
+                                <input
+                                  type="radio"
+                                  name={`modal_radio_${field.id}`}
+                                  value={opt}
+                                  checked={isSelected}
+                                  onChange={() => handleInputChange(field.id, opt)}
+                                  className="w-3.5 h-3.5 text-amber-600 focus:ring-amber-500 border-zinc-300"
+                                />
+                                <span>{opt}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* TYPE: CHECKBOX */}
+                      {field.type === 'checkbox' && (
+                        <div className="space-y-1.5 pt-0.5">
+                          {(field.options || []).map((opt, i) => {
+                            const isChecked = Array.isArray(val) && val.includes(opt);
+                            return (
+                              <label
+                                key={i}
+                                className={`flex items-center gap-2.5 p-2 rounded-lg border transition-all cursor-pointer select-none text-xs ${
+                                  isChecked
+                                    ? 'bg-amber-50/80 border-amber-500 text-amber-950 font-semibold shadow-xs'
+                                    : 'bg-zinc-50/40 border-zinc-200 text-zinc-800 hover:bg-zinc-100/60'
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => handleCheckboxToggle(field.id, opt)}
+                                  className="w-3.5 h-3.5 text-amber-600 rounded-sm focus:ring-amber-500 border-zinc-300"
+                                />
+                                <span>{opt}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Action Buttons */}
+              <div className="pt-2 flex items-center justify-between gap-3">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-8 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-all disabled:opacity-50 cursor-pointer uppercase tracking-wider"
+                  className="px-6 py-2.5 rounded-full bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50"
                 >
-                  {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Daftar Tenant F&B
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Mengirim...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Kirim Pendaftaran</span>
+                    </>
+                  )}
                 </button>
+
                 <button
                   type="button"
                   onClick={handleClearForm}
-                  className="text-xs font-semibold text-zinc-500 hover:text-zinc-800 hover:underline"
+                  disabled={loading}
+                  className="px-3 py-1.5 text-xs text-zinc-500 hover:text-zinc-800 transition-colors flex items-center gap-1"
                 >
-                  Clear form
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Reset</span>
                 </button>
               </div>
             </form>

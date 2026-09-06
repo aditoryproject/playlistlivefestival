@@ -40,6 +40,7 @@ export function TenantClientWrapper({ config, renderButtonOnly }: TenantClientWr
           onClose={() => setIsModalOpen(false)}
           title={config.tenantTitle}
           subtitle={config.tenantSubtitle}
+          config={config}
         />
       </>
     );
@@ -59,6 +60,7 @@ export function TenantClientWrapper({ config, renderButtonOnly }: TenantClientWr
         onClose={() => setIsModalOpen(false)}
         title={config.tenantTitle}
         subtitle={config.tenantSubtitle}
+        config={config}
       />
     </>
   );

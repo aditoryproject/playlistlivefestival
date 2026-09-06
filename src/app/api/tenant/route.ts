@@ -21,36 +21,99 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}));
+    const config = await getSiteConfigAsync();
+    const formFields = config.tenantFormFields && config.tenantFormFields.length > 0
+      ? config.tenantFormFields
+      : [];
+
     const {
-      brandName,
-      category,
-      menuDescription,
-      priceRange,
-      instagramCatalog,
-      picName,
-      whatsapp,
-      email,
-      city,
-      powerRequirement,
-      equipmentList,
-      eventExperience,
+      brandName: rawBrandName,
+      category: rawCategory,
+      menuDescription: rawMenuDescription,
+      priceRange: rawPriceRange,
+      instagramCatalog: rawInstagramCatalog,
+      picName: rawPicName,
+      whatsapp: rawWhatsapp,
+      email: rawEmail,
+      city: rawCity,
+      powerRequirement: rawPowerRequirement,
+      equipmentList: rawEquipmentList,
+      eventExperience: rawEventExperience,
+      responses: rawResponses,
+      customData: rawCustomData,
     } = body;
 
-    if (!brandName || !brandName.trim()) {
-      return NextResponse.json({ success: false, error: 'Nama Brand / Usaha wajib diisi.' }, { status: 400 });
+    // Collect responses into structured array
+    let responses: { id: string; label: string; value: any; type?: string }[] = [];
+    if (Array.isArray(rawResponses) && rawResponses.length > 0) {
+      responses = rawResponses;
+    } else if (formFields.length > 0) {
+      // Build responses from body fields based on configured form fields
+      responses = formFields.map((field) => {
+        const val = body[field.id] !== undefined ? body[field.id] : '';
+        return {
+          id: field.id,
+          label: field.label,
+          value: Array.isArray(val) ? val.join(', ') : String(val ?? ''),
+          type: field.type,
+        };
+      });
     }
 
-    if (!category || !category.trim()) {
-      return NextResponse.json({ success: false, error: 'Kategori Produk F&B wajib dipilih.' }, { status: 400 });
+    // Dynamic Validation against configured formFields
+    if (formFields.length > 0) {
+      for (const field of formFields) {
+        if (field.required) {
+          const resp = responses.find((r) => r.id === field.id);
+          const val = resp ? resp.value : body[field.id];
+          const isEmpty =
+            val === undefined ||
+            val === null ||
+            (typeof val === 'string' && !val.trim()) ||
+            (Array.isArray(val) && val.length === 0);
+
+          if (isEmpty) {
+            return NextResponse.json(
+              { success: false, error: `Pertanyaan "${field.label}" wajib diisi.` },
+              { status: 400 }
+            );
+          }
+        }
+      }
+    } else {
+      // Fallback standard validation
+      if (!rawBrandName || !String(rawBrandName).trim()) {
+        return NextResponse.json({ success: false, error: 'Nama Brand / Usaha wajib diisi.' }, { status: 400 });
+      }
+      if (!rawPicName || !String(rawPicName).trim()) {
+        return NextResponse.json({ success: false, error: 'Nama Lengkap PIC / Owner wajib diisi.' }, { status: 400 });
+      }
+      if (!rawWhatsapp || !String(rawWhatsapp).trim()) {
+        return NextResponse.json({ success: false, error: 'Nomor WhatsApp wajib diisi.' }, { status: 400 });
+      }
     }
 
-    if (!picName || !picName.trim()) {
-      return NextResponse.json({ success: false, error: 'Nama Lengkap PIC / Owner wajib diisi.' }, { status: 400 });
-    }
+    // Helper to find value from responses or body
+    const getValue = (key: string, fallbackVal: any = '') => {
+      const match = responses.find((r) => r.id === key);
+      if (match && match.value !== undefined && match.value !== '') {
+        return typeof match.value === 'string' ? match.value : JSON.stringify(match.value);
+      }
+      return fallbackVal ? String(fallbackVal) : '';
+    };
 
-    if (!whatsapp || !whatsapp.trim()) {
-      return NextResponse.json({ success: false, error: 'Nomor WhatsApp wajib diisi.' }, { status: 400 });
-    }
+    const brandName = getValue('brandName', rawBrandName) || 'Tenant';
+    const category = getValue('category', rawCategory) || 'Umum';
+    const picName = getValue('picName', rawPicName) || '-';
+    const whatsapp = getValue('whatsapp', rawWhatsapp) || '-';
+    const email = getValue('email', rawEmail);
+    const city = getValue('city', rawCity);
+    const menuDescription = getValue('menuDescription', rawMenuDescription);
+    const priceRange = getValue('priceRange', rawPriceRange);
+    const instagramCatalog = getValue('instagramCatalog', rawInstagramCatalog);
+    const powerRequirement = getValue('powerRequirement', rawPowerRequirement);
+    const equipmentList = getValue('equipmentList', rawEquipmentList);
+    const eventExperience = getValue('eventExperience', rawEventExperience);
 
     // 1. Record application to DB
     const application = await recordTenantApplication({
@@ -66,6 +129,11 @@ export async function POST(req: NextRequest) {
       powerRequirement: powerRequirement ? powerRequirement.trim() : '',
       equipmentList: equipmentList ? equipmentList.trim() : '',
       eventExperience: eventExperience ? eventExperience.trim() : '',
+      customData: {
+        ...(typeof rawCustomData === 'object' ? rawCustomData : {}),
+        responses,
+      },
+      responses,
     });
 
     // Helper to format absolute URL
@@ -79,12 +147,18 @@ export async function POST(req: NextRequest) {
     };
 
     // 2. Fetch site config for WA group URL & Google Sheets Webhook URL
-    const config = await getSiteConfigAsync();
     const waGroupUrl = config.tenantWaGroupUrl || 'https://chat.whatsapp.com/';
     const webhookUrl = config.tenantGoogleSheetWebhook;
 
     // 3. Optional: Sync to Google Sheets Webhook in background
     if (webhookUrl && webhookUrl.startsWith('http')) {
+      // Create a flat dictionary of dynamic fields for Google Sheets
+      const dynamicFieldsDict: Record<string, any> = {};
+      responses.forEach((r) => {
+        dynamicFieldsDict[`field_${r.id}`] = r.value;
+        dynamicFieldsDict[r.label] = r.value;
+      });
+
       fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -102,6 +176,8 @@ export async function POST(req: NextRequest) {
           powerRequirement: application.powerRequirement,
           equipmentList: application.equipmentList,
           eventExperience: application.eventExperience,
+          responsesJson: JSON.stringify(responses),
+          ...dynamicFieldsDict,
         }),
       }).catch((err) => {
         console.error('[Tenant Webhook] Error posting to Google Sheets:', err);
