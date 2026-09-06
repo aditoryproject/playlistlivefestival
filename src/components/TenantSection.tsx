@@ -41,7 +41,7 @@ export function TenantSection({
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-zinc-950 leading-tight">
                 {title || 'Open Recruitment Tenant F&B Playlist Rewind 2026'}
               </h2>
-              <p className="text-zinc-600 text-xs sm:text-sm md:text-base leading-relaxed max-w-2xl">
+              <p className="text-zinc-600 text-xs sm:text-sm md:text-base leading-relaxed max-w-2xl whitespace-pre-line">
                 {subtitle ||
                   'Sajikan produk kuliner terbaik brand Anda di hadapan puluhan ribu pengunjung festival musik terbesar di Bandung!'}
               </p>

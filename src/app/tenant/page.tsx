@@ -63,7 +63,7 @@ export default async function TenantPage() {
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight">
             {config.tenantTitle || 'Open Recruitment Tenant F&B Playlist Rewind 2026'}
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed whitespace-pre-line">
             {config.tenantSubtitle ||
               'Bergabunglah bersama puluhan ribu pengunjung di festival musik terbesar di Bandung!'}
           </p>

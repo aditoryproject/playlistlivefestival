@@ -182,7 +182,7 @@ export function TenantModal({ isOpen, onClose, title, subtitle, config }: Tenant
             <h3 className="text-xl font-black text-white leading-tight">
               {title || 'Open Recruitment Tenant F&B Playlist Rewind 2026'}
             </h3>
-            <p className="text-xs text-zinc-300">
+            <p className="text-xs text-zinc-300 whitespace-pre-line">
               {subtitle || 'Isi formulir pendaftaran tenant untuk bergabung di festival kami.'}
             </p>
           </div>
