@@ -15,14 +15,12 @@ import {
   Eye,
   RotateCcw,
   Search,
-  Filter,
   ShieldCheck,
   Zap,
   Sparkles,
-  ExternalLink,
   ChevronLeft,
   ChevronRight,
-  Trash2,
+  Copy,
 } from 'lucide-react';
 import { DEFAULT_EMAIL_HTML_TEMPLATE, DEFAULT_EMAIL_SUBJECT, renderEmailHtml } from '@/lib/emailTemplate';
 
@@ -121,6 +119,7 @@ export default function EmailBlastTab() {
 
   // Preview Modal
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [copiedCron, setCopiedCron] = useState(false);
 
   // Load SMTP on mount
   useEffect(() => {
@@ -339,7 +338,7 @@ export default function EmailBlastTab() {
           activeHoursStart: campaignHoursStart,
           activeHoursEnd: campaignHoursEnd,
           rawRecipientsText: rawRecipients,
-          status: 'paused', // Start paused so user can review queue first
+          status: 'paused',
         }),
       });
       const data = await res.json();
@@ -359,7 +358,6 @@ export default function EmailBlastTab() {
     }
   }
 
-  // Handle CSV file upload
   function handleCsvFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -375,7 +373,6 @@ export default function EmailBlastTab() {
 
   const selectedCampaign = campaigns.find((c) => c.id === selectedCampaignId);
 
-  // Format date helper
   const formatTime = (dateStr: string | null) => {
     if (!dateStr) return '-';
     const d = new Date(dateStr);
@@ -387,58 +384,60 @@ export default function EmailBlastTab() {
     });
   };
 
+  const cronCommand = '*/8 * * * * curl -s "https://playlistlivefestival.letsplaymaker.com/api/email/worker" >/dev/null 2>&1';
+
   return (
     <div className="space-y-6">
-      {/* HEADER HERO BANNER */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-zinc-900 via-zinc-900 to-zinc-950 border border-zinc-800 p-6 shadow-xl">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-transparent rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* HEADER HERO BANNER - Clean White Style */}
+      <div className="bg-white border border-zinc-200 rounded-3xl p-6 sm:p-7 shadow-xs relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/20 text-pink-400 text-xs font-semibold uppercase tracking-wider mb-2">
-              <Sparkles className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-50 border border-pink-200 text-pink-700 text-xs font-semibold tracking-wide mb-2.5">
+              <Sparkles className="w-3.5 h-3.5 text-pink-500" />
               Sistem Email Blast Terjadwal &amp; Aman
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight flex items-center gap-2">
-              <span>Nostalgia Mailer Queue</span>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                Safe SMTP
+            <h2 className="text-2xl sm:text-3xl font-bold text-zinc-950 tracking-tight flex items-center gap-2.5">
+              <span>Email Blast &amp; Queue</span>
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-zinc-100 text-zinc-700 border border-zinc-200 font-medium">
+                Safe SMTP Throttle
               </span>
             </h2>
-            <p className="text-sm text-zinc-400 mt-1 max-w-2xl">
-              Kirim email massal secara bertahap (1 email per 5–10 menit). Anti-spam, aman dari risiko suspend hosting,
-              dan dilengkapi estimasi jam pengiriman realtime.
+            <p className="text-xs sm:text-sm text-zinc-500 mt-1 max-w-2xl leading-relaxed">
+              Kirim email massal secara otomatis dan berkala (1 email per 5–10 menit). Anti-spam, aman dari risiko suspend hosting, dan dilengkapi estimasi jam pengiriman realtime.
             </p>
           </div>
 
           {/* Quick Metrics Bar */}
           <div className="flex items-center gap-3 shrink-0">
-            <div className="bg-zinc-800/80 border border-zinc-700/60 rounded-xl px-4 py-2.5 text-center min-w-[110px]">
-              <div className="text-xs text-zinc-400 font-medium">Terkirim Hari Ini</div>
-              <div className="text-xl font-bold text-emerald-400 mt-0.5">
-                {queueSentToday} <span className="text-xs text-zinc-500 font-normal">/ {selectedCampaign?.dailyLimit || 80}</span>
+            <div className="bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-center min-w-[120px]">
+              <div className="text-xs text-zinc-500 font-medium">Terkirim Hari Ini</div>
+              <div className="text-2xl font-bold text-emerald-600 mt-0.5">
+                {queueSentToday} <span className="text-xs text-zinc-400 font-normal">/ {selectedCampaign?.dailyLimit || 80}</span>
               </div>
             </div>
-            <div className="bg-zinc-800/80 border border-zinc-700/60 rounded-xl px-4 py-2.5 text-center min-w-[110px]">
-              <div className="text-xs text-zinc-400 font-medium">Total Antrean</div>
-              <div className="text-xl font-bold text-white mt-0.5">{queueTotal}</div>
+            <div className="bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-center min-w-[110px]">
+              <div className="text-xs text-zinc-500 font-medium">Total Antrean</div>
+              <div className="text-2xl font-bold text-zinc-900 mt-0.5">{queueTotal}</div>
             </div>
           </div>
         </div>
 
         {/* SUB NAVIGATION TABS */}
-        <div className="flex items-center gap-2 mt-6 pt-5 border-t border-zinc-800/80 flex-wrap">
+        <div className="flex items-center gap-2 mt-6 pt-5 border-t border-zinc-200 flex-wrap">
           <button
             onClick={() => setActiveSubTab('queue')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${
               activeSubTab === 'queue'
-                ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg shadow-pink-500/20'
-                : 'bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-800'
+                ? 'bg-zinc-950 text-white shadow-xs'
+                : 'bg-zinc-100 hover:bg-zinc-200/80 text-zinc-700'
             }`}
           >
             <Clock className="w-4 h-4" />
             <span>Antrean &amp; Monitor Realtime</span>
             {queueTotal > 0 && (
-              <span className="ml-1 px-2 py-0.5 rounded-full bg-white/20 text-white text-xs">
+              <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-bold ${
+                activeSubTab === 'queue' ? 'bg-white/20 text-white' : 'bg-zinc-200 text-zinc-800'
+              }`}>
                 {queueTotal}
               </span>
             )}
@@ -446,10 +445,10 @@ export default function EmailBlastTab() {
 
           <button
             onClick={() => setActiveSubTab('new_campaign')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${
               activeSubTab === 'new_campaign'
-                ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg shadow-pink-500/20'
-                : 'bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-800'
+                ? 'bg-zinc-950 text-white shadow-xs'
+                : 'bg-zinc-100 hover:bg-zinc-200/80 text-zinc-700'
             }`}
           >
             <UploadCloud className="w-4 h-4" />
@@ -458,10 +457,10 @@ export default function EmailBlastTab() {
 
           <button
             onClick={() => setActiveSubTab('smtp')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${
               activeSubTab === 'smtp'
-                ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg shadow-pink-500/20'
-                : 'bg-zinc-800/60 text-zinc-400 hover:text-white hover:bg-zinc-800'
+                ? 'bg-zinc-950 text-white shadow-xs'
+                : 'bg-zinc-100 hover:bg-zinc-200/80 text-zinc-700'
             }`}
           >
             <Settings className="w-4 h-4" />
@@ -475,18 +474,18 @@ export default function EmailBlastTab() {
       {/* ========================================================================= */}
       {activeSubTab === 'queue' && (
         <div className="space-y-6">
-          {/* CAMPAIGN SELECTOR & CONTROLS */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4">
+          {/* CAMPAIGN CONTROLLER CARD */}
+          <div className="bg-white border border-zinc-200 rounded-3xl p-6 shadow-xs space-y-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               {/* Campaign Switcher */}
               <div className="flex items-center gap-3">
-                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider shrink-0">
+                <label className="text-xs font-bold text-zinc-600 uppercase tracking-wider shrink-0">
                   Pilih Campaign:
                 </label>
                 <select
                   value={selectedCampaignId || ''}
                   onChange={(e) => setSelectedCampaignId(Number(e.target.value))}
-                  className="bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-3 py-2 font-medium focus:outline-none focus:border-pink-500"
+                  className="bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-3 py-2 font-medium focus:bg-white focus:outline-none focus:border-zinc-900"
                 >
                   {campaigns.length === 0 && <option value="">(Belum ada campaign)</option>}
                   {campaigns.map((c) => (
@@ -504,24 +503,24 @@ export default function EmailBlastTab() {
                     {selectedCampaign.status === 'running' ? (
                       <button
                         onClick={() => handleToggleCampaignStatus('paused')}
-                        className="px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all shadow-sm"
+                        className="px-4 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all shadow-2xs"
                       >
                         <Pause className="w-4 h-4" />
-                        Jeda Pengiriman (Pause)
+                        Jeda (Pause)
                       </button>
                     ) : (
                       <button
                         onClick={() => handleToggleCampaignStatus('running')}
-                        className="px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all shadow-sm"
+                        className="px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all shadow-2xs"
                       >
                         <Play className="w-4 h-4" />
-                        Jalankan Pengiriman (Start)
+                        Mulai (Start)
                       </button>
                     )}
 
                     <button
                       onClick={handleResetFailed}
-                      className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs sm:text-sm font-medium flex items-center gap-1.5 transition-all border border-zinc-700"
+                      className="px-3.5 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs sm:text-sm font-medium flex items-center gap-1.5 transition-all border border-zinc-200"
                       title="Kembalikan email gagal ke status antrean"
                     >
                       <RotateCcw className="w-4 h-4" />
@@ -533,12 +532,12 @@ export default function EmailBlastTab() {
                 <button
                   onClick={handleTriggerWorkerNow}
                   disabled={workerRunning}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all shadow-md disabled:opacity-50"
+                  className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all shadow-xs disabled:opacity-50"
                 >
                   {workerRunning ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Zap className="w-4 h-4" />
+                    <Zap className="w-4 h-4 text-amber-400" />
                   )}
                   Kirim 1 Sekarang (Manual)
                 </button>
@@ -548,8 +547,8 @@ export default function EmailBlastTab() {
                     fetchCampaigns();
                     fetchQueue();
                   }}
-                  className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-all border border-zinc-700"
-                  title="Refresh status antrean"
+                  className="p-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition-all border border-zinc-200"
+                  title="Refresh antrean"
                 >
                   <RefreshCw className={`w-4 h-4 ${queueLoading ? 'animate-spin' : ''}`} />
                 </button>
@@ -558,11 +557,11 @@ export default function EmailBlastTab() {
 
             {/* Live Worker Diagnostic Message */}
             {workerLog && (
-              <div className="px-4 py-2.5 rounded-xl bg-zinc-800/90 border border-zinc-700 text-xs text-zinc-200 flex items-center justify-between">
+              <div className="px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-800 flex items-center justify-between">
                 <span className="font-mono">{workerLog}</span>
                 <button
                   onClick={() => setWorkerLog(null)}
-                  className="text-zinc-500 hover:text-zinc-300 text-xs ml-2"
+                  className="text-zinc-400 hover:text-zinc-600 text-xs ml-2 font-bold"
                 >
                   ✕
                 </button>
@@ -571,22 +570,22 @@ export default function EmailBlastTab() {
 
             {/* Campaign Summary Strip */}
             {selectedCampaign && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-zinc-800 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-zinc-200 text-xs">
                 <div>
                   <span className="text-zinc-500">Interval Throttle:</span>
-                  <p className="font-semibold text-zinc-200 mt-0.5">
+                  <p className="font-semibold text-zinc-900 mt-0.5">
                     1 email per {selectedCampaign.intervalMinutes} menit
                   </p>
                 </div>
                 <div>
                   <span className="text-zinc-500">Limit Maks Harian:</span>
-                  <p className="font-semibold text-zinc-200 mt-0.5">
+                  <p className="font-semibold text-zinc-900 mt-0.5">
                     {selectedCampaign.dailyLimit} email / hari
                   </p>
                 </div>
                 <div>
                   <span className="text-zinc-500">Jam Operasional:</span>
-                  <p className="font-semibold text-zinc-200 mt-0.5">
+                  <p className="font-semibold text-zinc-900 mt-0.5">
                     {selectedCampaign.activeHoursStart}:00 - {selectedCampaign.activeHoursEnd}:00 WIB
                   </p>
                 </div>
@@ -594,9 +593,13 @@ export default function EmailBlastTab() {
                   <span className="text-zinc-500">Status Saat Ini:</span>
                   <p className="font-semibold mt-0.5">
                     {selectedCampaign.status === 'running' ? (
-                      <span className="text-emerald-400">● Berjalan Otomatis</span>
+                      <span className="inline-flex items-center gap-1 text-emerald-600 font-bold">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Berjalan Otomatis
+                      </span>
                     ) : (
-                      <span className="text-amber-400">❚❚ Dijeda (Paused)</span>
+                      <span className="inline-flex items-center gap-1 text-amber-600 font-bold">
+                        <span className="w-2 h-2 rounded-full bg-amber-500" /> Dijeda (Paused)
+                      </span>
                     )}
                   </p>
                 </div>
@@ -605,9 +608,9 @@ export default function EmailBlastTab() {
           </div>
 
           {/* QUEUE TABLE & FILTERS */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-white border border-zinc-200 rounded-3xl overflow-hidden shadow-xs">
             {/* Table Control Bar */}
-            <div className="p-4 border-b border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="p-4 border-b border-zinc-200 flex flex-col sm:flex-row items-center justify-between gap-3 bg-zinc-50/50">
               {/* Status Filter Badges */}
               <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
                 {[
@@ -622,10 +625,10 @@ export default function EmailBlastTab() {
                       setQueueStatusFilter(f.id);
                       setQueuePage(1);
                     }}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                       queueStatusFilter === f.id
-                        ? 'bg-zinc-700 text-white'
-                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
+                        ? 'bg-zinc-900 text-white shadow-2xs'
+                        : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200/60'
                     }`}
                   >
                     {f.label}
@@ -635,7 +638,7 @@ export default function EmailBlastTab() {
 
               {/* Search Bar */}
               <div className="relative w-full sm:w-64">
-                <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   placeholder="Cari nama atau email..."
@@ -644,7 +647,7 @@ export default function EmailBlastTab() {
                     setQueueSearch(e.target.value);
                     setQueuePage(1);
                   }}
-                  className="w-full bg-zinc-800 border border-zinc-700 text-zinc-200 text-xs rounded-xl pl-9 pr-3 py-2 focus:outline-none focus:border-pink-500"
+                  className="w-full bg-white border border-zinc-300 text-zinc-900 text-xs rounded-xl pl-9 pr-3 py-2 focus:outline-none focus:border-zinc-900"
                 />
               </div>
             </div>
@@ -652,21 +655,21 @@ export default function EmailBlastTab() {
             {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-950/60 text-zinc-400 uppercase tracking-wider font-semibold border-b border-zinc-800">
+                <thead className="bg-zinc-50 text-zinc-600 uppercase tracking-wider font-semibold border-b border-zinc-200">
                   <tr>
-                    <th className="py-3 px-4 w-12">No</th>
-                    <th className="py-3 px-4">Nama</th>
-                    <th className="py-3 px-4">Email Penerima</th>
-                    <th className="py-3 px-4 text-center">Status</th>
-                    <th className="py-3 px-4">Estimasi Waktu Kirim</th>
-                    <th className="py-3 px-4">Waktu Terkirim</th>
-                    <th className="py-3 px-4">Keterangan / Error</th>
+                    <th className="py-3.5 px-4 w-12 text-zinc-400">No</th>
+                    <th className="py-3.5 px-4">Nama</th>
+                    <th className="py-3.5 px-4">Email Penerima</th>
+                    <th className="py-3.5 px-4 text-center">Status</th>
+                    <th className="py-3.5 px-4">Estimasi Waktu Kirim</th>
+                    <th className="py-3.5 px-4">Waktu Terkirim</th>
+                    <th className="py-3.5 px-4">Keterangan / Error</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
+                <tbody className="divide-y divide-zinc-200 text-zinc-800">
                   {queueItems.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-12 text-center text-zinc-500">
+                      <td colSpan={7} className="py-12 text-center text-zinc-400">
                         {queueLoading
                           ? 'Memuat data antrean...'
                           : 'Belum ada email dalam antrean ini. Silakan buat campaign dan import sheet.'}
@@ -676,49 +679,49 @@ export default function EmailBlastTab() {
                     queueItems.map((item, idx) => {
                       const rowNumber = (queuePage - 1) * queueLimit + idx + 1;
                       return (
-                        <tr key={item.id} className="hover:bg-zinc-800/40 transition-colors">
-                          <td className="py-3 px-4 text-zinc-500 font-mono">{rowNumber}</td>
-                          <td className="py-3 px-4 font-medium text-white">{item.name || '-'}</td>
-                          <td className="py-3 px-4 font-mono text-zinc-300">{item.email}</td>
-                          <td className="py-3 px-4 text-center">
+                        <tr key={item.id} className="hover:bg-zinc-50/70 transition-colors">
+                          <td className="py-3.5 px-4 text-zinc-400 font-mono">{rowNumber}</td>
+                          <td className="py-3.5 px-4 font-semibold text-zinc-900">{item.name || '-'}</td>
+                          <td className="py-3.5 px-4 font-mono text-zinc-600">{item.email}</td>
+                          <td className="py-3.5 px-4 text-center">
                             {item.status === 'sent' && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/20">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">
                                 <CheckCircle2 className="w-3 h-3" /> Terkirim
                               </span>
                             )}
                             {item.status === 'pending' && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 font-semibold border border-amber-500/20">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 font-semibold border border-amber-200">
                                 <Clock className="w-3 h-3" /> Dalam Antrean
                               </span>
                             )}
                             {item.status === 'sending' && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 font-semibold border border-blue-500/20">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-semibold border border-blue-200">
                                 <RefreshCw className="w-3 h-3 animate-spin" /> Mengirim...
                               </span>
                             )}
                             {item.status === 'failed' && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 font-semibold border border-rose-500/20">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 font-semibold border border-rose-200">
                                 <AlertCircle className="w-3 h-3" /> Gagal
                               </span>
                             )}
                           </td>
-                          <td className="py-3 px-4 font-mono text-zinc-400">
+                          <td className="py-3.5 px-4 font-mono text-zinc-600">
                             {item.status === 'sent' ? (
-                              <span className="text-zinc-600 line-through">
+                              <span className="text-zinc-400 line-through">
                                 {formatTime(item.scheduledAt)}
                               </span>
                             ) : (
-                              <span className="text-pink-300 font-semibold">
+                              <span className="text-pink-600 font-semibold">
                                 {formatTime(item.scheduledAt)}
                               </span>
                             )}
                           </td>
-                          <td className="py-3 px-4 font-mono text-emerald-400">
+                          <td className="py-3.5 px-4 font-mono text-emerald-600 font-medium">
                             {item.sentAt ? formatTime(item.sentAt) : '-'}
                           </td>
-                          <td className="py-3 px-4 text-zinc-500 max-w-xs truncate" title={item.errorMessage || ''}>
+                          <td className="py-3.5 px-4 text-zinc-500 max-w-xs truncate" title={item.errorMessage || ''}>
                             {item.errorMessage ? (
-                              <span className="text-rose-400 font-mono text-[11px]">{item.errorMessage}</span>
+                              <span className="text-rose-600 font-mono text-[11px]">{item.errorMessage}</span>
                             ) : (
                               '-'
                             )}
@@ -733,7 +736,7 @@ export default function EmailBlastTab() {
 
             {/* Pagination Controls */}
             {queueTotal > queueLimit && (
-              <div className="p-4 border-t border-zinc-800 flex items-center justify-between text-xs text-zinc-400">
+              <div className="p-4 border-t border-zinc-200 flex items-center justify-between text-xs text-zinc-500 bg-zinc-50/50">
                 <span>
                   Menampilkan {(queuePage - 1) * queueLimit + 1} -{' '}
                   {Math.min(queuePage * queueLimit, queueTotal)} dari {queueTotal} email
@@ -742,17 +745,17 @@ export default function EmailBlastTab() {
                   <button
                     onClick={() => setQueuePage((p) => Math.max(1, p - 1))}
                     disabled={queuePage === 1}
-                    className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40"
+                    className="p-1.5 rounded-lg bg-white border border-zinc-200 hover:bg-zinc-100 disabled:opacity-40"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <span className="px-3 font-semibold text-white">
+                  <span className="px-3 font-semibold text-zinc-800">
                     Hal {queuePage} / {Math.ceil(queueTotal / queueLimit)}
                   </span>
                   <button
                     onClick={() => setQueuePage((p) => Math.min(Math.ceil(queueTotal / queueLimit), p + 1))}
                     disabled={queuePage >= Math.ceil(queueTotal / queueLimit)}
-                    className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40"
+                    className="p-1.5 rounded-lg bg-white border border-zinc-200 hover:bg-zinc-100 disabled:opacity-40"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -769,41 +772,41 @@ export default function EmailBlastTab() {
       {activeSubTab === 'new_campaign' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* LEFT FORM */}
-          <div className="lg:col-span-7 bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm space-y-5">
+          <div className="lg:col-span-7 bg-white border border-zinc-200 rounded-3xl p-6 sm:p-7 shadow-xs space-y-5">
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <UploadCloud className="w-5 h-5 text-pink-500" />
+              <h3 className="text-lg font-bold text-zinc-900 flex items-center gap-2">
+                <UploadCloud className="w-5 h-5 text-pink-600" />
                 <span>Import Daftar Email &amp; Konfigurasi Campaign</span>
               </h3>
-              <p className="text-xs text-zinc-400 mt-1">
+              <p className="text-xs text-zinc-500 mt-1">
                 Anda bisa memasukkan ribuan email sekaligus via upload file CSV atau langsung paste teks dari Excel/Sheet.
               </p>
             </div>
 
             {/* Campaign Title */}
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
                 Nama / Judul Campaign
               </label>
               <input
                 type="text"
                 value={campaignTitle}
                 onChange={(e) => setCampaignTitle(e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-pink-500"
+                className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900"
                 placeholder="Contoh: Blast Presale Tiket Phase 1"
               />
             </div>
 
             {/* Subject */}
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
                 Subjek Email
               </label>
               <input
                 type="text"
                 value={campaignSubject}
                 onChange={(e) => setCampaignSubject(e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-pink-500"
+                className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900"
                 placeholder="Subjek email..."
               />
             </div>
@@ -811,10 +814,10 @@ export default function EmailBlastTab() {
             {/* Recipients Import Area */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider">
+                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider">
                   Daftar Penerima (Nama, Email)
                 </label>
-                <label className="text-xs text-pink-400 hover:text-pink-300 cursor-pointer font-medium flex items-center gap-1">
+                <label className="text-xs text-pink-600 hover:text-pink-700 cursor-pointer font-semibold flex items-center gap-1">
                   <UploadCloud className="w-3.5 h-3.5" />
                   <span>Upload File CSV / TXT</span>
                   <input
@@ -831,27 +834,27 @@ export default function EmailBlastTab() {
                 value={rawRecipients}
                 onChange={(e) => setRawRecipients(e.target.value)}
                 placeholder="Paste data dari Excel / Spreadsheet di sini...&#10;Contoh format per baris:&#10;Budi Santoso, budi@gmail.com&#10;Sarah Wijaya, sarah@yahoo.com&#10;dimas@gmail.com"
-                className="w-full bg-zinc-800 border border-zinc-700 text-zinc-200 font-mono text-xs rounded-xl p-3 focus:outline-none focus:border-pink-500"
+                className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 font-mono text-xs rounded-xl p-3 focus:bg-white focus:outline-none focus:border-zinc-900"
               />
-              <div className="flex items-center justify-between text-xs text-zinc-400 mt-1">
+              <div className="flex items-center justify-between text-xs text-zinc-500 mt-1.5">
                 <span>
                   Status:{' '}
-                  <strong className="text-emerald-400">{parsedPreviewCount} email valid terdeteksi</strong>
+                  <strong className="text-emerald-600">{parsedPreviewCount} email valid terdeteksi</strong>
                 </span>
-                <span className="text-zinc-500">Mendukung ribuan baris data</span>
+                <span className="text-zinc-400">Mendukung ribuan baris data</span>
               </div>
             </div>
 
             {/* Safety Throttling Settings */}
-            <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800 space-y-4">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-pink-400">
-                <ShieldCheck className="w-4 h-4" />
+            <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-4">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-800">
+                <ShieldCheck className="w-4 h-4 text-pink-600" />
                 <span>Pengaturan Keamanan Hosting (Safe Throttling)</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-zinc-400 mb-1">
+                  <label className="block text-xs text-zinc-600 mb-1">
                     Jeda Kirim (Interval per 1 Email):
                   </label>
                   <div className="flex items-center gap-2">
@@ -861,9 +864,9 @@ export default function EmailBlastTab() {
                       max={60}
                       value={campaignInterval}
                       onChange={(e) => setCampaignInterval(Number(e.target.value))}
-                      className="w-24 bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-3 py-2 font-bold text-center focus:outline-none focus:border-pink-500"
+                      className="w-24 bg-white border border-zinc-300 text-zinc-900 text-sm rounded-xl px-3 py-2 font-bold text-center focus:outline-none focus:border-zinc-900"
                     />
-                    <span className="text-xs text-zinc-300 font-medium">Menit / email</span>
+                    <span className="text-xs text-zinc-600 font-medium">Menit / email</span>
                   </div>
                   <p className="text-[11px] text-zinc-500 mt-1">
                     Rekomendasi: <strong>8 menit</strong> (~7 email/jam)
@@ -871,7 +874,7 @@ export default function EmailBlastTab() {
                 </div>
 
                 <div>
-                  <label className="block text-xs text-zinc-400 mb-1">
+                  <label className="block text-xs text-zinc-600 mb-1">
                     Batas Maksimal Harian:
                   </label>
                   <div className="flex items-center gap-2">
@@ -881,9 +884,9 @@ export default function EmailBlastTab() {
                       max={500}
                       value={campaignDailyLimit}
                       onChange={(e) => setCampaignDailyLimit(Number(e.target.value))}
-                      className="w-24 bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-3 py-2 font-bold text-center focus:outline-none focus:border-pink-500"
+                      className="w-24 bg-white border border-zinc-300 text-zinc-900 text-sm rounded-xl px-3 py-2 font-bold text-center focus:outline-none focus:border-zinc-900"
                     />
-                    <span className="text-xs text-zinc-300 font-medium">Email / hari</span>
+                    <span className="text-xs text-zinc-600 font-medium">Email / hari</span>
                   </div>
                   <p className="text-[11px] text-zinc-500 mt-1">
                     Rekomendasi: <strong>60–80 email</strong> per hari
@@ -891,9 +894,9 @@ export default function EmailBlastTab() {
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-zinc-800/80 text-xs text-zinc-400 flex items-center justify-between">
+              <div className="pt-3 border-t border-zinc-200 text-xs text-zinc-600 flex items-center justify-between">
                 <span>Jam Aktif Pengiriman:</span>
-                <span className="font-semibold text-zinc-200">
+                <span className="font-semibold text-zinc-900">
                   {campaignHoursStart}:00 WIB – {campaignHoursEnd}:00 WIB
                 </span>
               </div>
@@ -904,8 +907,8 @@ export default function EmailBlastTab() {
               <div
                 className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
                   createMessage.type === 'success'
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-rose-50 text-rose-800 border border-rose-200'
                 }`}
               >
                 {createMessage.text}
@@ -917,12 +920,12 @@ export default function EmailBlastTab() {
               <button
                 onClick={handleCreateCampaign}
                 disabled={creatingCampaign || parsedPreviewCount === 0}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600 hover:opacity-90 text-white font-bold text-sm shadow-lg shadow-pink-500/20 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+                className="flex-1 py-3 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white font-bold text-sm shadow-xs transition-all disabled:opacity-40 flex items-center justify-center gap-2"
               >
                 {creatingCampaign ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
                 ) : (
-                  <Send className="w-4 h-4" />
+                  <Send className="w-4 h-4 text-pink-400" />
                 )}
                 <span>Simpan &amp; Masukkan ke Antrean ({parsedPreviewCount})</span>
               </button>
@@ -930,9 +933,9 @@ export default function EmailBlastTab() {
               <button
                 type="button"
                 onClick={() => setShowPreviewModal(true)}
-                className="px-4 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-sm font-semibold flex items-center gap-1.5 transition-all border border-zinc-700"
+                className="px-4 py-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-sm font-semibold flex items-center gap-1.5 transition-all border border-zinc-200"
               >
-                <Eye className="w-4 h-4" />
+                <Eye className="w-4 h-4 text-zinc-600" />
                 <span>Preview Desain</span>
               </button>
             </div>
@@ -941,12 +944,12 @@ export default function EmailBlastTab() {
           {/* RIGHT SIDE: LIVE EMAIL PREVIEW & TEST SEND */}
           <div className="lg:col-span-5 space-y-6">
             {/* Quick Test Send Box */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-sm space-y-3">
-              <div className="flex items-center gap-2 text-sm font-bold text-white">
-                <Mail className="w-4 h-4 text-purple-400" />
+            <div className="bg-white border border-zinc-200 rounded-3xl p-6 shadow-xs space-y-3.5">
+              <div className="flex items-center gap-2 text-sm font-bold text-zinc-900">
+                <Mail className="w-4 h-4 text-pink-600" />
                 <span>Kirim Uji Coba (Test Send)</span>
               </div>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-zinc-500 leading-relaxed">
                 Kirim 1 email percobaan langsung ke inbox pribadi Anda untuk melihat tampilan visual sebelum blast dijalankan.
               </p>
 
@@ -956,12 +959,12 @@ export default function EmailBlastTab() {
                   value={testEmailAddress}
                   onChange={(e) => setTestEmailAddress(e.target.value)}
                   placeholder="Masukkan email tester Anda..."
-                  className="flex-1 bg-zinc-800 border border-zinc-700 text-white text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-purple-500 font-mono"
+                  className="flex-1 bg-zinc-50 border border-zinc-300 text-zinc-900 text-xs rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900 font-mono"
                 />
                 <button
                   onClick={handleSendTestEmail}
                   disabled={sendingTest}
-                  className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold transition-all disabled:opacity-50 shrink-0 flex items-center gap-1.5"
+                  className="px-4 py-2.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-semibold transition-all disabled:opacity-50 shrink-0 flex items-center gap-1.5"
                 >
                   {sendingTest ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                   <span>Kirim</span>
@@ -972,8 +975,8 @@ export default function EmailBlastTab() {
                 <div
                   className={`p-2.5 rounded-xl text-xs ${
                     testMessage.type === 'success'
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                      : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                      : 'bg-rose-50 text-rose-800 border border-rose-200'
                   }`}
                 >
                   {testMessage.text}
@@ -982,17 +985,17 @@ export default function EmailBlastTab() {
             </div>
 
             {/* Email Visual Preview Card */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-sm space-y-3">
+            <div className="bg-white border border-zinc-200 rounded-3xl p-6 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-700">
                   Pratinjau Visual Template
                 </span>
-                <span className="text-[11px] px-2 py-0.5 rounded-md bg-pink-500/10 text-pink-400 font-mono">
+                <span className="text-[11px] px-2.5 py-0.5 rounded-md bg-pink-50 text-pink-700 font-mono border border-pink-200">
                   Tag: {'{name}'}
                 </span>
               </div>
 
-              <div className="border border-zinc-800 rounded-xl overflow-hidden bg-[#0f1117] h-[480px]">
+              <div className="border border-zinc-200 rounded-2xl overflow-hidden bg-[#0f1117] h-[460px] shadow-inner">
                 <iframe
                   title="Live Email Preview"
                   srcDoc={renderEmailHtml(campaignTemplate, 'Budi Santoso', '#')}
@@ -1009,20 +1012,20 @@ export default function EmailBlastTab() {
       {/* ========================================================================= */}
       {activeSubTab === 'smtp' && (
         <div className="max-w-3xl mx-auto space-y-6">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm space-y-6">
+          <div className="bg-white border border-zinc-200 rounded-3xl p-7 sm:p-8 shadow-xs space-y-6">
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Settings className="w-5 h-5 text-pink-500" />
+              <h3 className="text-lg font-bold text-zinc-900 flex items-center gap-2">
+                <Settings className="w-5 h-5 text-pink-600" />
                 <span>Konfigurasi SMTP Email Hosting</span>
               </h3>
-              <p className="text-xs text-zinc-400 mt-1">
+              <p className="text-xs text-zinc-500 mt-1">
                 Masukkan detail SMTP dari cPanel / Webmail / CloudPanel / Penyedia Hosting Anda.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
                   SMTP Host
                 </label>
                 <input
@@ -1030,12 +1033,12 @@ export default function EmailBlastTab() {
                   value={smtp.host}
                   onChange={(e) => setSmtp({ ...smtp, host: e.target.value })}
                   placeholder="mail.playlistlivefestival.com atau smtp.hostinger.com"
-                  className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-pink-500 font-mono"
+                  className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900 font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
                   Port
                 </label>
                 <input
@@ -1043,14 +1046,14 @@ export default function EmailBlastTab() {
                   value={smtp.port}
                   onChange={(e) => setSmtp({ ...smtp, port: Number(e.target.value) })}
                   placeholder="465"
-                  className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-pink-500 font-mono"
+                  className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900 font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
                   Username / Email Login
                 </label>
                 <input
@@ -1058,12 +1061,12 @@ export default function EmailBlastTab() {
                   value={smtp.user}
                   onChange={(e) => setSmtp({ ...smtp, user: e.target.value })}
                   placeholder="info@playlistlivefestival.com"
-                  className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-pink-500 font-mono"
+                  className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900 font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
                   Password Email
                 </label>
                 <input
@@ -1071,14 +1074,14 @@ export default function EmailBlastTab() {
                   value={smtp.pass}
                   onChange={(e) => setSmtp({ ...smtp, pass: e.target.value })}
                   placeholder="••••••••"
-                  className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-pink-500 font-mono"
+                  className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900 font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
                   Sender Email (Dari)
                 </label>
                 <input
@@ -1086,12 +1089,12 @@ export default function EmailBlastTab() {
                   value={smtp.fromEmail}
                   onChange={(e) => setSmtp({ ...smtp, fromEmail: e.target.value })}
                   placeholder="info@playlistlivefestival.com"
-                  className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-pink-500 font-mono"
+                  className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900 font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
                   Nama Pengirim (Display Name)
                 </label>
                 <input
@@ -1099,7 +1102,7 @@ export default function EmailBlastTab() {
                   value={smtp.fromName}
                   onChange={(e) => setSmtp({ ...smtp, fromName: e.target.value })}
                   placeholder="Playlist Live Festival"
-                  className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-pink-500"
+                  className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900"
                 />
               </div>
             </div>
@@ -1107,10 +1110,10 @@ export default function EmailBlastTab() {
             {/* Status Message */}
             {smtpMessage && (
               <div
-                className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                className={`p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 ${
                   smtpMessage.type === 'success'
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-rose-50 text-rose-800 border border-rose-200'
                 }`}
               >
                 {smtpMessage.text}
@@ -1118,11 +1121,11 @@ export default function EmailBlastTab() {
             )}
 
             {/* Buttons */}
-            <div className="flex items-center gap-3 pt-3 border-t border-zinc-800">
+            <div className="flex items-center gap-3 pt-3 border-t border-zinc-200">
               <button
                 onClick={() => handleSaveSmtp(false)}
                 disabled={smtpLoading}
-                className="px-6 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-semibold text-sm transition-all shadow-md disabled:opacity-50"
+                className="px-6 py-2.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white font-semibold text-sm transition-all shadow-xs disabled:opacity-50"
               >
                 {smtpLoading ? 'Menyimpan...' : 'Simpan Pengaturan'}
               </button>
@@ -1130,12 +1133,12 @@ export default function EmailBlastTab() {
               <button
                 onClick={() => handleSaveSmtp(true)}
                 disabled={smtpTesting}
-                className="px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-semibold text-sm transition-all border border-zinc-700 disabled:opacity-50 flex items-center gap-2"
+                className="px-5 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-semibold text-sm transition-all border border-zinc-200 disabled:opacity-50 flex items-center gap-2"
               >
                 {smtpTesting ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
                 ) : (
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
                 )}
                 <span>Uji Koneksi SMTP</span>
               </button>
@@ -1143,22 +1146,33 @@ export default function EmailBlastTab() {
           </div>
 
           {/* CRON JOB SETUP GUIDE CARD */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-sm space-y-3">
-            <div className="flex items-center gap-2 text-sm font-bold text-white">
-              <Clock className="w-4 h-4 text-amber-400" />
+          <div className="bg-white border border-zinc-200 rounded-3xl p-7 shadow-xs space-y-3.5">
+            <div className="flex items-center gap-2 text-sm font-bold text-zinc-900">
+              <Clock className="w-4 h-4 text-pink-600" />
               <span>Jadwal Otomatis (Cron Job VPS / CloudPanel)</span>
             </div>
-            <p className="text-xs text-zinc-400 leading-relaxed">
+            <p className="text-xs text-zinc-500 leading-relaxed">
               Agar pengiriman 1 email tiap 8 menit berjalan otomatis 24 jam tanpa perlu Anda membuka halaman web ini,
               buat 1 Cron Job di VPS / CloudPanel Anda dengan baris perintah berikut:
             </p>
 
-            <div className="p-3 bg-zinc-950 rounded-xl border border-zinc-800 font-mono text-xs text-emerald-400 flex items-center justify-between overflow-x-auto">
-              <code>*/8 * * * * curl -s &quot;https://playlistlivefestival.letsplaymaker.com/api/email/worker&quot; &gt;/dev/null 2&gt;&amp;1</code>
+            <div className="p-3.5 bg-zinc-50 rounded-xl border border-zinc-200 font-mono text-xs text-zinc-900 flex items-center justify-between overflow-x-auto gap-3">
+              <code className="text-zinc-800">{cronCommand}</code>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(cronCommand);
+                  setCopiedCron(true);
+                  setTimeout(() => setCopiedCron(false), 2000);
+                }}
+                className="px-2.5 py-1 bg-white border border-zinc-300 rounded-lg text-xs text-zinc-700 hover:bg-zinc-100 font-medium shrink-0 flex items-center gap-1"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>{copiedCron ? 'Tersalin!' : 'Salin'}</span>
+              </button>
             </div>
-            <p className="text-[11px] text-zinc-500">
+            <p className="text-[11px] text-zinc-400">
               Perintah di atas akan memanggil worker setiap 8 menit. Worker secara cerdas hanya akan mengirim tepat 1
-              email yang berstatus antrean jika kuota harian belum habis dan masih dalam jam kerja (08:00 - 21:00).
+              email yang berstatus antrean jika kuota harian belum habis dan masih dalam jam kerja (08:00 - 21:00 WIB).
             </p>
           </div>
         </div>
@@ -1166,13 +1180,13 @@ export default function EmailBlastTab() {
 
       {/* FULL PREVIEW MODAL */}
       {showPreviewModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
-            <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-              <span className="font-bold text-white text-sm">Pratinjau Email Playlist Live Festival</span>
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-zinc-200 rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            <div className="p-4 border-b border-zinc-200 flex items-center justify-between bg-zinc-50">
+              <span className="font-bold text-zinc-900 text-sm">Pratinjau Email Playlist Live Festival</span>
               <button
                 onClick={() => setShowPreviewModal(false)}
-                className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800"
+                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-200"
               >
                 ✕
               </button>
@@ -1181,7 +1195,7 @@ export default function EmailBlastTab() {
               <iframe
                 title="Modal Email Preview"
                 srcDoc={renderEmailHtml(campaignTemplate, 'Budi Santoso', '#')}
-                className="w-full h-[600px] border-none rounded-xl"
+                className="w-full h-[600px] border-none rounded-2xl"
               />
             </div>
           </div>
