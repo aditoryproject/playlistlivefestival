@@ -49,12 +49,27 @@ export async function POST(req: NextRequest) {
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const domainUrl = `${protocol}://${host}`;
 
+    // Ensure official festival template or updated Goers CTA link
+    let finalHtml = templateHtml;
+    if (
+      type === 'official_festival' ||
+      !finalHtml ||
+      !finalHtml.includes('Perunggu') ||
+      finalHtml.includes('https://playlistlivefestival.letsplaymaker.com/" target="_blank"')
+    ) {
+      finalHtml = DEFAULT_EMAIL_HTML_TEMPLATE;
+    } else {
+      finalHtml = finalHtml
+        .replace(/https:\/\/playlistlivefestival\.letsplaymaker\.com\/(?=["']\s*target)/g, 'https://goers.co/playlistlivefestival2026')
+        .replace(/https:\/\/loket\.com(?=["'])/g, 'https://goers.co/playlistlivefestival2026');
+    }
+
     const sendResult = await sendQueuedEmail({
       settings: smtpSettings,
       toEmail: testEmail.trim(),
       toName: testName || 'Tester Playlist',
       subject: (subject || DEFAULT_EMAIL_SUBJECT).trim(),
-      templateHtml: templateHtml || DEFAULT_EMAIL_HTML_TEMPLATE,
+      templateHtml: finalHtml,
       domainUrl,
       isTest: true,
     });

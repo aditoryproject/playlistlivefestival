@@ -93,10 +93,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    let finalHtml = templateHtml;
+    if (
+      !finalHtml ||
+      !finalHtml.includes('Perunggu') ||
+      finalHtml.includes('https://playlistlivefestival.letsplaymaker.com/" target="_blank"')
+    ) {
+      finalHtml = DEFAULT_EMAIL_HTML_TEMPLATE;
+    } else {
+      finalHtml = finalHtml
+        .replace(/https:\/\/playlistlivefestival\.letsplaymaker\.com\/(?=["']\s*target)/g, 'https://goers.co/playlistlivefestival2026')
+        .replace(/https:\/\/loket\.com(?=["'])/g, 'https://goers.co/playlistlivefestival2026');
+    }
+
     const campaign = {
       title: (title || 'Nostalgia Festival Blast').trim(),
       subject: (subject || DEFAULT_EMAIL_SUBJECT).trim(),
-      templateHtml: templateHtml || DEFAULT_EMAIL_HTML_TEMPLATE,
+      templateHtml: finalHtml,
       intervalMinutes: Math.max(1, Number(intervalMinutes) || 8),
       dailyLimit: Math.max(5, Number(dailyLimit) || 80),
       activeHoursStart: Number(activeHoursStart) ?? 8,

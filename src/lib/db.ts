@@ -1,5 +1,6 @@
 import mysql from 'mysql2/promise';
 import { SiteConfig } from './config';
+import { DEFAULT_EMAIL_HTML_TEMPLATE } from './emailTemplate';
 
 // MySQL Connection Configuration from Environment Variables
 const DB_HOST = process.env.MYSQL_HOST || '127.0.0.1';
@@ -1454,6 +1455,21 @@ export async function getNextPendingEmailForWorker(): Promise<{
     }
 
     const campaign = campaigns[0] as EmailCampaignItem;
+
+    // Auto-update legacy template in running campaigns to ensure Goers ticket URL & all 15 artists
+    if (
+      campaign.templateHtml &&
+      (!campaign.templateHtml.includes('Perunggu') ||
+        campaign.templateHtml.includes('https://playlistlivefestival.letsplaymaker.com/" target="_blank"'))
+    ) {
+      campaign.templateHtml = DEFAULT_EMAIL_HTML_TEMPLATE;
+      await db
+        .query(`UPDATE email_campaigns SET template_html = ? WHERE id = ?`, [
+          DEFAULT_EMAIL_HTML_TEMPLATE,
+          campaign.id,
+        ])
+        .catch(() => {});
+    }
 
     // 2. Check active hours (e.g. 08:00 - 21:00 WIB)
     const currentHour = new Date().getHours();

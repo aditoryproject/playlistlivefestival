@@ -121,10 +121,17 @@ export default function EmailBlastTab() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [copiedCron, setCopiedCron] = useState(false);
 
-  // Load SMTP on mount
+  // Load SMTP on mount & auto-sync latest festival template
   useEffect(() => {
     fetchSmtp();
     fetchCampaigns();
+    if (
+      !campaignTemplate ||
+      !campaignTemplate.includes('Perunggu') ||
+      campaignTemplate.includes('https://playlistlivefestival.letsplaymaker.com/" target="_blank"')
+    ) {
+      setCampaignTemplate(DEFAULT_EMAIL_HTML_TEMPLATE);
+    }
   }, []);
 
   // When campaign selected or filter changed, reload queue
@@ -291,7 +298,10 @@ export default function EmailBlastTab() {
     }
   }
 
-  async function handleSendTestEmail(type: 'campaign' | 'system' = 'campaign', customTarget?: string) {
+  async function handleSendTestEmail(
+    type: 'campaign' | 'system' | 'official_festival' = 'campaign',
+    customTarget?: string
+  ) {
     const target = (customTarget || testEmailAddress || '').trim();
     if (!target || !target.includes('@')) {
       alert('Masukkan email penerima uji coba yang valid.');
@@ -307,7 +317,7 @@ export default function EmailBlastTab() {
           testEmail: target,
           testName: 'Sahabat Playlist (Tester)',
           subject: campaignSubject,
-          templateHtml: campaignTemplate,
+          templateHtml: type === 'official_festival' ? undefined : campaignTemplate,
           type,
         }),
       });
@@ -1224,7 +1234,7 @@ export default function EmailBlastTab() {
 
                 <button
                   type="button"
-                  onClick={() => handleSendTestEmail('campaign', testEmailAddress)}
+                  onClick={() => handleSendTestEmail('official_festival', testEmailAddress)}
                   disabled={sendingTest}
                   className="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs sm:text-sm font-semibold transition-all shadow-xs disabled:opacity-50 flex items-center gap-2"
                 >
