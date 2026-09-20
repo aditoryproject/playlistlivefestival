@@ -45,6 +45,7 @@ import {
 } from 'lucide-react';
 
 import Link from 'next/link';
+import EmailBlastTab from '@/components/EmailBlastTab';
 
 
 export default function AdminPage() {
@@ -55,7 +56,7 @@ export default function AdminPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'hero' | 'pixels' | 'seo' | 'lineup' | 'video' | 'features' | 'analytics' | 'affiliate' | 'compensation' | 'tenant'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'pixels' | 'seo' | 'lineup' | 'video' | 'features' | 'analytics' | 'affiliate' | 'compensation' | 'tenant' | 'email_blast'>('hero');
   const [config, setConfig] = useState<SiteConfig | null>(null);
 
   // Tenant F&B Submissions & Form Builder State
@@ -1003,6 +1004,7 @@ export default function AdminPage() {
             { id: 'pixels', label: 'Tracking & Pixels', icon: Tag },
             { id: 'seo', label: 'SEO & Meta Graph', icon: Globe },
             { id: 'features', label: 'Map & Features', icon: MapPin },
+            { id: 'email_blast', label: 'Email Blast (Queue)', icon: Mail },
             { id: 'affiliate', label: 'Program Affiliate', icon: Users },
             { id: 'compensation', label: 'Form Kompensasi', icon: FileText },
             { id: 'tenant', label: 'Pendaftaran Tenant F&B', icon: Utensils },
@@ -3622,6 +3624,10 @@ export default function AdminPage() {
             </div>
           )}
 
+          {/* TAB 11: EMAIL BLAST QUEUE */}
+          {activeTab === 'email_blast' && (
+            <EmailBlastTab />
+          )}
 
         </main>
       </div>

@@ -265,6 +265,74 @@ export async function initDatabase(): Promise<boolean> {
       // Column might already exist, ignore error
     }
 
+    // 8. Email SMTP Settings table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS email_smtp_settings (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        host VARCHAR(255) NOT NULL,
+        port INT NOT NULL DEFAULT 465,
+        secure TINYINT(1) NOT NULL DEFAULT 1,
+        user VARCHAR(255) NOT NULL,
+        pass VARCHAR(255) NOT NULL,
+        from_email VARCHAR(255) NOT NULL,
+        from_name VARCHAR(255) NOT NULL DEFAULT 'Playlist Live Festival',
+        reply_to VARCHAR(255) NULL,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    // 9. Email Blast Campaigns table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS email_campaigns (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        subject VARCHAR(255) NOT NULL,
+        template_html LONGTEXT NOT NULL,
+        interval_minutes INT NOT NULL DEFAULT 8,
+        daily_limit INT NOT NULL DEFAULT 80,
+        active_hours_start INT NOT NULL DEFAULT 8,
+        active_hours_end INT NOT NULL DEFAULT 21,
+        status VARCHAR(30) NOT NULL DEFAULT 'paused',
+        total_recipients INT NOT NULL DEFAULT 0,
+        sent_count INT NOT NULL DEFAULT 0,
+        failed_count INT NOT NULL DEFAULT 0,
+        last_sent_at DATETIME NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_campaign_status (status)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    // 10. Email Queue Items table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS email_queue (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        campaign_id BIGINT NOT NULL,
+        name VARCHAR(150) NULL,
+        email VARCHAR(190) NOT NULL,
+        status VARCHAR(30) NOT NULL DEFAULT 'pending',
+        scheduled_at DATETIME NULL,
+        sent_at DATETIME NULL,
+        error_message TEXT NULL,
+        retry_count INT NOT NULL DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_queue_campaign (campaign_id),
+        INDEX idx_queue_status (status),
+        INDEX idx_queue_scheduled (scheduled_at),
+        INDEX idx_queue_email (email)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    // 11. Email Unsubscribes table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS email_unsubscribes (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(190) NOT NULL UNIQUE,
+        unsubscribed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        reason VARCHAR(255) NULL,
+        INDEX idx_unsub_email (email)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
 
     isInitialized = true;
 
@@ -998,6 +1066,567 @@ export async function deleteTenantApplicationFromDb(id: string | number): Promis
     return true;
   }
   return false;
+}
+
+/* ==========================================================================
+   EMAIL BLAST QUEUE & SMTP DATABASE HELPERS
+   ========================================================================== */
+
+export interface SmtpSettings {
+  id?: number;
+  host: string;
+  port: number;
+  secure: boolean;
+  user: string;
+  pass: string;
+  fromEmail: string;
+  fromName: string;
+  replyTo?: string;
+  updatedAt?: string;
+}
+
+export interface EmailCampaignItem {
+  id: number;
+  title: string;
+  subject: string;
+  templateHtml: string;
+  intervalMinutes: number;
+  dailyLimit: number;
+  activeHoursStart: number;
+  activeHoursEnd: number;
+  status: 'draft' | 'running' | 'paused' | 'completed';
+  totalRecipients: number;
+  sentCount: number;
+  failedCount: number;
+  lastSentAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EmailQueueItem {
+  id: number;
+  campaignId: number;
+  name: string;
+  email: string;
+  status: 'pending' | 'sending' | 'sent' | 'failed';
+  scheduledAt: string | null;
+  sentAt: string | null;
+  errorMessage: string | null;
+  retryCount: number;
+  createdAt: string;
+}
+
+/**
+ * Fetch active SMTP settings
+ */
+export async function getSmtpSettingsFromDb(): Promise<SmtpSettings | null> {
+  const db = getDbPool();
+  if (!db) return null;
+
+  try {
+    await initDatabase();
+    const [rows]: any = await db.query(
+      `SELECT id, host, port, secure, user, pass, from_email as fromEmail, from_name as fromName, reply_to as replyTo, updated_at as updatedAt
+       FROM email_smtp_settings ORDER BY id DESC LIMIT 1`
+    );
+
+    if (rows && rows.length > 0) {
+      return {
+        id: rows[0].id,
+        host: rows[0].host,
+        port: Number(rows[0].port),
+        secure: Boolean(rows[0].secure),
+        user: rows[0].user,
+        pass: rows[0].pass,
+        fromEmail: rows[0].fromEmail,
+        fromName: rows[0].fromName,
+        replyTo: rows[0].replyTo || '',
+        updatedAt: rows[0].updatedAt,
+      };
+    }
+  } catch (err) {
+    console.warn('[MySQL DB] Error fetching SMTP settings:', err);
+  }
+  return null;
+}
+
+/**
+ * Save or update SMTP settings
+ */
+export async function saveSmtpSettingsToDb(settings: SmtpSettings): Promise<boolean> {
+  const db = getDbPool();
+  if (!db) return false;
+
+  try {
+    await initDatabase();
+    const existing = await getSmtpSettingsFromDb();
+    if (existing && existing.id) {
+      await db.query(
+        `UPDATE email_smtp_settings 
+         SET host = ?, port = ?, secure = ?, user = ?, pass = ?, from_email = ?, from_name = ?, reply_to = ?
+         WHERE id = ?`,
+        [
+          settings.host.trim(),
+          settings.port || 465,
+          settings.secure ? 1 : 0,
+          settings.user.trim(),
+          settings.pass,
+          settings.fromEmail.trim(),
+          settings.fromName.trim() || 'Playlist Live Festival',
+          (settings.replyTo || '').trim(),
+          existing.id,
+        ]
+      );
+    } else {
+      await db.query(
+        `INSERT INTO email_smtp_settings (host, port, secure, user, pass, from_email, from_name, reply_to)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          settings.host.trim(),
+          settings.port || 465,
+          settings.secure ? 1 : 0,
+          settings.user.trim(),
+          settings.pass,
+          settings.fromEmail.trim(),
+          settings.fromName.trim() || 'Playlist Live Festival',
+          (settings.replyTo || '').trim(),
+        ]
+      );
+    }
+    return true;
+  } catch (err) {
+    console.warn('[MySQL DB] Error saving SMTP settings:', err);
+    return false;
+  }
+}
+
+/**
+ * Create a new Email Campaign and bulk insert recipients into email_queue
+ */
+export async function createEmailCampaignWithRecipients(
+  campaign: {
+    title: string;
+    subject: string;
+    templateHtml: string;
+    intervalMinutes: number;
+    dailyLimit: number;
+    activeHoursStart: number;
+    activeHoursEnd: number;
+    status?: 'draft' | 'running' | 'paused';
+  },
+  recipients: Array<{ name: string; email: string }>
+): Promise<{ success: boolean; campaignId?: number; count?: number; error?: string }> {
+  const db = getDbPool();
+  if (!db) return { success: false, error: 'Database connection unavailable' };
+
+  try {
+    await initDatabase();
+
+    // 1. Get unsubscribed emails to filter them out
+    const [unsubs]: any = await db.query(`SELECT email FROM email_unsubscribes`);
+    const unsubSet = new Set((unsubs || []).map((u: any) => String(u.email).toLowerCase().trim()));
+
+    // 2. Filter & deduplicate valid emails
+    const uniqueRecipients: Array<{ name: string; email: string }> = [];
+    const seen = new Set<string>();
+
+    for (const r of recipients) {
+      const email = String(r.email || '').toLowerCase().trim();
+      if (!email || !email.includes('@') || !email.includes('.')) continue;
+      if (seen.has(email)) continue;
+      if (unsubSet.has(email)) continue;
+
+      seen.add(email);
+      uniqueRecipients.push({
+        name: (r.name || '').trim(),
+        email,
+      });
+    }
+
+    if (uniqueRecipients.length === 0) {
+      return { success: false, error: 'Tidak ada email valid untuk dimasukkan ke antrean.' };
+    }
+
+    // 3. Insert campaign
+    const [campResult]: any = await db.query(
+      `INSERT INTO email_campaigns 
+       (title, subject, template_html, interval_minutes, daily_limit, active_hours_start, active_hours_end, status, total_recipients, sent_count, failed_count)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)`,
+      [
+        campaign.title.trim() || 'Email Blast Campaign',
+        campaign.subject.trim(),
+        campaign.templateHtml,
+        campaign.intervalMinutes || 8,
+        campaign.dailyLimit || 80,
+        campaign.activeHoursStart || 8,
+        campaign.activeHoursEnd || 21,
+        campaign.status || 'paused',
+        uniqueRecipients.length,
+      ]
+    );
+
+    const campaignId = campResult.insertId;
+
+    // 4. Calculate estimated scheduled_at for each recipient based on interval
+    const now = Date.now();
+    const intervalMs = (campaign.intervalMinutes || 8) * 60 * 1000;
+
+    // Insert in chunks of 500 to avoid packet size limit
+    const chunkSize = 500;
+    for (let i = 0; i < uniqueRecipients.length; i += chunkSize) {
+      const chunk = uniqueRecipients.slice(i, i + chunkSize);
+      const values: any[] = [];
+      const placeholders: string[] = [];
+
+      chunk.forEach((rec, idx) => {
+        const itemIndex = i + idx;
+        const estTime = new Date(now + itemIndex * intervalMs);
+        const estSql = estTime.toISOString().slice(0, 19).replace('T', ' ');
+
+        placeholders.push('(?, ?, ?, ?, ?)');
+        values.push(campaignId, rec.name, rec.email, 'pending', estSql);
+      });
+
+      await db.query(
+        `INSERT INTO email_queue (campaign_id, name, email, status, scheduled_at)
+         VALUES ${placeholders.join(', ')}`,
+        values
+      );
+    }
+
+    return { success: true, campaignId, count: uniqueRecipients.length };
+  } catch (err: any) {
+    console.warn('[MySQL DB] Error creating email campaign:', err);
+    return { success: false, error: err.message || 'Gagal membuat antrean campaign' };
+  }
+}
+
+/**
+ * Get all email campaigns with latest stats
+ */
+export async function getEmailCampaignsFromDb(): Promise<EmailCampaignItem[]> {
+  const db = getDbPool();
+  if (!db) return [];
+
+  try {
+    await initDatabase();
+    const [rows]: any = await db.query(
+      `SELECT id, title, subject, template_html as templateHtml, interval_minutes as intervalMinutes,
+              daily_limit as dailyLimit, active_hours_start as activeHoursStart, active_hours_end as activeHoursEnd,
+              status, total_recipients as totalRecipients, sent_count as sentCount, failed_count as failedCount,
+              last_sent_at as lastSentAt, created_at as createdAt, updated_at as updatedAt
+       FROM email_campaigns ORDER BY id DESC`
+    );
+
+    return (rows || []).map((r: any) => ({
+      ...r,
+      intervalMinutes: Number(r.intervalMinutes),
+      dailyLimit: Number(r.dailyLimit),
+      activeHoursStart: Number(r.activeHoursStart),
+      activeHoursEnd: Number(r.activeHoursEnd),
+      totalRecipients: Number(r.totalRecipients),
+      sentCount: Number(r.sentCount),
+      failedCount: Number(r.failedCount),
+    }));
+  } catch (err) {
+    console.warn('[MySQL DB] Error fetching campaigns:', err);
+    return [];
+  }
+}
+
+/**
+ * Update campaign status (running, paused, completed)
+ */
+export async function updateEmailCampaignStatus(
+  campaignId: number,
+  status: 'running' | 'paused' | 'completed'
+): Promise<boolean> {
+  const db = getDbPool();
+  if (!db) return false;
+
+  try {
+    await initDatabase();
+    await db.query(`UPDATE email_campaigns SET status = ? WHERE id = ?`, [status, campaignId]);
+    return true;
+  } catch (err) {
+    console.warn('[MySQL DB] Error updating campaign status:', err);
+    return false;
+  }
+}
+
+/**
+ * Get Queue items for a campaign with pagination, search, and status filter
+ */
+export async function getEmailQueueFromDb(params: {
+  campaignId?: number;
+  status?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}): Promise<{ items: EmailQueueItem[]; total: number; sentToday: number }> {
+  const db = getDbPool();
+  if (!db) return { items: [], total: 0, sentToday: 0 };
+
+  try {
+    await initDatabase();
+    const { campaignId, status, search, page = 1, limit = 50 } = params;
+    const offset = (page - 1) * limit;
+
+    const conditions: string[] = [];
+    const values: any[] = [];
+
+    if (campaignId) {
+      conditions.push(`campaign_id = ?`);
+      values.push(campaignId);
+    }
+
+    if (status && status !== 'all') {
+      conditions.push(`status = ?`);
+      values.push(status);
+    }
+
+    if (search && search.trim()) {
+      conditions.push(`(name LIKE ? OR email LIKE ?)`);
+      values.push(`%${search.trim()}%`, `%${search.trim()}%`);
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    // Total count
+    const [countRows]: any = await db.query(
+      `SELECT COUNT(*) as cnt FROM email_queue ${whereClause}`,
+      values
+    );
+    const total = countRows[0]?.cnt || 0;
+
+    // Count sent today
+    const [todayRows]: any = await db.query(
+      `SELECT COUNT(*) as todayCount FROM email_queue WHERE status = 'sent' AND DATE(sent_at) = CURDATE()`
+    );
+    const sentToday = todayRows[0]?.todayCount || 0;
+
+    // Items query
+    const [rows]: any = await db.query(
+      `SELECT id, campaign_id as campaignId, name, email, status, scheduled_at as scheduledAt,
+              sent_at as sentAt, error_message as errorMessage, retry_count as retryCount, created_at as createdAt
+       FROM email_queue
+       ${whereClause}
+       ORDER BY id ASC
+       LIMIT ? OFFSET ?`,
+      [...values, limit, offset]
+    );
+
+    return { items: rows || [], total, sentToday };
+  } catch (err) {
+    console.warn('[MySQL DB] Error fetching email queue:', err);
+    return { items: [], total: 0, sentToday: 0 };
+  }
+}
+
+/**
+ * Worker helper: Pick the next pending email from a running campaign
+ */
+export async function getNextPendingEmailForWorker(): Promise<{
+  queueItem: EmailQueueItem | null;
+  campaign: EmailCampaignItem | null;
+  reason?: string;
+}> {
+  const db = getDbPool();
+  if (!db) return { queueItem: null, campaign: null, reason: 'Database not connected' };
+
+  try {
+    await initDatabase();
+
+    // 1. Find an active running campaign
+    const [campaigns]: any = await db.query(
+      `SELECT id, title, subject, template_html as templateHtml, interval_minutes as intervalMinutes,
+              daily_limit as dailyLimit, active_hours_start as activeHoursStart, active_hours_end as activeHoursEnd,
+              status, total_recipients as totalRecipients, sent_count as sentCount, failed_count as failedCount,
+              last_sent_at as lastSentAt, created_at as createdAt, updated_at as updatedAt
+       FROM email_campaigns 
+       WHERE status = 'running' 
+       ORDER BY id ASC 
+       LIMIT 1`
+    );
+
+    if (!campaigns || campaigns.length === 0) {
+      return { queueItem: null, campaign: null, reason: 'Tidak ada campaign yang sedang berjalan (status: running)' };
+    }
+
+    const campaign = campaigns[0] as EmailCampaignItem;
+
+    // 2. Check active hours (e.g. 08:00 - 21:00 WIB)
+    const currentHour = new Date().getHours();
+    if (currentHour < campaign.activeHoursStart || currentHour >= campaign.activeHoursEnd) {
+      return {
+        queueItem: null,
+        campaign,
+        reason: `Di luar jam aktif pengiriman (${campaign.activeHoursStart}:00 - ${campaign.activeHoursEnd}:00). Jam sekarang: ${currentHour}:00`,
+      };
+    }
+
+    // 3. Check daily limit
+    const [dailySentRows]: any = await db.query(
+      `SELECT COUNT(*) as todayCount FROM email_queue WHERE campaign_id = ? AND status = 'sent' AND DATE(sent_at) = CURDATE()`,
+      [campaign.id]
+    );
+    const todaySent = dailySentRows[0]?.todayCount || 0;
+    if (todaySent >= campaign.dailyLimit) {
+      return {
+        queueItem: null,
+        campaign,
+        reason: `Batas harian ${campaign.dailyLimit} email sudah tercapai hari ini (${todaySent} terkirim). Akan dilanjutkan besok pagi.`,
+      };
+    }
+
+    // 4. Check interval cooldown since last sent email (with random jitter ± 30s)
+    if (campaign.lastSentAt) {
+      const lastSentTime = new Date(campaign.lastSentAt).getTime();
+      const elapsedMinutes = (Date.now() - lastSentTime) / (60 * 1000);
+      const minInterval = Math.max(1, campaign.intervalMinutes - 0.5); // 30s variance allowance
+      if (elapsedMinutes < minInterval) {
+        const remainingMinutes = (campaign.intervalMinutes - elapsedMinutes).toFixed(1);
+        return {
+          queueItem: null,
+          campaign,
+          reason: `Masih dalam masa jeda aman interval. Sisa waktu: ~${remainingMinutes} menit.`,
+        };
+      }
+    }
+
+    // 5. Select 1 pending item and lock it by setting status to 'sending'
+    const [pendingRows]: any = await db.query(
+      `SELECT id, campaign_id as campaignId, name, email, status, scheduled_at as scheduledAt,
+              sent_at as sentAt, error_message as errorMessage, retry_count as retryCount, created_at as createdAt
+       FROM email_queue
+       WHERE campaign_id = ? AND status = 'pending'
+       ORDER BY id ASC
+       LIMIT 1`,
+      [campaign.id]
+    );
+
+    if (!pendingRows || pendingRows.length === 0) {
+      // Mark campaign completed
+      await updateEmailCampaignStatus(campaign.id, 'completed');
+      return { queueItem: null, campaign, reason: 'Semua email dalam antrean campaign ini telah selesai diproses.' };
+    }
+
+    const item = pendingRows[0] as EmailQueueItem;
+
+    // Temporarily mark as sending
+    await db.query(`UPDATE email_queue SET status = 'sending' WHERE id = ?`, [item.id]);
+
+    return { queueItem: item, campaign };
+  } catch (err: any) {
+    console.warn('[MySQL DB] Error picking next queue item:', err);
+    return { queueItem: null, campaign: null, reason: err.message };
+  }
+}
+
+/**
+ * Mark queue item as sent & update campaign counter
+ */
+export async function markEmailQueueSent(id: number, campaignId: number): Promise<void> {
+  const db = getDbPool();
+  if (!db) return;
+
+  try {
+    const nowSql = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    await db.query(
+      `UPDATE email_queue SET status = 'sent', sent_at = ?, error_message = NULL WHERE id = ?`,
+      [nowSql, id]
+    );
+    await db.query(
+      `UPDATE email_campaigns 
+       SET sent_count = sent_count + 1, last_sent_at = ? 
+       WHERE id = ?`,
+      [nowSql, campaignId]
+    );
+  } catch (err) {
+    console.warn('[MySQL DB] Error marking email as sent:', err);
+  }
+}
+
+/**
+ * Mark queue item as failed & update campaign counter
+ */
+export async function markEmailQueueFailed(id: number, campaignId: number, errorMessage: string): Promise<void> {
+  const db = getDbPool();
+  if (!db) return;
+
+  try {
+    await db.query(
+      `UPDATE email_queue SET status = 'failed', error_message = ?, retry_count = retry_count + 1 WHERE id = ?`,
+      [errorMessage.slice(0, 500), id]
+    );
+    await db.query(
+      `UPDATE email_campaigns SET failed_count = failed_count + 1 WHERE id = ?`,
+      [campaignId]
+    );
+  } catch (err) {
+    console.warn('[MySQL DB] Error marking email as failed:', err);
+  }
+}
+
+/**
+ * Delete a campaign and its queue items
+ */
+export async function deleteEmailCampaign(campaignId: number): Promise<boolean> {
+  const db = getDbPool();
+  if (!db) return false;
+
+  try {
+    await initDatabase();
+    await db.query(`DELETE FROM email_queue WHERE campaign_id = ?`, [campaignId]);
+    await db.query(`DELETE FROM email_campaigns WHERE id = ?`, [campaignId]);
+    return true;
+  } catch (err) {
+    console.warn('[MySQL DB] Error deleting campaign:', err);
+    return false;
+  }
+}
+
+/**
+ * Add an unsubscribe record
+ */
+export async function addEmailUnsubscribe(email: string, reason?: string): Promise<boolean> {
+  const db = getDbPool();
+  if (!db) return false;
+
+  try {
+    await initDatabase();
+    const cleanEmail = email.toLowerCase().trim();
+    await db.query(
+      `INSERT INTO email_unsubscribes (email, reason) VALUES (?, ?) ON DUPLICATE KEY UPDATE reason = VALUES(reason)`,
+      [cleanEmail, reason || 'User requested unsubscribe']
+    );
+    // Also remove from any pending queue
+    await db.query(`DELETE FROM email_queue WHERE email = ? AND status = 'pending'`, [cleanEmail]);
+    return true;
+  } catch (err) {
+    console.warn('[MySQL DB] Error adding unsubscribe:', err);
+    return false;
+  }
+}
+
+/**
+ * Reset failed emails in a campaign back to pending
+ */
+export async function resetFailedQueueItems(campaignId: number): Promise<number> {
+  const db = getDbPool();
+  if (!db) return 0;
+
+  try {
+    await initDatabase();
+    const [result]: any = await db.query(
+      `UPDATE email_queue SET status = 'pending', error_message = NULL WHERE campaign_id = ? AND status = 'failed'`,
+      [campaignId]
+    );
+    return result?.affectedRows || 0;
+  } catch (err) {
+    console.warn('[MySQL DB] Error resetting failed items:', err);
+    return 0;
+  }
 }
 
 
