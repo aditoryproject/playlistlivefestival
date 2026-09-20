@@ -2,9 +2,37 @@
  * Email Template & Generator for Playlist Live Festival
  * Clean White Edition matching the modern, premium aesthetic of the website.
  * Fully compatible with all email clients (Gmail, Apple Mail, Outlook).
+ *
+ * TICKET URL  : https://goers.co/playlistlivefestival2026
+ * LINEUP (15) : Peterpan, Perunggu, Charly Setia Band, GIGI, Enau, T-Five,
+ *               Armand Maulana, Rony Parulian, Letto, The Changcuters,
+ *               Kangen Band, Andra and The Backbone, Raisa, Idgitaf, Bernadya
  */
 
+export const TICKET_URL = 'https://goers.co/playlistlivefestival2026';
+
 export const DEFAULT_EMAIL_SUBJECT = 'Siap buat balik lagi ke masa-masa paling seru? 📼✨';
+
+const PILL = (name: string) =>
+  `<span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">${name}</span>`;
+
+const ARTISTS = [
+  'Peterpan',
+  'Perunggu',
+  'Charly Setia Band',
+  'GIGI',
+  'Enau',
+  'T-Five',
+  'Armand Maulana',
+  'Rony Parulian',
+  'Letto',
+  'The Changcuters',
+  'Kangen Band',
+  'Andra and The Backbone',
+  'Raisa',
+  'Idgitaf',
+  'Bernadya',
+];
 
 export const DEFAULT_EMAIL_HTML_TEMPLATE = `<!DOCTYPE html>
 <html lang="id">
@@ -42,7 +70,7 @@ export const DEFAULT_EMAIL_HTML_TEMPLATE = `<!DOCTYPE html>
                 </tr>
               </table>
 
-              <!-- Logo Title - Clean Solid Colors (100% email client compatible) -->
+              <!-- Logo Title -->
               <h1 style="margin: 0; font-size: 34px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.15;">
                 <span style="color: #DB5494;">PLAYLIST</span>
                 <span style="color: #18181b;"> LIVE FESTIVAL</span>
@@ -53,7 +81,7 @@ export const DEFAULT_EMAIL_HTML_TEMPLATE = `<!DOCTYPE html>
             </td>
           </tr>
 
-          <!-- HERO BANNER CARD (Light Gray Card) -->
+          <!-- HERO BANNER CARD -->
           <tr>
             <td style="padding: 0 32px;">
               <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 22px; text-align: center;">
@@ -77,7 +105,7 @@ export const DEFAULT_EMAIL_HTML_TEMPLATE = `<!DOCTYPE html>
                 Playlist nostalgia favorit kamu bakal kembali dinyanyikan langsung di panggung megah <strong>Playlist Live Festival</strong>! 🎧
               </p>
               
-              <!-- Highlight Card Spotify vs Festival -->
+              <!-- Highlight Card -->
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #fdf2f8; border-left: 4px solid #DB5494; border-radius: 0 12px 12px 0; margin: 20px 0;">
                 <tr>
                   <td style="padding: 16px 20px;">
@@ -111,7 +139,7 @@ export const DEFAULT_EMAIL_HTML_TEMPLATE = `<!DOCTYPE html>
                   <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Bernadya</span>
                 </div>
                 
-                <!-- Instagram Teaser Box -->
+                <!-- Instagram Teaser -->
                 <div style="margin-top: 16px; padding-top: 14px; border-top: 1px dashed #cbd5e1; text-align: center;">
                   <p style="margin: 0; font-size: 13px; color: #475569; line-height: 1.6;">
                     ✨ <em>Dan masih banyak lagi bintang tamu kejutan lainnya!</em><br>
@@ -131,7 +159,7 @@ export const DEFAULT_EMAIL_HTML_TEMPLATE = `<!DOCTYPE html>
                 </p>
               </div>
 
-              <!-- FRIEND FORWARD TIP BOX -->
+              <!-- FRIEND FORWARD TIP -->
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #faf5ff; border: 1px dashed #d8b4fe; border-radius: 14px; margin: 24px 0 16px 0;">
                 <tr>
                   <td style="padding: 16px; text-align: center;">
@@ -153,7 +181,7 @@ export const DEFAULT_EMAIL_HTML_TEMPLATE = `<!DOCTYPE html>
                 Diselenggarakan oleh <strong>PLAYMAKER!</strong> Event Management
               </p>
               <p style="margin: 0 0 12px 0; font-size: 11px; color: #a1a1aa;">
-                Website resmi: <a href="https://playlistlivefestival.letsplaymaker.com/" style="color: #71717a; text-decoration: underline;">playlistlivefestival.letsplaymaker.com</a>
+                Instagram resmi: <a href="https://www.instagram.com/playlistlivefestival" style="color: #71717a; text-decoration: underline;">@playlistlivefestival</a>
               </p>
               <p style="margin: 0; font-size: 11px; color: #a1a1aa; line-height: 1.5;">
                 Kamu menerima email ini karena terdaftar pada update Playlist Live Festival.<br>
@@ -219,7 +247,7 @@ Gas amankan tiketnya sekarang ya Kak! 🔥
 
 --
 Diselenggarakan oleh PLAYMAKER! Event Management
-Website resmi: https://playlistlivefestival.letsplaymaker.com/
+Instagram: @playlistlivefestival
 Berhenti Berlangganan: ${unsubscribeUrl}
 `;
 }
