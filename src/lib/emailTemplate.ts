@@ -1,8 +1,7 @@
 /**
  * Email Template & Generator for Playlist Live Festival
  * Clean White Edition matching the modern, premium aesthetic of the website.
- * Fully compatible with all email clients (Gmail, Apple Mail, Outlook)
- * without background-clip artifacts or dark-mode glitches.
+ * Fully compatible with all email clients (Gmail, Apple Mail, Outlook).
  */
 
 export const DEFAULT_EMAIL_SUBJECT = 'Siap buat balik lagi ke masa-masa paling seru? 📼✨';
@@ -54,7 +53,7 @@ export const DEFAULT_EMAIL_HTML_TEMPLATE = `<!DOCTYPE html>
             </td>
           </tr>
 
-          <!-- HERO BANNER TAPE CARD (Light Gray Card) -->
+          <!-- HERO BANNER CARD (Light Gray Card) -->
           <tr>
             <td style="padding: 0 32px;">
               <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 22px; text-align: center;">
@@ -79,7 +78,7 @@ export const DEFAULT_EMAIL_HTML_TEMPLATE = `<!DOCTYPE html>
               </p>
               
               <!-- Highlight Card Spotify vs Festival -->
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #fdf2f8; border-left: 4px solid #DB5494; border-radius: 0 12px 12px 0; margin: 22px 0;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #fdf2f8; border-left: 4px solid #DB5494; border-radius: 0 12px 12px 0; margin: 20px 0;">
                 <tr>
                   <td style="padding: 16px 20px;">
                     <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #831843; font-style: italic; font-weight: 500;">
@@ -88,6 +87,38 @@ export const DEFAULT_EMAIL_HTML_TEMPLATE = `<!DOCTYPE html>
                   </td>
                 </tr>
               </table>
+
+              <!-- LINEUP SHOWCASE SECTION -->
+              <div style="margin: 26px 0; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 18px; padding: 22px 18px;">
+                <p style="margin: 0 0 14px 0; font-size: 13px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">
+                  🎸 Musisi Hits &amp; Bintang Tamu Yang Siap Mengguncang Panggung:
+                </p>
+                <div style="text-align: center; line-height: 2.2;">
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Peterpan</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Bernadya</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Charly Setia Band</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">GIGI</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">The Changcuters</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Raisa</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Kangen Band</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Andra and The Backbone</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Letto</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Armand Maulana</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Rony Parulian</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Idgitaf</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">T-Five</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Enau</span>
+                </div>
+                
+                <!-- Instagram Teaser Box -->
+                <div style="margin-top: 16px; padding-top: 14px; border-top: 1px dashed #cbd5e1; text-align: center;">
+                  <p style="margin: 0; font-size: 13px; color: #475569; line-height: 1.6;">
+                    ✨ <em>Dan masih banyak lagi bintang tamu kejutan lainnya!</em><br>
+                    <strong>More to come</strong>, pantengin terus update terbarunya di Instagram resmi kami:
+                    <a href="https://www.instagram.com/playlistlivefestival" target="_blank" style="color: #DB5494; font-weight: 700; text-decoration: underline; display: inline-block; margin-top: 4px;">@playlistlivefestival</a> 📲
+                  </p>
+                </div>
+              </div>
 
               <!-- CTA BUTTON SECTION -->
               <div style="text-align: center; margin: 32px 0 24px 0;">
@@ -156,6 +187,26 @@ Halo Kak ${safeName},
 Playlist nostalgia favorit kamu bakal kembali dinyanyikan langsung di panggung megah Playlist Live Festival! 🎧
 
 Daripada cuma dengerin di Spotify, mending kita teriak bareng, nostalgia bareng, dan bikin kenangan baru bareng musisi-musisi hits era 90-2000an! 🕺💃
+
+Bintang Tamu Spektakuler:
+- Peterpan
+- Bernadya
+- Charly Setia Band
+- GIGI
+- The Changcuters
+- Raisa
+- Kangen Band
+- Andra and The Backbone
+- Letto
+- Armand Maulana
+- Rony Parulian
+- Idgitaf
+- T-Five
+- Enau
+
+Dan masih banyak lagi bintang tamu lainnya!
+More to come, pantengin terus update terbarunya di Instagram resmi kami:
+👉 https://www.instagram.com/playlistlivefestival
 
 🎟️ Tiket udah bisa di-checkout sekarang:
 👉 https://playlistlivefestival.letsplaymaker.com/
