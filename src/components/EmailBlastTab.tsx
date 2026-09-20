@@ -1204,9 +1204,9 @@ export default function EmailBlastTab() {
                 </label>
                 <input
                   type="email"
-                  value={testEmailAddress || 'tarakanaroko@gmail.com'}
+                  value={testEmailAddress}
                   onChange={(e) => setTestEmailAddress(e.target.value)}
-                  placeholder="tarakanaroko@gmail.com"
+                  placeholder="Masukkan email tujuan uji coba (contoh: emailanda@gmail.com)"
                   className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900"
                 />
               </div>
@@ -1214,7 +1214,7 @@ export default function EmailBlastTab() {
               <div className="flex items-center gap-3 flex-wrap pt-1">
                 <button
                   type="button"
-                  onClick={() => handleSendTestEmail('system', testEmailAddress || 'tarakanaroko@gmail.com')}
+                  onClick={() => handleSendTestEmail('system', testEmailAddress)}
                   disabled={sendingTest}
                   className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-semibold transition-all shadow-xs disabled:opacity-50 flex items-center gap-2"
                 >
@@ -1224,7 +1224,7 @@ export default function EmailBlastTab() {
 
                 <button
                   type="button"
-                  onClick={() => handleSendTestEmail('campaign', testEmailAddress || 'tarakanaroko@gmail.com')}
+                  onClick={() => handleSendTestEmail('campaign', testEmailAddress)}
                   disabled={sendingTest}
                   className="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs sm:text-sm font-semibold transition-all shadow-xs disabled:opacity-50 flex items-center gap-2"
                 >
