@@ -95,19 +95,20 @@ export const DEFAULT_EMAIL_HTML_TEMPLATE = `<!DOCTYPE html>
                 </p>
                 <div style="text-align: center; line-height: 2.2;">
                   <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Peterpan</span>
-                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Bernadya</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Perunggu</span>
                   <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Charly Setia Band</span>
                   <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">GIGI</span>
-                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">The Changcuters</span>
-                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Raisa</span>
-                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Kangen Band</span>
-                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Andra and The Backbone</span>
-                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Letto</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Enau</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">T-Five</span>
                   <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Armand Maulana</span>
                   <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Rony Parulian</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Letto</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">The Changcuters</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Kangen Band</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Andra and The Backbone</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Raisa</span>
                   <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Idgitaf</span>
-                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">T-Five</span>
-                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Enau</span>
+                  <span style="display: inline-block; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 9999px; margin: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">Bernadya</span>
                 </div>
                 
                 <!-- Instagram Teaser Box -->
@@ -122,7 +123,7 @@ export const DEFAULT_EMAIL_HTML_TEMPLATE = `<!DOCTYPE html>
 
               <!-- CTA BUTTON SECTION -->
               <div style="text-align: center; margin: 32px 0 24px 0;">
-                <a href="https://playlistlivefestival.letsplaymaker.com/" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #DB5494 0%, #8B5CF6 50%, #3B82F6 100%); color: #ffffff; font-size: 15px; font-weight: 700; text-decoration: none; padding: 15px 38px; border-radius: 9999px; box-shadow: 0 6px 20px rgba(219, 84, 148, 0.3); letter-spacing: 0.3px;">
+                <a href="https://goers.co/playlistlivefestival2026" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #DB5494 0%, #8B5CF6 50%, #3B82F6 100%); color: #ffffff; font-size: 15px; font-weight: 700; text-decoration: none; padding: 15px 38px; border-radius: 9999px; box-shadow: 0 6px 20px rgba(219, 84, 148, 0.3); letter-spacing: 0.3px;">
                   🎟️ AMANKAN TIKET SEKARANG
                 </a>
                 <p style="margin: 12px 0 0 0; font-size: 13px; color: #71717a;">
@@ -190,26 +191,27 @@ Daripada cuma dengerin di Spotify, mending kita teriak bareng, nostalgia bareng,
 
 Bintang Tamu Spektakuler:
 - Peterpan
-- Bernadya
+- Perunggu
 - Charly Setia Band
 - GIGI
-- The Changcuters
-- Raisa
-- Kangen Band
-- Andra and The Backbone
-- Letto
+- Enau
+- T-Five
 - Armand Maulana
 - Rony Parulian
+- Letto
+- The Changcuters
+- Kangen Band
+- Andra and The Backbone
+- Raisa
 - Idgitaf
-- T-Five
-- Enau
+- Bernadya
 
 Dan masih banyak lagi bintang tamu lainnya!
 More to come, pantengin terus update terbarunya di Instagram resmi kami:
 👉 https://www.instagram.com/playlistlivefestival
 
 🎟️ Tiket udah bisa di-checkout sekarang:
-👉 https://playlistlivefestival.letsplaymaker.com/
+👉 https://goers.co/playlistlivefestival2026
 
 Tips: Langsung forward pesan ini ke grup teman-teman konser kamu biar bisa seru-seruan bareng lagi tahun ini! 👯‍♀️
 

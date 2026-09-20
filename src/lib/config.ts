@@ -10,7 +10,7 @@ export const defaultConfig: SiteConfig = {
   eventTitleSecond: 'Rewind 2026',
   eventSubtitle: 'Bandung | 14-15 November 2026',
   topBadgeText: 'Festival Experience by PLAYMAKER!',
-  ticketUrl: 'https://loket.com',
+  ticketUrl: 'https://goers.co/playlistlivefestival2026',
   buyButtonText: 'Buy Now!',
   ticketStatusText: '🔥 Presale 1 • Limited Tickets Remaining!',
   showTicketStatus: true,
