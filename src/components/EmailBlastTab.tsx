@@ -992,12 +992,17 @@ export default function EmailBlastTab() {
                 <span className="text-xs font-bold uppercase tracking-wider text-zinc-700">
                   Pratinjau Visual Template
                 </span>
-                <span className="text-[11px] px-2.5 py-0.5 rounded-md bg-pink-50 text-pink-700 font-mono border border-pink-200">
-                  Tag: {'{name}'}
-                </span>
+                <button
+                  type="button"
+                  onClick={() => setCampaignTemplate(DEFAULT_EMAIL_HTML_TEMPLATE)}
+                  className="text-[11px] text-pink-600 hover:text-pink-700 font-semibold underline cursor-pointer"
+                  title="Kembalikan ke template putih standar terbaru"
+                >
+                  Reset Template Putih
+                </button>
               </div>
 
-              <div className="border border-zinc-200 rounded-2xl overflow-hidden bg-[#0f1117] h-[460px] shadow-inner">
+              <div className="border border-zinc-200 rounded-2xl overflow-hidden bg-[#f4f4f5] h-[480px] shadow-xs">
                 <iframe
                   title="Live Email Preview"
                   srcDoc={renderEmailHtml(campaignTemplate, 'Budi Santoso', '#')}
@@ -1288,7 +1293,7 @@ export default function EmailBlastTab() {
                 ✕
               </button>
             </div>
-            <div className="flex-1 overflow-auto p-4 bg-[#0f1117]">
+            <div className="flex-1 overflow-auto p-4 bg-[#f4f4f5]">
               <iframe
                 title="Modal Email Preview"
                 srcDoc={renderEmailHtml(campaignTemplate, 'Budi Santoso', '#')}
