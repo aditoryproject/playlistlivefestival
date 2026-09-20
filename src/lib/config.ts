@@ -10,7 +10,7 @@ export const defaultConfig: SiteConfig = {
   eventTitleSecond: 'Rewind 2026',
   eventSubtitle: 'Bandung | 14-15 November 2026',
   topBadgeText: 'Festival Experience by PLAYMAKER!',
-  ticketUrl: 'https://goers.co/playlistlivefestival2026',
+  ticketUrl: 'https://www.goersapp.com/events/schedules/playlist-rewind-festival-2026--playlistlivefestival2026/this%20event?fbclid=PARlRTSAUcvrFwZG9mAmZkaWQWUOx7eIiqHpg8ibuBrBBwog229qwFdmV4dG4DYWVtAjExAHNydGMGYXBwX2lkDzEyNDAyNDU3NDI4NzQxNAABp9FIQ9wlQtlnDSreMP7qSKnWXlibj04nNTjacBVskZkatXdSKfV0fNoWKAD6_aem_fCnXIMqSX21YZmzjSMLq1g',
   buyButtonText: 'Buy Now!',
   ticketStatusText: '🔥 Presale 1 • Limited Tickets Remaining!',
   showTicketStatus: true,
