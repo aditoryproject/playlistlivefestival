@@ -291,8 +291,9 @@ export default function EmailBlastTab() {
     }
   }
 
-  async function handleSendTestEmail() {
-    if (!testEmailAddress || !testEmailAddress.includes('@')) {
+  async function handleSendTestEmail(type: 'campaign' | 'system' = 'campaign', customTarget?: string) {
+    const target = (customTarget || testEmailAddress || '').trim();
+    if (!target || !target.includes('@')) {
       alert('Masukkan email penerima uji coba yang valid.');
       return;
     }
@@ -303,10 +304,11 @@ export default function EmailBlastTab() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          testEmail: testEmailAddress,
+          testEmail: target,
           testName: 'Sahabat Playlist (Tester)',
           subject: campaignSubject,
           templateHtml: campaignTemplate,
+          type,
         }),
       });
       const data = await res.json();
@@ -962,7 +964,7 @@ export default function EmailBlastTab() {
                   className="flex-1 bg-zinc-50 border border-zinc-300 text-zinc-900 text-xs rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900 font-mono"
                 />
                 <button
-                  onClick={handleSendTestEmail}
+                  onClick={() => handleSendTestEmail('campaign')}
                   disabled={sendingTest}
                   className="px-4 py-2.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-semibold transition-all disabled:opacity-50 shrink-0 flex items-center gap-1.5"
                 >
@@ -1011,7 +1013,7 @@ export default function EmailBlastTab() {
       {/* TAB 3: PENGATURAN SMTP HOSTING */}
       {/* ========================================================================= */}
       {activeSubTab === 'smtp' && (
-        <div className="max-w-3xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-6">
           <div className="bg-white border border-zinc-200 rounded-3xl p-7 sm:p-8 shadow-xs space-y-6">
             <div>
               <h3 className="text-lg font-bold text-zinc-900 flex items-center gap-2">
@@ -1023,6 +1025,7 @@ export default function EmailBlastTab() {
               </p>
             </div>
 
+            {/* Host & Port */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
@@ -1032,8 +1035,10 @@ export default function EmailBlastTab() {
                   type="text"
                   value={smtp.host}
                   onChange={(e) => setSmtp({ ...smtp, host: e.target.value })}
-                  placeholder="mail.playlistlivefestival.com atau smtp.hostinger.com"
-                  className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900 font-mono"
+                  placeholder="mail.letsplaymaker.com"
+                  spellCheck={false}
+                  autoComplete="off"
+                  className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900"
                 />
               </div>
 
@@ -1046,53 +1051,72 @@ export default function EmailBlastTab() {
                   value={smtp.port}
                   onChange={(e) => setSmtp({ ...smtp, port: Number(e.target.value) })}
                   placeholder="465"
-                  className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900 font-mono"
+                  className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
-                  Username / Email Login
-                </label>
-                <input
-                  type="text"
-                  value={smtp.user}
-                  onChange={(e) => setSmtp({ ...smtp, user: e.target.value })}
-                  placeholder="info@playlistlivefestival.com"
-                  className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900 font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
-                  Password Email
-                </label>
-                <input
-                  type="password"
-                  value={smtp.pass}
-                  onChange={(e) => setSmtp({ ...smtp, pass: e.target.value })}
-                  placeholder="••••••••"
-                  className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900 font-mono"
-                />
-              </div>
+            {/* Username / Email Login - Full Width & Spacious */}
+            <div>
+              <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
+                Username / Email Login (Akun Email cPanel Lengkap)
+              </label>
+              <input
+                type="text"
+                value={smtp.user}
+                onChange={(e) => setSmtp({ ...smtp, user: e.target.value })}
+                placeholder="playlistlivefestival@letsplaymaker.com"
+                spellCheck={false}
+                autoComplete="off"
+                className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:border-zinc-900 font-sans"
+              />
+              <p className="text-[11px] text-zinc-400 mt-1">
+                Gunakan alamat email lengkap sesuai di cPanel (contoh: <code>playlistlivefestival@letsplaymaker.com</code>).
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
-                  Sender Email (Dari)
-                </label>
-                <input
-                  type="email"
-                  value={smtp.fromEmail}
-                  onChange={(e) => setSmtp({ ...smtp, fromEmail: e.target.value })}
-                  placeholder="info@playlistlivefestival.com"
-                  className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900 font-mono"
-                />
-              </div>
+            {/* Password */}
+            <div>
+              <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
+                Password Email
+              </label>
+              <input
+                type="password"
+                value={smtp.pass}
+                onChange={(e) => setSmtp({ ...smtp, pass: e.target.value })}
+                placeholder="••••••••"
+                autoComplete="new-password"
+                className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900"
+              />
+            </div>
 
+            {/* Sender Email (Dari) - Full Width & Spacious */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider">
+                  Sender Email (Alamat Pengirim / FROM)
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setSmtp({ ...smtp, fromEmail: smtp.user })}
+                  className="text-xs text-pink-600 hover:text-pink-700 font-semibold"
+                >
+                  Sama dengan Username ↵
+                </button>
+              </div>
+              <input
+                type="email"
+                value={smtp.fromEmail}
+                onChange={(e) => setSmtp({ ...smtp, fromEmail: e.target.value })}
+                placeholder="playlistlivefestival@letsplaymaker.com"
+                spellCheck={false}
+                autoComplete="off"
+                className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-3 focus:bg-white focus:outline-none focus:border-zinc-900 font-sans"
+              />
+            </div>
+
+            {/* Display Name & Reply To */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
                   Nama Pengirim (Display Name)
@@ -1102,6 +1126,19 @@ export default function EmailBlastTab() {
                   value={smtp.fromName}
                   onChange={(e) => setSmtp({ ...smtp, fromName: e.target.value })}
                   placeholder="Playlist Live Festival"
+                  className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
+                  Reply-To (Opsional)
+                </label>
+                <input
+                  type="email"
+                  value={smtp.replyTo}
+                  onChange={(e) => setSmtp({ ...smtp, replyTo: e.target.value })}
+                  placeholder="support@letsplaymaker.com"
                   className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900"
                 />
               </div>
@@ -1140,8 +1177,68 @@ export default function EmailBlastTab() {
                 ) : (
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
                 )}
-                <span>Uji Koneksi SMTP</span>
+                <span>Uji Koneksi Port &amp; Login</span>
               </button>
+            </div>
+          </div>
+
+          {/* DEDICATED DIRECT TEST SEND PANEL */}
+          <div className="bg-white border border-zinc-200 rounded-3xl p-7 shadow-xs space-y-4">
+            <div className="flex items-center gap-2 text-sm font-bold text-zinc-900">
+              <Mail className="w-4 h-4 text-pink-600" />
+              <span>Tes Pengiriman Langsung ke Inbox (Test Delivery)</span>
+            </div>
+            <p className="text-xs text-zinc-500 leading-relaxed">
+              Uji pengiriman email langsung ke Gmail Anda untuk memverifikasi apakah email benar-benar mendarat di inbox.
+            </p>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-1.5">
+                  Email Penerima Uji Coba:
+                </label>
+                <input
+                  type="email"
+                  value={testEmailAddress || 'tarakanaroko@gmail.com'}
+                  onChange={(e) => setTestEmailAddress(e.target.value)}
+                  placeholder="tarakanaroko@gmail.com"
+                  className="w-full bg-zinc-50 border border-zinc-300 text-zinc-900 text-sm rounded-xl px-4 py-2.5 focus:bg-white focus:outline-none focus:border-zinc-900"
+                />
+              </div>
+
+              <div className="flex items-center gap-3 flex-wrap pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleSendTestEmail('system', testEmailAddress || 'tarakanaroko@gmail.com')}
+                  disabled={sendingTest}
+                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-semibold transition-all shadow-xs disabled:opacity-50 flex items-center gap-2"
+                >
+                  {sendingTest ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  <span>Kirim Tes Cepat (Format Transaksional seperti TaskManager)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSendTestEmail('campaign', testEmailAddress || 'tarakanaroko@gmail.com')}
+                  disabled={sendingTest}
+                  className="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs sm:text-sm font-semibold transition-all shadow-xs disabled:opacity-50 flex items-center gap-2"
+                >
+                  {sendingTest ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 text-pink-400" />}
+                  <span>Kirim Tes Template Festival</span>
+                </button>
+              </div>
+
+              {testMessage && (
+                <div
+                  className={`p-3.5 rounded-xl text-xs font-semibold ${
+                    testMessage.type === 'success'
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                      : 'bg-rose-50 text-rose-800 border border-rose-200'
+                  }`}
+                >
+                  {testMessage.text}
+                </div>
+              )}
             </div>
           </div>
 
