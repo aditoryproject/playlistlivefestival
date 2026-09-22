@@ -68,13 +68,12 @@ export async function sendQueuedEmail(params: {
       ? `"${settings.fromName.replace(/"/g, '')}" <${settings.fromEmail}>`
       : settings.fromEmail;
 
-    // Headers - Clean without custom X-Mailer or invalid Unsubscribe-Post which trigger spam filters
-    const headers: Record<string, string> = {
-      'Reply-To': settings.replyTo || settings.fromEmail,
-    };
+    // Headers - Clean without duplicate Reply-To or invalid headers
+    const headers: Record<string, string> = {};
 
     if (!isTest) {
       headers['List-Unsubscribe'] = `<${unsubscribeUrl}>`;
+      headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
     }
 
     // Send email with explicit SMTP envelope to prevent cPanel envelope mismatch

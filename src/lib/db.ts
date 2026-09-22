@@ -1400,9 +1400,16 @@ export async function getEmailQueueFromDb(params: {
     );
     const total = countRows[0]?.cnt || 0;
 
-    // Count sent today
+    // Count sent today in WIB (Asia/Jakarta)
+    const todayWib = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Jakarta',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date());
     const [todayRows]: any = await db.query(
-      `SELECT COUNT(*) as todayCount FROM email_queue WHERE status = 'sent' AND DATE(sent_at) = CURDATE()`
+      `SELECT COUNT(*) as todayCount FROM email_queue WHERE status = 'sent' AND DATE(sent_at) = ?`,
+      [todayWib]
     );
     const sentToday = todayRows[0]?.todayCount || 0;
 
@@ -1456,10 +1463,11 @@ export async function getNextPendingEmailForWorker(): Promise<{
 
     const campaign = campaigns[0] as EmailCampaignItem;
 
-    // Auto-update legacy template in running campaigns to ensure Goers ticket URL & all 15 artists
+    // Auto-update legacy template in running campaigns to ensure clean Goers ticket URL & all 15 artists
     if (
       campaign.templateHtml &&
       (!campaign.templateHtml.includes('Perunggu') ||
+        campaign.templateHtml.includes('fbclid') ||
         campaign.templateHtml.includes('https://playlistlivefestival.letsplaymaker.com/" target="_blank"'))
     ) {
       campaign.templateHtml = DEFAULT_EMAIL_HTML_TEMPLATE;
@@ -1472,19 +1480,31 @@ export async function getNextPendingEmailForWorker(): Promise<{
     }
 
     // 2. Check active hours (e.g. 08:00 - 21:00 WIB)
-    const currentHour = new Date().getHours();
+    // Pastikan mengacu pada zona waktu Asia/Jakarta (WIB, UTC+7) agar konsisten di server VPS
+    const wibHourStr = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Jakarta',
+      hour: 'numeric',
+      hour12: false,
+    }).format(new Date());
+    const currentHour = parseInt(wibHourStr, 10);
     if (currentHour < campaign.activeHoursStart || currentHour >= campaign.activeHoursEnd) {
       return {
         queueItem: null,
         campaign,
-        reason: `Di luar jam aktif pengiriman (${campaign.activeHoursStart}:00 - ${campaign.activeHoursEnd}:00). Jam sekarang: ${currentHour}:00`,
+        reason: `Di luar jam aktif pengiriman (${campaign.activeHoursStart}:00 - ${campaign.activeHoursEnd}:00 WIB). Jam sekarang: ${currentHour}:00 WIB`,
       };
     }
 
     // 3. Check daily limit
+    const todayWib = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Jakarta',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date()); // YYYY-MM-DD
     const [dailySentRows]: any = await db.query(
-      `SELECT COUNT(*) as todayCount FROM email_queue WHERE campaign_id = ? AND status = 'sent' AND DATE(sent_at) = CURDATE()`,
-      [campaign.id]
+      `SELECT COUNT(*) as todayCount FROM email_queue WHERE campaign_id = ? AND status = 'sent' AND DATE(sent_at) = ?`,
+      [campaign.id, todayWib]
     );
     const todaySent = dailySentRows[0]?.todayCount || 0;
     if (todaySent >= campaign.dailyLimit) {

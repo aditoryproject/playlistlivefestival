@@ -9,7 +9,7 @@
  *               Kangen Band, Andra and The Backbone, Raisa, Idgitaf, Bernadya
  */
 
-export const TICKET_URL = 'https://www.goersapp.com/events/schedules/playlist-rewind-festival-2026--playlistlivefestival2026/this%20event?fbclid=PARlRTSAUcvrFwZG9mAmZkaWQWUOx7eIiqHpg8ibuBrBBwog229qwFdmV4dG4DYWVtAjExAHNydGMGYXBwX2lkDzEyNDAyNDU3NDI4NzQxNAABp9FIQ9wlQtlnDSreMP7qSKnWXlibj04nNTjacBVskZkatXdSKfV0fNoWKAD6_aem_fCnXIMqSX21YZmzjSMLq1g';
+export const TICKET_URL = 'https://www.goersapp.com/events/schedules/playlist-rewind-festival-2026--playlistlivefestival2026/this%20event';
 
 export const DEFAULT_EMAIL_SUBJECT = 'Siap buat balik lagi ke masa-masa paling seru? 📼✨';
 
@@ -151,7 +151,7 @@ export const DEFAULT_EMAIL_HTML_TEMPLATE = `<!DOCTYPE html>
 
               <!-- CTA BUTTON SECTION -->
               <div style="text-align: center; margin: 32px 0 24px 0;">
-                <a href="https://www.goersapp.com/events/schedules/playlist-rewind-festival-2026--playlistlivefestival2026/this%20event?fbclid=PARlRTSAUcvrFwZG9mAmZkaWQWUOx7eIiqHpg8ibuBrBBwog229qwFdmV4dG4DYWVtAjExAHNydGMGYXBwX2lkDzEyNDAyNDU3NDI4NzQxNAABp9FIQ9wlQtlnDSreMP7qSKnWXlibj04nNTjacBVskZkatXdSKfV0fNoWKAD6_aem_fCnXIMqSX21YZmzjSMLq1g" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #DB5494 0%, #8B5CF6 50%, #3B82F6 100%); color: #ffffff; font-size: 15px; font-weight: 700; text-decoration: none; padding: 15px 38px; border-radius: 9999px; box-shadow: 0 6px 20px rgba(219, 84, 148, 0.3); letter-spacing: 0.3px;">
+                <a href="${TICKET_URL}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #DB5494 0%, #8B5CF6 50%, #3B82F6 100%); color: #ffffff; font-size: 15px; font-weight: 700; text-decoration: none; padding: 15px 38px; border-radius: 9999px; box-shadow: 0 6px 20px rgba(219, 84, 148, 0.3); letter-spacing: 0.3px;">
                   🎟️ AMANKAN TIKET SEKARANG
                 </a>
                 <p style="margin: 12px 0 0 0; font-size: 13px; color: #71717a;">

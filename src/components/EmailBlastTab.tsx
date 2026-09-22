@@ -98,6 +98,7 @@ export default function EmailBlastTab() {
   // Worker Action State
   const [workerRunning, setWorkerRunning] = useState(false);
   const [workerLog, setWorkerLog] = useState<string | null>(null);
+  const [autoWorkerTab, setAutoWorkerTab] = useState(true);
 
   // New Campaign Form State
   const [campaignTitle, setCampaignTitle] = useState('Nostalgia Festival Blast 2026');
@@ -138,6 +139,48 @@ export default function EmailBlastTab() {
   useEffect(() => {
     fetchQueue();
   }, [selectedCampaignId, queueStatusFilter, queuePage, queueSearch]);
+
+  // Auto-Worker loop when tab is kept open in browser
+  useEffect(() => {
+    if (!autoWorkerTab) return;
+    const campaign = campaigns.find((c) => c.id === selectedCampaignId);
+    if (!campaign || campaign.status !== 'running') return;
+
+    let isCalling = false;
+    const runWorkerCheck = async () => {
+      if (isCalling || workerRunning) return;
+      isCalling = true;
+      try {
+        const res = await fetch('/api/email/worker', { method: 'POST' });
+        const data = await res.json();
+        if (data.dispatched && data.success) {
+          setWorkerLog(`✅ [Auto-Tab] Berhasil terkirim ke: ${data.recipient?.email} (${new Date().toLocaleTimeString('id-ID')})`);
+          fetchCampaigns();
+          fetchQueue();
+        } else if (data.dispatched && !data.success) {
+          setWorkerLog(`❌ [Auto-Tab] Gagal mengirim ke ${data.recipient?.email}: ${data.error}`);
+          fetchCampaigns();
+          fetchQueue();
+        } else if (data.message) {
+          // If it's a cooldown or waiting message
+          setWorkerLog(data.message.includes('jeda') ? `⏳ ${data.message}` : `ℹ️ ${data.message}`);
+        }
+      } catch (err) {
+        // network or background error
+      } finally {
+        isCalling = false;
+      }
+    };
+
+    // Run once after 3 seconds, then every 30 seconds
+    const initialTimer = setTimeout(runWorkerCheck, 3000);
+    const intervalTimer = setInterval(runWorkerCheck, 30000);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(intervalTimer);
+    };
+  }, [autoWorkerTab, selectedCampaignId, campaigns, workerRunning]);
 
   // Parse count of raw recipients dynamically
   useEffect(() => {
