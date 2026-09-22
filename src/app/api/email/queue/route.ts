@@ -3,8 +3,10 @@ import {
   getEmailQueueFromDb,
   updateEmailCampaignStatus,
   resetFailedQueueItems,
+  getSmtpSettingsFromDb,
   getDbPool,
 } from '@/lib/db';
+import { sendQueuedEmail } from '@/lib/emailSender';
 
 export async function GET(req: NextRequest) {
   try {
@@ -63,7 +65,86 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    if (action === 'resend_item') {
+    if (action === 'resend_now') {
+      const { queueItemId } = body;
+      if (!queueItemId) {
+        return NextResponse.json({ success: false, error: 'Queue Item ID diperlukan' }, { status: 400 });
+      }
+
+      const db = getDbPool();
+      if (!db) {
+        return NextResponse.json({ success: false, error: 'Database tidak terhubung' }, { status: 500 });
+      }
+
+      // 1. Get SMTP settings
+      const smtpSettings = await getSmtpSettingsFromDb();
+      if (!smtpSettings || !smtpSettings.host || !smtpSettings.user || !smtpSettings.pass) {
+        return NextResponse.json({ success: false, error: 'Pengaturan SMTP belum lengkap di tab Pengaturan SMTP' }, { status: 400 });
+      }
+
+      // 2. Get item & campaign
+      const [itemRows]: any = await db.query(
+        `SELECT id, campaign_id as campaignId, name, email, status FROM email_queue WHERE id = ?`,
+        [queueItemId]
+      );
+      if (!itemRows || itemRows.length === 0) {
+        return NextResponse.json({ success: false, error: 'Item antrean tidak ditemukan' }, { status: 404 });
+      }
+      const item = itemRows[0];
+
+      const [campaignRows]: any = await db.query(
+        `SELECT id, subject, template_html as templateHtml FROM email_campaigns WHERE id = ?`,
+        [item.campaignId]
+      );
+      if (!campaignRows || campaignRows.length === 0) {
+        return NextResponse.json({ success: false, error: 'Campaign tidak ditemukan' }, { status: 404 });
+      }
+      const camp = campaignRows[0];
+
+      const host = req.headers.get('host') || 'playlistlivefestival.letsplaymaker.com';
+      const protocol = host.includes('localhost') ? 'http' : 'https';
+      const domainUrl = `${protocol}://${host}`;
+
+      // 3. Dispatch immediately
+      const sendResult = await sendQueuedEmail({
+        settings: smtpSettings,
+        toEmail: item.email,
+        toName: item.name || 'Sobat Playlist',
+        subject: camp.subject,
+        templateHtml: camp.templateHtml,
+        domainUrl,
+      });
+
+      if (sendResult.success) {
+        const nowSql = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        await db.query(
+          `UPDATE email_queue SET status = 'sent', sent_at = ?, error_message = NULL WHERE id = ?`,
+          [nowSql, item.id]
+        );
+        if (item.status !== 'sent') {
+          await db.query(
+            `UPDATE email_campaigns SET sent_count = sent_count + 1, last_sent_at = ? WHERE id = ?`,
+            [nowSql, item.campaignId]
+          );
+        }
+        return NextResponse.json({
+          success: true,
+          message: `Berhasil mengirim ulang email ke ${item.email}!`,
+          response: sendResult.response,
+        });
+      } else {
+        await db.query(
+          `UPDATE email_queue SET status = 'failed', error_message = ? WHERE id = ?`,
+          [sendResult.error?.slice(0, 500) || 'Gagal kirim ulang', item.id]
+        );
+        return NextResponse.json({
+          success: false,
+          error: sendResult.error || 'Gagal mengirim ulang email',
+        }, { status: 400 });
+      }
+    }
+
+    if (action === 'resend_item' || action === 'reset_to_pending') {
       const { queueItemId } = body;
       if (!queueItemId) {
         return NextResponse.json({ success: false, error: 'Queue Item ID diperlukan' }, { status: 400 });

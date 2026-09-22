@@ -99,6 +99,7 @@ export default function EmailBlastTab() {
   const [workerRunning, setWorkerRunning] = useState(false);
   const [workerLog, setWorkerLog] = useState<string | null>(null);
   const [autoWorkerTab, setAutoWorkerTab] = useState(true);
+  const [resendingId, setResendingId] = useState<number | null>(null);
 
   // New Campaign Form State
   const [campaignTitle, setCampaignTitle] = useState('Nostalgia Festival Blast 2026');
@@ -338,6 +339,40 @@ export default function EmailBlastTab() {
       setWorkerLog(`❌ Terjadi kesalahan: ${err.message}`);
     } finally {
       setWorkerRunning(false);
+    }
+  }
+
+  async function handleResendItem(item: EmailQueueItem) {
+    if (!selectedCampaignId) return;
+    const actionLabel = item.status === 'sent' ? 'Kirim ulang' : 'Kirim sekarang';
+    if (!confirm(`${actionLabel} email ke ${item.email} (${item.name || 'Penerima'})?`)) {
+      return;
+    }
+    setResendingId(item.id);
+    setWorkerLog(`Mengirim email ke ${item.email}...`);
+    try {
+      const res = await fetch('/api/email/queue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'resend_now',
+          campaignId: selectedCampaignId,
+          queueItemId: item.id,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setWorkerLog(`✅ Berhasil mengirim email ke: ${item.email}`);
+        fetchCampaigns();
+        fetchQueue();
+      } else {
+        setWorkerLog(`❌ Gagal mengirim ke ${item.email}: ${data.error}`);
+        fetchQueue();
+      }
+    } catch (err: any) {
+      setWorkerLog(`❌ Terjadi kesalahan: ${err.message}`);
+    } finally {
+      setResendingId(null);
     }
   }
 
@@ -719,12 +754,13 @@ export default function EmailBlastTab() {
                     <th className="py-3.5 px-4">Estimasi Waktu Kirim</th>
                     <th className="py-3.5 px-4">Waktu Terkirim</th>
                     <th className="py-3.5 px-4">Keterangan / Error</th>
+                    <th className="py-3.5 px-4 text-center">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200 text-zinc-800">
                   {queueItems.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-12 text-center text-zinc-400">
+                      <td colSpan={8} className="py-12 text-center text-zinc-400">
                         {queueLoading
                           ? 'Memuat data antrean...'
                           : 'Belum ada email dalam antrean ini. Silakan buat campaign dan import sheet.'}
@@ -780,6 +816,27 @@ export default function EmailBlastTab() {
                             ) : (
                               '-'
                             )}
+                          </td>
+                          <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                            <button
+                              onClick={() => handleResendItem(item)}
+                              disabled={resendingId === item.id || item.status === 'sending'}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border shadow-2xs ${
+                                item.status === 'sent'
+                                  ? 'bg-zinc-100 hover:bg-zinc-900 hover:text-white text-zinc-700 border-zinc-300'
+                                  : item.status === 'failed'
+                                  ? 'bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-700 border-rose-200'
+                                  : 'bg-zinc-900 hover:bg-zinc-800 text-white border-zinc-900'
+                              } disabled:opacity-50`}
+                              title={item.status === 'sent' ? 'Kirim ulang email ini sekarang' : 'Kirim sekarang tanpa menunggu antrean'}
+                            >
+                              {resendingId === item.id ? (
+                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <RotateCcw className="w-3.5 h-3.5" />
+                              )}
+                              <span>{item.status === 'sent' ? 'Kirim Ulang' : 'Kirim Sekarang'}</span>
+                            </button>
                           </td>
                         </tr>
                       );
