@@ -3,6 +3,7 @@ import {
   getEmailQueueFromDb,
   updateEmailCampaignStatus,
   resetFailedQueueItems,
+  getDbPool,
 } from '@/lib/db';
 
 export async function GET(req: NextRequest) {
@@ -60,6 +61,21 @@ export async function POST(req: NextRequest) {
         message: `${count} email gagal berhasil dikembalikan ke status antrean (pending).`,
         count,
       });
+    }
+
+    if (action === 'resend_item') {
+      const { queueItemId } = body;
+      if (!queueItemId) {
+        return NextResponse.json({ success: false, error: 'Queue Item ID diperlukan' }, { status: 400 });
+      }
+      const db = getDbPool();
+      if (db) {
+        await db.query(
+          `UPDATE email_queue SET status = 'pending', sent_at = NULL, error_message = NULL WHERE id = ?`,
+          [queueItemId]
+        );
+      }
+      return NextResponse.json({ success: true, message: `Item #${queueItemId} berhasil dikembalikan ke antrean.` });
     }
 
     return NextResponse.json({ success: false, error: 'Aksi tidak dikenali' }, { status: 400 });

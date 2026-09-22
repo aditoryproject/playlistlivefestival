@@ -68,13 +68,8 @@ export async function sendQueuedEmail(params: {
       ? `"${settings.fromName.replace(/"/g, '')}" <${settings.fromEmail}>`
       : settings.fromEmail;
 
-    // Headers - Clean without duplicate Reply-To or invalid headers
+    // Headers - Clean without custom headers to match the successful test email delivery
     const headers: Record<string, string> = {};
-
-    if (!isTest) {
-      headers['List-Unsubscribe'] = `<${unsubscribeUrl}>`;
-      headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
-    }
 
     // Send email with explicit SMTP envelope to prevent cPanel envelope mismatch
     const info = await transporter.sendMail({
